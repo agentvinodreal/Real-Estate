@@ -15,6 +15,7 @@ export default function PropertyCard({ property: l }: { property: Property }) {
         <Photo
           seed={l.slug}
           label={l.title}
+          src={l.images && l.images.length > 0 ? l.images[0] : undefined}
           className="aspect-[4/3] w-full transition-transform duration-500 ease-out group-hover:scale-105"
         />
         <span

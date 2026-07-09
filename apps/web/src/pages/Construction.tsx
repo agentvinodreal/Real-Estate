@@ -3,12 +3,14 @@ import Seo from '../components/Seo'
 import Placeholder from '../components/Placeholder'
 import ConstructionCard from '../components/ConstructionCard'
 import InquiryForm from '../components/InquiryForm'
-import { api, type ConstructionProject } from '@carry/shared'
+import { api, type ConstructionProject, type Material } from '@carry/shared'
 import { PILLARS, PACKAGES, PROCESS } from '../lib/data'
 
 export default function Construction() {
   const [projects, setProjects] = useState<ConstructionProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [loadingMaterials, setLoadingMaterials] = useState(true)
 
   useEffect(() => {
     api
@@ -16,6 +18,12 @@ export default function Construction() {
       .then((res) => setProjects(res.data))
       .catch(() => setProjects([]))
       .finally(() => setLoading(false))
+
+    api
+      .listMaterials()
+      .then((res) => setMaterials(res.data))
+      .catch(() => setMaterials([]))
+      .finally(() => setLoadingMaterials(false))
   }, [])
 
   return (
@@ -143,6 +151,56 @@ export default function Construction() {
           )}
         </div>
       </section>
+
+      {/* Materials Showcase */}
+      {!loadingMaterials && materials.length > 0 && (
+        <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 border-t border-ink/10">
+          <span className="kicker">Built With Trust</span>
+          <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+            Premium raw materials we use.
+          </h2>
+          <p className="mt-3 max-w-xl text-ink-soft">
+            We source our materials from certified grade-A manufacturers, ensuring structural longevity, anti-corrosive reinforcement, and premium finishes.
+          </p>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {materials.map((m) => (
+              <div
+                key={m.id}
+                className="flex flex-col justify-between border border-ink/10 bg-bone p-5 hover:border-ink/20 shadow-sm transition-all animate-fade-in"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-sans text-base font-semibold text-ink leading-snug">
+                        {m.name}
+                      </h3>
+                      <p className="font-mono text-[0.6rem] text-concrete uppercase tracking-wider mt-0.5">
+                        Brand: {m.brand}
+                      </p>
+                    </div>
+                    <span className="font-mono text-[0.6rem] bg-ink/5 px-2 py-0.5 uppercase tracking-wider text-ink-soft whitespace-nowrap">
+                      {m.category}
+                    </span>
+                  </div>
+
+                  {m.imageUrl && (
+                    <div className="mt-4 aspect-[16/10] w-full border border-ink/5 overflow-hidden bg-bone-dim/30">
+                      <img src={m.imageUrl} alt={m.name} className="h-full w-full object-cover" />
+                    </div>
+                  )}
+
+                  {m.description && (
+                    <p className="mt-3 font-sans text-xs text-ink-soft leading-relaxed">
+                      {m.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Quote form */}
       <section id="quote" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">

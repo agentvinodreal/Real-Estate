@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Seo from '../components/Seo'
 import Placeholder from '../components/Placeholder'
+import Photo from '../components/Photo'
 import InquiryForm from '../components/InquiryForm'
 import { api, pricePerSqft, statusLabel, type Property } from '@carry/shared'
 import { CONTACT } from '../lib/data'
@@ -100,11 +101,21 @@ export default function PropertyDetail() {
 
       {/* Gallery */}
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <Placeholder label={`${p.title} — main`} className="aspect-[16/9] w-full" />
-        <div className="mt-3 grid grid-cols-4 gap-3">
-          {['Living', 'Kitchen', 'Bedroom', 'Exterior'].map((l) => (
-            <Placeholder key={l} label={l} className="aspect-[4/3] w-full" />
-          ))}
+        {p.images && p.images.length > 0 ? (
+          <Photo src={p.images[0]} seed={p.slug} label={`${p.title} - main`} className="aspect-[16/9] w-full bg-ink" objectFit="contain" />
+        ) : (
+          <Placeholder label={`${p.title} — main`} className="aspect-[16/9] w-full" />
+        )}
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {p.images && p.images.length > 1 ? (
+            p.images.slice(1, 5).map((imgUrl, idx) => (
+              <Photo key={imgUrl} src={imgUrl} seed={`${p.slug}-${idx}`} className="aspect-[4/3] w-full bg-ink" objectFit="contain" />
+            ))
+          ) : (
+            ['Living', 'Kitchen', 'Bedroom', 'Exterior'].map((lbl) => (
+              <Placeholder key={lbl} label={lbl} className="aspect-[4/3] w-full" />
+            ))
+          )}
         </div>
       </div>
 

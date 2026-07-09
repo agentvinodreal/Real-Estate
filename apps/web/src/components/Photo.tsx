@@ -13,6 +13,7 @@ type PhotoProps = {
   rounded?: boolean
   /** Overrides the default picsum.photos URL (e.g. for pravatar avatars). */
   src?: string
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
 }
 
 /**
@@ -20,7 +21,7 @@ type PhotoProps = {
  * picsum.photos image (same seed → same photo) that fades in on load;
  * falls back to the blueprint <Placeholder> if the request fails (e.g. offline).
  */
-export default function Photo({ seed, label, className = '', w = 800, h = 600, rounded = false, src }: PhotoProps) {
+export default function Photo({ seed, label, className = '', w = 800, h = 600, rounded = false, src, objectFit = 'cover' }: PhotoProps) {
   const [failed, setFailed] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
@@ -35,7 +36,8 @@ export default function Photo({ seed, label, className = '', w = 800, h = 600, r
         src={src ?? dummyPhoto(seed, w, h)}
         alt={label ?? seed}
         loading="lazy"
-        className={`h-full w-full object-cover ${rounded ? 'rounded-full' : ''}`}
+        className={`h-full w-full ${rounded ? 'rounded-full' : ''}`}
+        style={{ objectFit }}
         initial={{ opacity: 0 }}
         animate={{ opacity: loaded ? 1 : 0 }}
         transition={{ duration: 0.5, ease: EASE_OUT_EXPO }}

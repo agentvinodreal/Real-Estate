@@ -4,6 +4,7 @@ import type {
   Paginated,
   Property,
   Testimonial,
+  Material,
 } from './types'
 
 const BASE = '/api/v1'
@@ -63,5 +64,9 @@ export const api = {
     })
     if (!res.ok) throw new Error(`Could not submit enquiry (${res.status})`)
     return res.json()
+  },
+
+  listMaterials(): Promise<{ data: Material[] }> {
+    return getJson<{ data: Material[] }>('/materials')
   },
 }

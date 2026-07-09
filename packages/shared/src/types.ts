@@ -68,3 +68,13 @@ export type LeadInput = {
   propertyId?: string
   projectId?: string
 }
+
+export type Material = {
+  id: string
+  name: string
+  category: string
+  brand: string
+  description: string | null
+  imageUrl: string | null
+  createdAt: string
+}

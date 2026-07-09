@@ -9,6 +9,8 @@ import propertyRoutes from './routes/properties.js'
 import constructionRoutes from './routes/construction.js'
 import leadRoutes from './routes/leads.js'
 import testimonialRoutes from './routes/testimonials.js'
+import uploadsRoutes from './routes/uploads.js'
+import materialsRoutes from './routes/materials.js'
 
 const PORT = Number(process.env.PORT ?? 4000)
 const API_PREFIX = '/api/v1'
@@ -58,6 +60,8 @@ async function main() {
     await api.register(constructionRoutes)
     await api.register(leadRoutes)
     await api.register(testimonialRoutes)
+    await api.register(uploadsRoutes)
+    await api.register(materialsRoutes)
   }, { prefix: API_PREFIX })
 
   await app.ready()

@@ -87,3 +87,13 @@ model Testimonial {
   published Boolean  @default(true)
   createdAt DateTime @default(now())
 }
+
+model Material {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // e.g. "Steel", "Cement", "Flooring", "Glass"
+  brand       String   // e.g. "Tata Tiscon", "Ultratech"
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+}

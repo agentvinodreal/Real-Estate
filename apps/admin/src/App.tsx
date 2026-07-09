@@ -7,6 +7,7 @@ import Leads from './pages/Leads'
 import Properties from './pages/Properties'
 import PropertyForm from './pages/PropertyForm'
 import Projects from './pages/Projects'
+import Materials from './pages/Materials'
 import { setTokenGetter } from './lib/adminApi'
 
 /** Registers the live Clerk token getter for adminApi.ts's authFetch. */
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="properties/new" element={<PropertyForm />} />
           <Route path="properties/:slug" element={<PropertyForm />} />
           <Route path="projects" element={<Projects />} />
+          <Route path="materials" element={<Materials />} />
         </Route>
       </Routes>
     </>

@@ -1,4 +1,4 @@
-import type { ConstructionProject, Paginated, Property } from '@carry/shared'
+import type { ConstructionProject, Paginated, Property, Material } from '@carry/shared'
 
 const BASE = '/api/v1'
 
@@ -84,5 +84,24 @@ export const adminApi = {
 
   async deleteProject(id: string): Promise<void> {
     await authFetch(`/construction-projects/${id}`, { method: 'DELETE' })
+  },
+
+  async getUploadSignature(): Promise<{ signature: string; timestamp: number; apiKey: string; cloudName: string; folder: string }> {
+    const res = await authFetch('/uploads/sign')
+    return res.json()
+  },
+
+  async listMaterials(): Promise<Material[]> {
+    const res = await fetch(`${BASE}/materials`)
+    return (await res.json()).data
+  },
+
+  async createMaterial(data: Record<string, unknown>): Promise<Material> {
+    const res = await authFetch('/materials', { method: 'POST', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async deleteMaterial(id: string): Promise<void> {
+    await authFetch(`/materials/${id}`, { method: 'DELETE' })
   },
 }

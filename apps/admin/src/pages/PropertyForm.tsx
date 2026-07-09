@@ -38,6 +38,9 @@ export default function PropertyForm() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
+  const [images, setImages] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
+
   useEffect(() => {
     if (!isEdit) return
     api.getProperty(slug!).then((p) => {
@@ -62,8 +65,65 @@ export default function PropertyForm() {
         featured: p.featured,
         published: p.published,
       })
+      setImages(p.images ?? [])
     })
   }, [slug, isEdit])
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const sigData = await adminApi.getUploadSignature()
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('api_key', sigData.apiKey)
+        formData.append('timestamp', String(sigData.timestamp))
+        formData.append('signature', sigData.signature)
+        formData.append('folder', sigData.folder)
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!res.ok) {
+          const errData = await res.json()
+          throw new Error(errData.error?.message || 'Cloudinary upload failed')
+        }
+
+        const data = await res.json()
+        setImages((prev) => [...prev, data.secure_url])
+      }
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'Failed to upload one or more images. Please configure your Cloudinary environment keys.')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  function setHero(index: number) {
+    if (index === 0) return
+    setImages((prev) => {
+      const copy = [...prev]
+      const [item] = copy.splice(index, 1)
+      copy.unshift(item)
+      return copy
+    })
+  }
+
+  function deleteImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
 
   function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [k]: v }))
@@ -94,6 +154,7 @@ export default function PropertyForm() {
       amenities: form.amenities.split(',').map((a) => a.trim()).filter(Boolean),
       featured: form.featured,
       published: form.published,
+      images,
     }
     try {
       if (isEdit) await adminApi.updateProperty(form.id, payload)
@@ -187,6 +248,68 @@ export default function PropertyForm() {
         <label className="flex items-center gap-2 text-sm text-ink-soft">
           <input type="checkbox" checked={form.published} onChange={(e) => set('published', e.target.checked)} /> Published
         </label>
+
+        {/* Cloudinary Gallery Section */}
+        <div className="col-span-2 border-t border-ink/10 pt-6">
+          <h2 className="font-display text-xl font-semibold text-ink">Property Gallery</h2>
+          
+          <div className="mt-3 flex items-center justify-center border border-dashed border-ink/30 bg-bone-dim p-6 text-center">
+            <div>
+              <p className="text-sm text-ink-soft">
+                {uploading ? 'Uploading to Cloudinary...' : 'Upload multiple photos directly to Cloudinary'}
+              </p>
+              <label className="mt-3 inline-block cursor-pointer bg-ink px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark transition-colors">
+                {uploading ? 'Uploading…' : 'Select Files'}
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          {images.length > 0 && (
+            <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+              {images.map((imgUrl, idx) => {
+                const isHero = idx === 0
+                return (
+                  <div key={imgUrl} className={`group relative aspect-[4/3] border overflow-hidden bg-bone-dim ${isHero ? 'border-ochre shadow-md ring-1 ring-ochre' : 'border-ink/10'}`}>
+                    <img src={imgUrl} alt={`Gallery item ${idx}`} className="h-full w-full object-cover" />
+                    
+                    {isHero && (
+                      <span className="absolute left-1.5 top-1.5 bg-ochre px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-bone">
+                        Hero
+                      </span>
+                    )}
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {!isHero && (
+                        <button
+                          type="button"
+                          onClick={() => setHero(idx)}
+                          className="bg-bone text-ochre px-2.5 py-1 text-[0.6rem] font-mono uppercase tracking-wider transition-colors hover:bg-ochre hover:text-bone"
+                        >
+                          Make Hero
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => deleteImage(idx)}
+                        className="bg-bone text-ink px-2.5 py-1 text-[0.6rem] font-mono uppercase tracking-wider transition-colors hover:bg-red-700 hover:text-white"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         {error && <p className="col-span-2 text-sm text-ochre-dark">{error}</p>}
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
+import { Sun, Moon } from 'lucide-react'
 import { CONTACT } from '../lib/data'
 
 const NAV: { label: string; to: string }[] = [
@@ -24,6 +25,27 @@ export default function Header() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'light'
+    }
+    return 'light'
+  })
+
+  useEffect(() => {
+    const root = window.document.documentElement
+    if (theme === 'dark') {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
+  }
 
   return (
     <header
@@ -48,7 +70,14 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-5 md:flex">
+          <button
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/10 text-ink-soft transition-colors hover:border-ochre hover:text-ochre-dark"
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </button>
           <SignedOut>
             <SignInButton mode="modal">
               <button className="font-mono text-xs uppercase tracking-[0.18em] text-ink-soft transition-colors hover:text-ochre-dark">
@@ -92,6 +121,16 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          <div className="flex items-center justify-between border-b border-ink/5 py-3">
+            <span className="font-mono text-xs uppercase tracking-[0.18em] text-ink-soft">Theme</span>
+            <button
+              onClick={toggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/10 text-ink-soft"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </button>
+          </div>
           <div className="flex items-center justify-between border-b border-ink/5 py-3">
             <SignedOut>
               <SignInButton mode="modal">

@@ -17,6 +17,7 @@ export default function CountUp({ value, className }: CountUpProps) {
   const [display, setDisplay] = useState(match ? '0' + match[2] : value)
 
   useEffect(() => {
+    const match = value.match(MATCH)
     if (!inView || !match) return
     const target = Number(match[1])
     const decimals = match[1].includes('.') ? match[1].split('.')[1].length : 0
@@ -26,7 +27,7 @@ export default function CountUp({ value, className }: CountUpProps) {
       onUpdate: (v) => setDisplay(v.toFixed(decimals) + match[2]),
     })
     return () => controls.stop()
-  }, [inView, match])
+  }, [inView, value])
 
   return (
     <span ref={ref} className={className}>
