@@ -1,0 +1,63 @@
+/* ── Carry Construction design tokens ───────────────────────────────
+   Warm architectural palette. No purple/indigo, no rainbow gradients.
+   Ink + Bone base, Ochre accent, Concrete/Sand neutrals, Steel contrast.
+   Shared between the public web app and the admin panel. */
+@theme {
+  --color-ink: #1c1b18;
+  --color-ink-soft: #33312c;
+  --color-bone: #f5f1e9;
+  --color-bone-dim: #ebe6da;
+  --color-concrete: #8b857a;
+  --color-sand: #e7e0d3;
+  --color-ochre: #b87333;
+  --color-ochre-dark: #9c5f28;
+  --color-steel: #2e3a40;
+
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Base */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bone);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-ochre);
+  color: var(--color-bone);
+}
+
+/* Thin architectural rule used across sections */
+.rule {
+  height: 1px;
+  background-color: color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+
+/* Subtle blueprint texture for placeholder imagery */
+.blueprint {
+  background-color: var(--color-sand);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-concrete) 20%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-concrete) 20%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Eyebrow / kicker label */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ochre-dark);
+}

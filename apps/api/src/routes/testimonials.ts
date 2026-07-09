@@ -1,0 +1,45 @@
+import type { FastifyInstance } from 'fastify'
+import { prisma } from '../lib/prisma.js'
+import { verifyAdmin } from '../lib/auth.js'
+
+export default async function testimonialRoutes(app: FastifyInstance) {
+  app.get(
+    '/testimonials',
+    { schema: { tags: ['Testimonials'], summary: 'List published testimonials' } },
+    async () => {
+      const rows = await prisma.testimonial.findMany({
+        where: { published: true },
+        orderBy: { createdAt: 'desc' },
+      })
+      return { data: rows }
+    },
+  )
+
+  app.post(
+    '/testimonials',
+    {
+      preHandler: verifyAdmin,
+      schema: {
+        tags: ['Testimonials'],
+        summary: 'Create testimonial (admin)',
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: 'object',
+          required: ['name', 'quote'],
+          properties: {
+            name: { type: 'string' },
+            location: { type: 'string', nullable: true },
+            rating: { type: 'integer', minimum: 1, maximum: 5 },
+            quote: { type: 'string' },
+            avatarUrl: { type: 'string', nullable: true },
+            published: { type: 'boolean' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const row = await prisma.testimonial.create({ data: request.body as never })
+      return reply.code(201).send(row)
+    },
+  )
+}

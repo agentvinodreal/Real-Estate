@@ -1,0 +1,89 @@
+// Carry Construction data model.
+// Dev uses SQLite for zero-setup local running. List/JSON fields are stored as
+// JSON strings so the schema is portable — to move to Neon Postgres, change the
+// provider below to "postgresql" and set DATABASE_URL. App code stays the same.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Property {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  listingType     String // "Sale" | "Resale" | "Under Construction"
+  propertyType    String // "Apartment" | "Villa" | "Plot" | "Commercial"
+  bhk             Int?
+  priceInr        Int
+  priceLabel      String // pre-formatted, e.g. "₹1.35 Cr"
+  areaSqft        Int
+  carpetAreaSqft  Int?
+  builtupAreaSqft Int?
+  city            String
+  locality        String
+  address         String?
+  lat             Float?
+  lng             Float?
+  status          String // "ready" | "under_construction"
+  furnishing      String?
+  reraNumber      String?
+  description     String?
+  amenities       String   @default("[]") // JSON array of strings
+  images          String   @default("[]") // JSON array of image URLs
+  floorPlanUrl    String?
+  videoUrl        String?
+  featured        Boolean  @default(false)
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([city, listingType, propertyType])
+}
+
+model ConstructionProject {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  category       String
+  location       String
+  areaSqft       Int?
+  durationMonths Int?
+  packageTier    String?
+  description    String?
+  processStages  String   @default("[]") // JSON array of {title, body}
+  beforeImages   String   @default("[]") // JSON array of URLs
+  afterImages    String   @default("[]")
+  stageImages    String   @default("[]")
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Lead {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  sourcePage String?
+  propertyId String?
+  projectId  String?
+  message    String?
+  status     String   @default("new") // new | contacted | visit | closed
+  createdAt  DateTime @default(now())
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String?
+  rating    Int      @default(5)
+  quote     String
+  avatarUrl String?
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

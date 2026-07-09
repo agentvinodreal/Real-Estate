@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node --version; npm --version; \\(Get-Location\\).Path)",
+      "PowerShell(npm create vite@latest web -- --template react-ts 2>&1)",
+      "PowerShell(npm config get ignore-scripts)",
+      "PowerShell(npm approve-scripts --help 2>&1)"
+    ]
+  }
+}
