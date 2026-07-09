@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
 import { CONTACT } from '../lib/data'
 
@@ -13,9 +14,23 @@ const NAV: { label: string; to: string }[] = [
 
 export default function Header() {
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 8)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-ink/10 bg-bone/85 backdrop-blur">
+    <header
+      className={`sticky top-0 z-50 border-b border-ink/10 bg-bone/85 backdrop-blur transition-shadow duration-300 ${
+        scrolled ? 'shadow-[0_4px_20px_-8px_rgba(28,27,24,0.25)]' : 'shadow-none'
+      }`}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
         <Link to="/" className="text-ink">
           <Logo />
@@ -33,7 +48,17 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-4 md:flex">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="font-mono text-xs uppercase tracking-[0.18em] text-ink-soft transition-colors hover:text-ochre-dark">
+                Sign in
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
           <a
             href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
             className="inline-flex items-center gap-2 bg-ink px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:bg-ochre-dark"
@@ -67,6 +92,21 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          <div className="flex items-center justify-between border-b border-ink/5 py-3">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="font-mono text-xs uppercase tracking-[0.18em] text-ink-soft"
+                >
+                  Sign in
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
           <a
             href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
             className="mt-4 inline-flex bg-ink px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-bone"

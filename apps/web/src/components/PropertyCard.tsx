@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import Placeholder from './Placeholder'
+import Photo from './Photo'
 import type { Property } from '@carry/shared'
 
 const tagColor: Record<string, string> = {
@@ -11,8 +11,12 @@ const tagColor: Record<string, string> = {
 export default function PropertyCard({ property: l }: { property: Property }) {
   return (
     <Link to={`/properties/${l.slug}`} className="group flex flex-col">
-      <div className="relative">
-        <Placeholder label={l.title} className="aspect-[4/3] w-full" />
+      <div className="relative overflow-hidden">
+        <Photo
+          seed={l.slug}
+          label={l.title}
+          className="aspect-[4/3] w-full transition-transform duration-500 ease-out group-hover:scale-105"
+        />
         <span
           className={`absolute left-3 top-3 px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-[0.15em] ${tagColor[l.listingType] ?? 'bg-ink text-bone'}`}
         >

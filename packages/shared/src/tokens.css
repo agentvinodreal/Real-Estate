@@ -16,6 +16,11 @@
   --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.2s;
+  --duration-base: 0.5s;
+  --duration-slow: 0.9s;
 }
 
 /* Base */
@@ -60,4 +65,30 @@ body {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-ochre-dark);
+}
+
+/* Shimmer sweep used by loading skeletons and the CTA accent */
+@keyframes shimmer-sweep {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+.shimmer {
+  background-image: linear-gradient(
+    100deg,
+    transparent 35%,
+    color-mix(in srgb, var(--color-bone) 55%, transparent) 50%,
+    transparent 65%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 1.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

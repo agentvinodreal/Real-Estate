@@ -20,6 +20,7 @@
     "@prisma/client@6.19.3": true,
     "@prisma/engines@6.19.3": true,
     "esbuild@0.28.1": true,
-    "prisma@6.19.3": true
+    "prisma@6.19.3": true,
+    "@clerk/shared@3.47.7": true
   }
 }

@@ -1,16 +1,20 @@
 import type { ConstructionProject, Paginated, Property } from '@carry/shared'
 
 const BASE = '/api/v1'
-const TOKEN_KEY = 'carry_admin_token'
 
-export const adminAuth = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (t: string) => localStorage.setItem(TOKEN_KEY, t),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
+/**
+ * `adminApi.*` is called from plain page components (not hooks), but needs a
+ * live Clerk session token per request. `TokenBridge` (mounted once near the
+ * ClerkProvider) registers `useAuth().getToken` here so every call site below
+ * stays unchanged.
+ */
+let getToken: (() => Promise<string | null>) | null = null
+export function setTokenGetter(fn: () => Promise<string | null>) {
+  getToken = fn
 }
 
 async function authFetch(path: string, init: RequestInit = {}) {
-  const token = adminAuth.get()
+  const token = getToken ? await getToken() : null
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
@@ -19,7 +23,7 @@ async function authFetch(path: string, init: RequestInit = {}) {
       ...(init.headers ?? {}),
     },
   })
-  if (res.status === 401) throw new Error('unauthorized')
+  if (res.status === 401 || res.status === 403) throw new Error('unauthorized')
   if (!res.ok) throw new Error(`Request failed: ${res.status}`)
   return res
 }
@@ -38,16 +42,6 @@ export type Lead = {
 }
 
 export const adminApi = {
-  /** Validates the stored token by calling a protected endpoint. */
-  async verify(): Promise<boolean> {
-    try {
-      await authFetch('/leads')
-      return true
-    } catch {
-      return false
-    }
-  },
-
   async listLeads(): Promise<Lead[]> {
     const res = await authFetch('/leads')
     return (await res.json()).data

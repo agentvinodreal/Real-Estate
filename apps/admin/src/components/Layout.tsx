@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useClerk, useUser } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
-import { adminApi, adminAuth } from '../lib/adminApi'
 
 const TABS = [
   { to: '/', label: 'Leads', end: true },
@@ -10,30 +10,37 @@ const TABS = [
 ]
 
 export default function Layout() {
-  const [state, setState] = useState<'checking' | 'ok'>('checking')
+  const { isLoaded, isSignedIn, user } = useUser()
+  const { signOut } = useClerk()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!adminAuth.get()) {
-      navigate('/login')
-      return
-    }
-    adminApi.verify().then((ok) => {
-      if (ok) setState('ok')
-      else {
-        adminAuth.clear()
-        navigate('/login')
-      }
-    })
-  }, [navigate])
+    if (isLoaded && !isSignedIn) navigate('/login')
+  }, [isLoaded, isSignedIn, navigate])
 
-  function logout() {
-    adminAuth.clear()
-    navigate('/login')
+  if (!isLoaded) {
+    return <p className="p-10 font-mono text-sm text-concrete">Checking access…</p>
   }
 
-  if (state === 'checking') {
-    return <p className="p-10 font-mono text-sm text-concrete">Checking access…</p>
+  if (!isSignedIn) {
+    return null
+  }
+
+  if (user.publicMetadata.role !== 'admin') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bone px-5 text-center">
+        <p className="font-display text-2xl font-semibold text-ink">Not authorized</p>
+        <p className="max-w-sm text-sm text-ink-soft">
+          Your account ({user.primaryEmailAddress?.emailAddress}) doesn't have admin access yet.
+        </p>
+        <button
+          onClick={() => signOut({ redirectUrl: '/login' })}
+          className="font-mono text-xs uppercase tracking-[0.15em] text-ink hover:text-ochre-dark"
+        >
+          Sign out
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -46,7 +53,10 @@ export default function Layout() {
               Admin
             </span>
           </div>
-          <button onClick={logout} className="font-mono text-xs uppercase tracking-[0.15em] text-ink hover:text-ochre-dark">
+          <button
+            onClick={() => signOut({ redirectUrl: '/login' })}
+            className="font-mono text-xs uppercase tracking-[0.15em] text-ink hover:text-ochre-dark"
+          >
             Sign out
           </button>
         </div>

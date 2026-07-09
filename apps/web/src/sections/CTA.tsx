@@ -1,9 +1,13 @@
 import { CONTACT } from '../lib/data'
+import Reveal from '../components/motion/Reveal'
 
 export default function CTA() {
   return (
-    <section className="bg-ochre">
-      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-5 py-16 sm:px-8 lg:flex-row lg:items-center">
+    <section className="shimmer relative overflow-hidden bg-ochre">
+      <Reveal
+        as="div"
+        className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-5 py-16 sm:px-8 lg:flex-row lg:items-center"
+      >
         <div>
           <h2 className="max-w-xl font-display text-3xl font-semibold leading-tight text-ink sm:text-4xl">
             Ready to buy, sell, or build? Let’s talk.
@@ -26,7 +30,7 @@ export default function CTA() {
             {CONTACT.phone}
           </a>
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }

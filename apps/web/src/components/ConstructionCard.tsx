@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom'
-import Placeholder from './Placeholder'
+import Photo from './Photo'
 import type { ConstructionProject } from '@carry/shared'
 
 export default function ConstructionCard({ project }: { project: ConstructionProject }) {
   return (
     <Link to={`/construction/${project.slug}`} className="group flex flex-col">
-      <div className="relative">
-        <Placeholder label={project.title} className="aspect-[4/3] w-full" />
+      <div className="relative overflow-hidden">
+        <Photo
+          seed={project.slug}
+          label={project.title}
+          className="aspect-[4/3] w-full transition-transform duration-500 ease-out group-hover:scale-105"
+        />
         <span className="absolute left-3 top-3 bg-ochre px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-bone">
           {project.category}
         </span>

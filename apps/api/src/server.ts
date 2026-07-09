@@ -33,7 +33,7 @@ async function main() {
       servers: [{ url: `http://localhost:${PORT}`, description: 'Local dev' }],
       components: {
         securitySchemes: {
-          bearerAuth: { type: 'http', scheme: 'bearer', description: 'Admin API key (dev) or Firebase ID token (prod)' },
+          bearerAuth: { type: 'http', scheme: 'bearer', description: 'Clerk session token (admin role required)' },
         },
       },
       tags: [
