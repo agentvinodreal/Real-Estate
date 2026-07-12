@@ -76,4 +76,47 @@ export default async function materialsRoutes(app: FastifyInstance) {
       return reply.code(204).send()
     },
   )
+
+  // PATCH /materials/:id (admin - update)
+  app.patch(
+    '/materials/:id',
+    {
+      preHandler: verifyAdmin,
+      schema: {
+        tags: ['Materials'],
+        summary: 'Update material listing (admin)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: { type: 'string' },
+          },
+        },
+        body: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            category: { type: 'string' },
+            brand: { type: 'string' },
+            description: { type: 'string', nullable: true },
+            imageUrl: { type: 'string', nullable: true },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      try {
+        const row = await prisma.material.update({
+          where: { id },
+          data: request.body as any,
+        })
+        return row
+      } catch {
+        return reply.code(404).send({ error: 'Material not found' })
+      }
+    },
+  )
 }
+

@@ -20,7 +20,7 @@ async function authFetch(path: string, init: RequestInit = {}) {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token ?? ''}`,
-      ...(init.headers ?? {}),
+      ...init.headers,
     },
   })
   if (res.status === 401 || res.status === 403) throw new Error('unauthorized')

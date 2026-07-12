@@ -4,6 +4,11 @@ import Placeholder from './Placeholder'
 import { dummyPhoto } from '../lib/images'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
+const getCloudinaryUrl = (publicId: string, w = 800) => {
+  const cloudName = import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME ?? 'piwpzbke'
+  return `https://res.cloudinary.com/${cloudName}/image/upload/w_${w},q_auto,f_auto/${publicId}`
+}
+
 type PhotoProps = {
   seed: string
   label?: string
@@ -29,11 +34,14 @@ export default function Photo({ seed, label, className = '', w = 800, h = 600, r
     return <Placeholder label={label ?? seed} className={className} />
   }
 
+  const isUrl = src && (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:'))
+  const resolvedSrc = src ? (isUrl ? src : getCloudinaryUrl(src, w)) : dummyPhoto(seed, w, h)
+
   return (
     <div className={`relative overflow-hidden ${rounded ? 'rounded-full' : ''} ${className}`}>
       {!loaded && <div className={`blueprint absolute inset-0 ${rounded ? 'rounded-full' : ''}`} />}
       <motion.img
-        src={src ?? dummyPhoto(seed, w, h)}
+        src={resolvedSrc}
         alt={label ?? seed}
         loading="lazy"
         className={`h-full w-full ${rounded ? 'rounded-full' : ''}`}

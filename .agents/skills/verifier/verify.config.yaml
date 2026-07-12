@@ -1,0 +1,38 @@
+# Verification Agent Configuration - Carry Construction Monorepo
+
+sandbox:
+  root_dir: "logs/verification/"
+  worktree_dir: "logs/verification/sandbox/"
+  cleanup_on_success: true
+  cleanup_on_failure: false
+
+targets:
+  - name: "apps/api"
+    build_cmd: "npm run build -w apps/api"
+    lint_cmd: "npx oxlint apps/api/src"
+    test_cmd: "npm test -w apps/api"
+  - name: "apps/web"
+    build_cmd: "npm run build -w apps/web"
+    lint_cmd: "npx oxlint apps/web/src"
+  - name: "apps/admin"
+    build_cmd: "npm run build -w apps/admin"
+    lint_cmd: "npx oxlint apps/admin/src"
+  - name: "packages/shared"
+    build_cmd: "npm run build -w packages/shared"
+
+security:
+  check_secrets: true
+  blocked_keys:
+    - "sk_test_"
+    - "pk_test_"
+    - "CLOUDINARY_API_SECRET"
+    - "CLOUDINARY_API_KEY"
+    - "CLERK_SECRET_KEY"
+  verify_prisma_parameterized: true
+  verify_clerk_auth: true
+
+git:
+  auto_commit_on_pass: false
+  auto_push_on_pass: false
+  default_commit_message: "verify: automated check passed (build, lint, and security OK)"
+

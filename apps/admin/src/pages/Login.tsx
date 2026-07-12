@@ -7,7 +7,7 @@ export default function Login() {
       <div className="text-ink">
         <Logo />
       </div>
-      <SignIn routing="hash" forceRedirectUrl="/" signUpForceRedirectUrl="/" />
+      <SignIn routing="hash" forceRedirectUrl="/admin" signUpForceRedirectUrl="/admin" />
     </div>
   )
 }

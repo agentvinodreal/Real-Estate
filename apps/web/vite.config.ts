@@ -6,8 +6,10 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    host: true,
     port: 5173,
     strictPort: true,
+    allowedHosts: true,
     // Proxy API calls to the Fastify backend. Mirrors production, where Nginx
     // reverse-proxies /api on the same origin — so no CORS in the browser.
     proxy: {

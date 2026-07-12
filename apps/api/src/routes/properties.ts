@@ -130,8 +130,8 @@ export default async function propertyRoutes(app: FastifyInstance) {
       const row = await prisma.property.create({
         data: {
           ...body,
-          amenities: JSON.stringify(body.amenities ?? []),
-          images: JSON.stringify(body.images ?? []),
+          amenities: (body.amenities as string[]) ?? [],
+          images: (body.images as string[]) ?? [],
         } as Prisma.PropertyCreateInput,
       })
       return reply.code(201).send(serializeProperty(row))
@@ -146,8 +146,6 @@ export default async function propertyRoutes(app: FastifyInstance) {
       const { id } = request.params as { id: string }
       const body = request.body as Record<string, unknown>
       const data: Record<string, unknown> = { ...body }
-      if (body.amenities) data.amenities = JSON.stringify(body.amenities)
-      if (body.images) data.images = JSON.stringify(body.images)
       try {
         const row = await prisma.property.update({ where: { id }, data })
         return serializeProperty(row)

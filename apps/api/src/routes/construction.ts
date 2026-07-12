@@ -63,9 +63,9 @@ export default async function constructionRoutes(app: FastifyInstance) {
         data: {
           ...body,
           processStages: JSON.stringify(body.processStages ?? []),
-          beforeImages: JSON.stringify(body.beforeImages ?? []),
-          afterImages: JSON.stringify(body.afterImages ?? []),
-          stageImages: JSON.stringify(body.stageImages ?? []),
+          beforeImages: (body.beforeImages as string[]) ?? [],
+          afterImages: (body.afterImages as string[]) ?? [],
+          stageImages: (body.stageImages as string[]) ?? [],
         } as Prisma.ConstructionProjectCreateInput,
       })
       return reply.code(201).send(serializeProject(row))
@@ -85,4 +85,52 @@ export default async function constructionRoutes(app: FastifyInstance) {
       }
     },
   )
+
+  app.patch(
+    '/construction-projects/:id',
+    {
+      preHandler: verifyAdmin,
+      schema: {
+        tags: ['Construction'],
+        summary: 'Update project (admin)',
+        security: [{ bearerAuth: [] }],
+        params: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+        body: {
+          type: 'object',
+          properties: {
+            slug: { type: 'string' },
+            title: { type: 'string' },
+            category: { type: 'string' },
+            location: { type: 'string' },
+            areaSqft: { type: 'integer', nullable: true },
+            durationMonths: { type: 'integer', nullable: true },
+            packageTier: { type: 'string', nullable: true },
+            description: { type: 'string', nullable: true },
+            processStages: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, body: { type: 'string' } } } },
+            beforeImages: { type: 'array', items: { type: 'string' } },
+            afterImages: { type: 'array', items: { type: 'string' } },
+            stageImages: { type: 'array', items: { type: 'string' } },
+            published: { type: 'boolean' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const body = request.body as Record<string, unknown>
+      const data: Record<string, unknown> = { ...body }
+      if (body.processStages) data.processStages = JSON.stringify(body.processStages)
+
+      try {
+        const row = await prisma.constructionProject.update({
+          where: { id },
+          data: data as any,
+        })
+        return serializeProject(row)
+      } catch {
+        return reply.code(404).send({ error: 'Project not found' })
+      }
+    },
+  )
 }
+

@@ -1,69 +1,173 @@
-// Carry Construction data model.
-// Dev uses SQLite for zero-setup local running. List/JSON fields are stored as
-// JSON strings so the schema is portable — to move to Neon Postgres, change the
-// provider below to "postgresql" and set DATABASE_URL. App code stays the same.
+// Carry Construction data model (Unified PostgreSQL version)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Property {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  title           String
-  listingType     String // "Sale" | "Resale" | "Under Construction"
-  propertyType    String // "Apartment" | "Villa" | "Plot" | "Commercial"
-  bhk             Int?
-  priceInr        Int
-  priceLabel      String // pre-formatted, e.g. "₹1.35 Cr"
-  areaSqft        Int
-  carpetAreaSqft  Int?
-  builtupAreaSqft Int?
-  city            String
-  locality        String
-  address         String?
-  lat             Float?
-  lng             Float?
-  status          String // "ready" | "under_construction"
-  furnishing      String?
-  reraNumber      String?
-  description     String?
-  amenities       String   @default("[]") // JSON array of strings
-  images          String   @default("[]") // JSON array of image URLs
-  floorPlanUrl    String?
-  videoUrl        String?
-  featured        Boolean  @default(false)
-  published       Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+// ── Agent (from Field Ops) ─────────────────────────────────────────────
+model Agent {
+  id          String   @id @default(cuid())
+  clerkUserId String   @unique
+  name        String
+  email       String   @unique
+  phone       String?
+  age         Int?
+  status      String   @default("active") // "active" | "revoked"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([city, listingType, propertyType])
+  properties Property[]
+  projects   ConstructionProject[]
+  labour     Labour[]
+  shops      Shop[]
+
+  @@index([clerkUserId])
+  @@map("agents")
 }
 
+// ── Property ───────────────────────────────────────────────────────────
+model Property {
+  id           String   @id @default(cuid())
+  slug         String?  @unique
+  title        String
+  propertyType String // "Apartment" | "Villa" | "Plot" | "Commercial"
+  listingType  String // "Sale" | "Resale" | "Under Construction"
+  bhk          Int?
+  priceInr     Int
+  priceLabel   String // pre-formatted "₹1.35 Cr"
+  areaSqft     Int
+  locality     String
+  city         String
+  address      String?
+  reraNumber   String?
+  status       String // "Ready" | "Under Construction"
+  furnishing   String? // "Unfurnished" | "Semi-Furnished" | "Furnished"
+  description  String?
+  images       String[] @default([]) // Cloudinary public IDs (Postgres native array)
+  floorPlanUrl String? // single Cloudinary public ID
+  videoUrl     String?  // for public website virtual tours
+  featured     Boolean  @default(false)
+  amenities    String[] @default([])
+  lat          Float?
+  lng          Float?
+  reviewStatus String   @default("pending") // "pending" | "reviewed" | "deleted"
+  published    Boolean  @default(false)
+
+  // Rent-specific fields
+  securityDeposit    Int?
+  availableFrom      String?
+  preferredTenant    String?
+  petFriendly        Boolean?
+  maintenanceCharges Int?
+  leaseDuration      Int?
+  lockInPeriod       Int?
+  camCharges         Int?
+  plotAllowedUse     String?
+
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([reviewStatus])
+  @@index([city, listingType, propertyType])
+  @@map("properties")
+}
+
+// ── ConstructionProject ────────────────────────────────────────────────
 model ConstructionProject {
   id             String   @id @default(cuid())
-  slug           String   @unique
+  slug           String?  @unique
   title          String
-  category       String
+  category       String // "Turnkey Villa" | "Renovation" | "Interior" | "Commercial Build"
   location       String
   areaSqft       Int?
   durationMonths Int?
-  packageTier    String?
+  packageTier    String? // "Basic" | "Premium" | "Luxury"
   description    String?
-  processStages  String   @default("[]") // JSON array of {title, body}
-  beforeImages   String   @default("[]") // JSON array of URLs
-  afterImages    String   @default("[]")
-  stageImages    String   @default("[]")
-  published      Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  processStages  String   @default("[]") // JSON string of stages (compatibility)
+  beforeImages   String[] @default([]) // Cloudinary public IDs
+  afterImages    String[] @default([])
+  stageImages    String[] @default([])
+  reviewStatus   String   @default("pending")
+  published      Boolean  @default(false)
+
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([reviewStatus])
+  @@index([category])
+  @@map("construction_projects")
 }
 
+// ── Labour ─────────────────────────────────────────────────────────────
+model Labour {
+  id              String  @id @default(cuid())
+  fullName        String
+  age             Int
+  gender          String // "Male" | "Female" | "Other"
+  skillLevel      String // "Skilled" | "Non-Skilled"
+  skillType       String? // only if Skilled — from SKILL_TYPES list
+  phone           String
+  profilePhotoUrl String? // single Cloudinary public ID
+
+  // Availability address
+  houseNo  String?
+  street   String?
+  locality String?
+  city     String?
+  pincode  String?
+
+  reviewStatus String @default("pending")
+
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([reviewStatus])
+  @@index([city, skillLevel])
+  @@map("labour")
+}
+
+// ── Shop ────────────────────────────────────────────────────────────────
+model Shop {
+  id          String  @id @default(cuid())
+  shopName    String
+  shopType    String                    // free-text: "Cement", "Bricks", etc.
+  keeperName  String
+  keeperPhone String
+  address     String?
+  lat         Float?
+  lng         Float?
+  images      String[] @default([])
+  reviewStatus String  @default("pending") // "pending" | "reviewed" | "deleted"
+
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([reviewStatus])
+  @@map("shops")
+}
+
+// ── Lead (from Real Estate) ────────────────────────────────────────────
 model Lead {
   id         String   @id @default(cuid())
   name       String
@@ -75,8 +179,11 @@ model Lead {
   message    String?
   status     String   @default("new") // new | contacted | visit | closed
   createdAt  DateTime @default(now())
+
+  @@map("leads")
 }
 
+// ── Testimonial (from Real Estate) ─────────────────────────────────────
 model Testimonial {
   id        String   @id @default(cuid())
   name      String
@@ -86,8 +193,11 @@ model Testimonial {
   avatarUrl String?
   published Boolean  @default(true)
   createdAt DateTime @default(now())
+
+  @@map("testimonials")
 }
 
+// ── Material (from Real Estate) ────────────────────────────────────────
 model Material {
   id          String   @id @default(cuid())
   name        String
@@ -96,4 +206,23 @@ model Material {
   description String?
   imageUrl    String?
   createdAt   DateTime @default(now())
+
+  @@map("materials")
+}
+
+// ── BlogPost (from Real Estate) ────────────────────────────────────────
+model BlogPost {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  excerpt         String
+  coverImage      String?
+  body            String
+  metaTitle       String?
+  metaDescription String?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("blog_posts")
 }

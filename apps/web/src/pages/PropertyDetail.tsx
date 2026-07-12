@@ -87,15 +87,8 @@ export default function PropertyDetail() {
         <span className="inline-block bg-ink px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-bone">
           {p.listingType}
         </span>
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{p.title}</h1>
-            <p className="mt-2 text-ink-soft">{p.locality}, {p.city}</p>
-          </div>
-          <div className="text-right">
-            <div className="font-display text-3xl font-semibold text-ochre-dark">{p.priceLabel}</div>
-            <div className="font-mono text-xs text-concrete">{pricePerSqft(p.priceInr, p.areaSqft)}</div>
-          </div>
+        <div className="mt-3">
+          <h1 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{p.title}</h1>
         </div>
       </div>
 
@@ -116,6 +109,18 @@ export default function PropertyDetail() {
               <Placeholder key={lbl} label={lbl} className="aspect-[4/3] w-full" />
             ))
           )}
+        </div>
+      </div>
+
+      {/* Price block below images */}
+      <div className="mx-auto max-w-7xl px-5 mt-6 sm:px-8 flex items-baseline justify-between border-b border-ink/10 pb-6">
+        <div>
+          <span className="font-mono text-[0.6rem] text-concrete uppercase tracking-[0.15em]">Price</span>
+          <div className="font-display text-3xl font-semibold text-ochre-dark mt-1">{p.priceLabel}</div>
+        </div>
+        <div className="text-right">
+          <span className="font-mono text-[0.6rem] text-concrete uppercase tracking-[0.15em]">Rate</span>
+          <div className="font-mono text-sm text-ink-soft mt-1">{pricePerSqft(p.priceInr, p.areaSqft)}</div>
         </div>
       </div>
 
@@ -140,6 +145,8 @@ export default function PropertyDetail() {
               <Spec label="Carpet area" value={p.carpetAreaSqft ? `${p.carpetAreaSqft.toLocaleString('en-IN')} sq ft` : null} />
               <Spec label="Furnishing" value={p.furnishing} />
               <Spec label="RERA" value={p.reraNumber} />
+              <Spec label="Location" value={`${p.locality}, ${p.city}`} />
+              <Spec label="Address" value={p.address} />
             </dl>
           </section>
 
@@ -157,18 +164,39 @@ export default function PropertyDetail() {
             </section>
           )}
 
+          {p.floorPlanUrl && (
+            <section className="mt-10">
+              <h2 className="font-display text-2xl font-semibold text-ink">Floor Plan</h2>
+              <div className="mt-4 border border-ink/10 p-4 bg-bone/30">
+                <Photo
+                  src={p.floorPlanUrl}
+                  seed={`${p.slug}-floor-plan`}
+                  label={`${p.title} - Floor Plan`}
+                  className="aspect-[4/3] w-full max-w-2xl mx-auto bg-ink"
+                  objectFit="contain"
+                />
+              </div>
+            </section>
+          )}
+
           <section className="mt-10">
             <h2 className="font-display text-2xl font-semibold text-ink">Location</h2>
-            <div className="relative mt-4">
-              <Placeholder label="Mappls map" className="aspect-[16/7] w-full" />
-              <div className="absolute bottom-3 left-3 bg-ink px-3 py-2 font-mono text-[0.6rem] uppercase tracking-[0.12em] text-bone">
-                {p.locality}, {p.city}
-                {p.lat && p.lng ? ` · ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}` : ''}
-              </div>
+            {p.address && <p className="mt-3 text-sm text-ink-soft">{p.address}</p>}
+            <p className="mt-1 text-sm font-semibold text-ink">{p.locality}, {p.city}</p>
+            <div className="relative mt-4 overflow-hidden border border-ink/10 aspect-[16/7] w-full">
+              {/* ponytail: native iframe embed avoids Google Maps API key / JS SDK overhead */}
+              {p.lat && p.lng ? (
+                <iframe
+                  src={`https://maps.google.com/maps?q=${p.lat},${p.lng}&z=15&output=embed`}
+                  className="w-full h-full border-none"
+                  allowFullScreen
+                  loading="lazy"
+                  title="Location Map"
+                />
+              ) : (
+                <Placeholder label="No Location Pinned" className="w-full h-full" />
+              )}
             </div>
-            <p className="mt-2 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-concrete">
-              Interactive Mappls map wires in here
-            </p>
           </section>
         </div>
 

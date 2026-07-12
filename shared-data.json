@@ -1,0 +1,47 @@
+{
+  "properties": [
+    {
+      "id": "cmrhlenam0004l204j84lwl58",
+      "title": "Primary school Neemtalla for sale",
+      "propertyType": "Commercial",
+      "listingType": "Sale",
+      "bhk": 0,
+      "priceInr": 3000000,
+      "priceLabel": "₹30.00 L",
+      "areaSqft": 0,
+      "locality": "Sukhasan ,Barari",
+      "city": "Katihar",
+      "address": "",
+      "reraNumber": "",
+      "status": "Under Construction",
+      "furnishing": "Unfurnished",
+      "description": "",
+      "images": [
+        "properties/tli1jsdvwwr0kof5qmnp"
+      ],
+      "floorPlanUrl": "",
+      "lat": 25.5514721,
+      "lng": 87.5501887,
+      "reviewStatus": "reviewed",
+      "published": true,
+      "securityDeposit": null,
+      "availableFrom": null,
+      "preferredTenant": null,
+      "petFriendly": null,
+      "maintenanceCharges": null,
+      "leaseDuration": null,
+      "lockInPeriod": null,
+      "camCharges": null,
+      "plotAllowedUse": null,
+      "agentId": "cmrhlena30002l204qrcy2s6y",
+      "createdAt": "2026-07-12T09:30:13.486Z",
+      "updatedAt": "2026-07-12T14:13:42.684Z",
+      "agent": {
+        "id": "cmrhlena30002l204qrcy2s6y",
+        "name": "ali ammar",
+        "email": "ali.ammar24x7@gmail.com"
+      }
+    }
+  ],
+  "projects": []
+}

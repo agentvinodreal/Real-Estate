@@ -3,6 +3,9 @@ import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
+import fastifyStatic from '@fastify/static'
+import { fileURLToPath } from 'url'
+import path from 'path'
 
 import healthRoutes from './routes/health.js'
 import propertyRoutes from './routes/properties.js'
@@ -11,16 +14,19 @@ import leadRoutes from './routes/leads.js'
 import testimonialRoutes from './routes/testimonials.js'
 import uploadsRoutes from './routes/uploads.js'
 import materialsRoutes from './routes/materials.js'
+import blogRoutes from './routes/blog.js'
+import geocodeRoutes from './routes/geocode.js'
 
 const PORT = Number(process.env.PORT ?? 4000)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const WEB_DIST = path.resolve(__dirname, '../../web/dist')
+const ADMIN_DIST = path.resolve(__dirname, '../../admin/dist')
 const API_PREFIX = '/api/v1'
 
 async function main() {
   const app = Fastify({ logger: true })
 
-  await app.register(cors, {
-    origin: process.env.CORS_ORIGIN?.split(',') ?? true,
-  })
+  await app.register(cors, { origin: true })
 
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' })
 
@@ -43,6 +49,7 @@ async function main() {
         { name: 'Construction' },
         { name: 'Leads' },
         { name: 'Testimonials' },
+        { name: 'Blog' },
         { name: 'System' },
       ],
     },
@@ -62,12 +69,37 @@ async function main() {
     await api.register(testimonialRoutes)
     await api.register(uploadsRoutes)
     await api.register(materialsRoutes)
+    await api.register(blogRoutes)
+    await api.register(geocodeRoutes)
   }, { prefix: API_PREFIX })
+
+  // ── Serve built web app (SPA fallback) ───────────────────────
+  await app.register(fastifyStatic, {
+    root: WEB_DIST,
+    prefix: '/',
+  })
+
+  // ── Serve built admin app at /admin ───────────────────────
+  await app.register(fastifyStatic, {
+    root: ADMIN_DIST,
+    prefix: '/admin/',
+    decorateReply: false,
+  })
+
+  // SPA fallback — /admin/* → admin index.html, everything else → web index.html
+  app.setNotFoundHandler((req, reply) => {
+    if (req.url.startsWith('/admin')) {
+      reply.sendFile('index.html', ADMIN_DIST)
+    } else {
+      reply.sendFile('index.html', WEB_DIST)
+    }
+  })
 
   await app.ready()
 
   await app.listen({ port: PORT, host: '0.0.0.0' })
   app.log.info(`Swagger UI → http://localhost:${PORT}/api/docs`)
+  app.log.info(`Web app    → http://localhost:${PORT}/`)
 }
 
 main().catch((err) => {

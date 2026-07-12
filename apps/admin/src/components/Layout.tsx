@@ -35,7 +35,7 @@ export default function Layout() {
           Your account ({user.primaryEmailAddress?.emailAddress}) doesn't have admin access yet.
         </p>
         <button
-          onClick={() => signOut({ redirectUrl: '/login' })}
+          onClick={() => signOut({ redirectUrl: '/admin/login' })}
           className="font-mono text-xs uppercase tracking-[0.15em] text-ink hover:text-ochre-dark"
         >
           Sign out
@@ -55,7 +55,7 @@ export default function Layout() {
             </span>
           </div>
           <button
-            onClick={() => signOut({ redirectUrl: '/login' })}
+            onClick={() => signOut({ redirectUrl: '/admin/login' })}
             className="font-mono text-xs uppercase tracking-[0.15em] text-ink hover:text-ochre-dark"
           >
             Sign out

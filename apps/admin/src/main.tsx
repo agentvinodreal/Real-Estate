@@ -19,7 +19,7 @@ if (!publishableKey) throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY — see
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ClerkProvider publishableKey={publishableKey} appearance={clerkAppearance}>
-      <BrowserRouter>
+      <BrowserRouter basename="/admin">
         <App />
       </BrowserRouter>
     </ClerkProvider>
