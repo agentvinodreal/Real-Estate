@@ -118,7 +118,7 @@ export default function BlogPost() {
           <span>•</span>
           <span className="text-ochre-dark">{readTime} min read</span>
         </div>
-        <h1 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl leading-tight max-w-4xl">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl leading-tight max-w-4xl">
           {p.title}
         </h1>
       </div>

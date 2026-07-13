@@ -114,10 +114,10 @@ export default function LocalityPage() {
 
       {/* Locality Header */}
       <div className="border-b border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
           <div>
             <span className="kicker">{config.tagline}</span>
-            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+            <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
               Living in {config.name}
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-ink-soft max-w-xl">

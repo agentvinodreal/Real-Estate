@@ -36,10 +36,10 @@ export default function Construction() {
       />
       {/* Hero */}
       <section className="border-b border-ink/10">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:py-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
           <div className="flex flex-col justify-center">
             <span className="kicker">Construction services</span>
-            <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.03] tracking-tight text-ink sm:text-6xl">
+            <h1 className="mt-4 font-display text-3xl font-semibold leading-[1.03] tracking-tight text-ink sm:text-5xl lg:text-6xl">
               Design to execution, <span className="text-ochre">under one roof.</span>
             </h1>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-soft">
@@ -73,9 +73,9 @@ export default function Construction() {
       </section>
 
       {/* Pillars */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <span className="kicker">What we handle</span>
-        <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
           Four disciplines, one team.
         </h2>
         <div className="mt-12 grid gap-px overflow-hidden border border-ink/10 bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
@@ -93,9 +93,9 @@ export default function Construction() {
       <Process />
 
       {/* Packages */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <span className="kicker">Packages</span>
-        <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
           Transparent, per-sq-ft pricing.
         </h2>
         <p className="mt-3 max-w-xl text-ink-soft">Indicative rates — your final quote depends on design, site, and specification.</p>
@@ -132,9 +132,9 @@ export default function Construction() {
 
       {/* Projects */}
       <section id="projects" className="border-t border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
           <span className="kicker">Recent work</span>
-          <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
             Projects we’ve delivered.
           </h2>
           {loading ? (
@@ -151,9 +151,9 @@ export default function Construction() {
 
       {/* Materials Showcase */}
       {!loadingMaterials && materials.length > 0 && (
-        <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 border-t border-ink/10">
+        <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8 border-t border-ink/10">
           <span className="kicker">Built With Trust</span>
-          <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
             Premium raw materials we use.
           </h2>
           <p className="mt-3 max-w-xl text-ink-soft">
@@ -200,11 +200,11 @@ export default function Construction() {
       )}
 
       {/* Quote form */}
-      <section id="quote" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section id="quote" className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[1fr_0.9fr] lg:gap-16">
           <div>
             <span className="kicker">Get started</span>
-            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+            <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
               Tell us about your project.
             </h2>
             <p className="mt-5 max-w-md text-ink-soft">

@@ -25,9 +25,9 @@ export default function Blog() {
 
       {/* Header */}
       <div className="border-b border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
           <span className="kicker">Knowledge</span>
-          <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
             Guides & insights.
           </h1>
           <p className="mt-3 max-w-xl text-ink-soft">
@@ -37,7 +37,7 @@ export default function Blog() {
       </div>
 
       {/* Grid listing */}
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
         {loading ? (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (

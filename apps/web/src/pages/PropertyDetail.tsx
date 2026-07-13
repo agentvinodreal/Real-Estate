@@ -137,7 +137,7 @@ export default function PropertyDetail() {
   }
 
   return (
-    <div>
+    <div className="pb-20 md:pb-0">
       <Seo
         title={`${p.title}, ${p.locality}`}
         description={p.description ?? `${p.listingType} — ${p.propertyType} in ${p.locality}, ${p.city}. ${p.priceLabel}.`}
@@ -164,44 +164,70 @@ export default function PropertyDetail() {
 
       {/* Gallery */}
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        {p.images && p.images.length > 0 ? (
-          <div className="relative group cursor-pointer overflow-hidden" onClick={() => { setGalleryOpen(true); setGalleryIndex(0) }}>
-            <Photo src={p.images[0]} seed={p.slug} label={`${p.title} - main`} className="aspect-[16/9] w-full bg-ink transition-transform duration-500 group-hover:scale-[1.02]" objectFit="contain" />
-            {p.images.length > 1 && (
-              <button 
-                className="absolute bottom-4 right-4 bg-ink/80 hover:bg-ochre hover:text-ink text-bone font-mono text-[0.65rem] uppercase tracking-[0.15em] px-4 py-2 transition-colors duration-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setGalleryOpen(true);
-                  setGalleryIndex(0);
-                }}
-              >
-                View all {p.images.length} photos
-              </button>
-            )}
-          </div>
-        ) : (
-          <Placeholder label={`${p.title} — main`} className="aspect-[16/9] w-full" />
-        )}
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {p.images && p.images.length > 1 ? (
-            p.images.slice(1, 5).map((imgUrl, idx) => (
+        {/* Mobile swipable gallery */}
+        <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2">
+          {p.images && p.images.length > 0 ? (
+            p.images.map((imgUrl, idx) => (
               <button
                 key={imgUrl}
                 onClick={() => {
-                  setGalleryOpen(true);
-                  setGalleryIndex(idx + 1);
+                  setGalleryOpen(true)
+                  setGalleryIndex(idx)
                 }}
-                className="group relative overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre aspect-[4/3] w-full bg-ink"
+                className="w-[85vw] shrink-0 snap-center relative aspect-[16/10] bg-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre cursor-pointer"
               >
-                <Photo src={imgUrl} seed={`${p.slug}-${idx}`} className="h-full w-full transition-transform duration-300 group-hover:scale-105" objectFit="cover" />
+                <Photo src={imgUrl} seed={`${p.slug}-mob-${idx}`} className="h-full w-full" objectFit="cover" />
+                <span className="absolute bottom-3 right-3 bg-ink/80 text-bone font-mono text-[0.62rem] px-2 py-1 uppercase tracking-wider">
+                  {idx + 1} / {p.images.length}
+                </span>
               </button>
             ))
           ) : (
-            ['Living', 'Kitchen', 'Bedroom', 'Exterior'].map((lbl) => (
-              <Placeholder key={lbl} label={lbl} className="aspect-[4/3] w-full" />
-            ))
+            <Placeholder label={`${p.title} — main`} className="w-[85vw] shrink-0 aspect-[16/10]" />
           )}
+        </div>
+
+        {/* Desktop grid gallery */}
+        <div className="hidden md:block">
+          {p.images && p.images.length > 0 ? (
+            <div className="relative group cursor-pointer overflow-hidden" onClick={() => { setGalleryOpen(true); setGalleryIndex(0) }}>
+              <Photo src={p.images[0]} seed={p.slug} label={`${p.title} - main`} className="aspect-[16/9] w-full bg-ink transition-transform duration-500 group-hover:scale-[1.02]" objectFit="contain" />
+              {p.images.length > 1 && (
+                <button 
+                  className="absolute bottom-4 right-4 bg-ink/80 hover:bg-ochre hover:text-ink text-bone font-mono text-[0.65rem] uppercase tracking-[0.15em] px-4 py-2 transition-colors duration-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setGalleryOpen(true);
+                    setGalleryIndex(0);
+                  }}
+                >
+                  View all {p.images.length} photos
+                </button>
+              )}
+            </div>
+          ) : (
+            <Placeholder label={`${p.title} — main`} className="aspect-[16/9] w-full" />
+          )}
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {p.images && p.images.length > 1 ? (
+              p.images.slice(1, 5).map((imgUrl, idx) => (
+                <button
+                  key={imgUrl}
+                  onClick={() => {
+                    setGalleryOpen(true);
+                    setGalleryIndex(idx + 1);
+                  }}
+                  className="group relative overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre aspect-[4/3] w-full bg-ink"
+                >
+                  <Photo src={imgUrl} seed={`${p.slug}-${idx}`} className="h-full w-full transition-transform duration-300 group-hover:scale-105" objectFit="cover" />
+                </button>
+              ))
+            ) : (
+              ['Living', 'Kitchen', 'Bedroom', 'Exterior'].map((lbl) => (
+                <Placeholder key={lbl} label={lbl} className="aspect-[4/3] w-full" />
+              ))
+            )}
+          </div>
         </div>
       </div>
 
@@ -217,12 +243,12 @@ export default function PropertyDetail() {
       )}
 
       {/* Price block below images */}
-      <div className="mx-auto max-w-7xl px-5 mt-6 sm:px-8 flex items-baseline justify-between border-b border-ink/10 pb-6">
+      <div className="mx-auto max-w-7xl px-5 mt-6 sm:px-8 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between border-b border-ink/10 pb-6">
         <div>
           <span className="font-mono text-[0.6rem] text-concrete uppercase tracking-[0.15em]">Price</span>
           <div className="font-display text-3xl font-semibold text-ochre-dark mt-1">{p.priceLabel}</div>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <span className="font-mono text-[0.6rem] text-concrete uppercase tracking-[0.15em]">Rate</span>
           <div className="font-mono text-sm text-ink-soft mt-1">{pricePerSqft(p.priceInr, p.areaSqft)}</div>
         </div>
@@ -289,11 +315,11 @@ export default function PropertyDetail() {
             <p className="mt-1 text-sm font-semibold text-ink">{p.locality}, {p.city}</p>
             <div className="mt-4">
               {p.lat && p.lng ? (
-                <Suspense fallback={<div className="aspect-[16/7] w-full bg-ink/5 animate-pulse rounded-sm shimmer" />}>
-                  <PropertyMap lat={p.lat} lng={p.lng} title={p.title} className="aspect-[16/7] w-full" />
+                <Suspense fallback={<div className="aspect-[4/3] sm:aspect-[16/7] w-full bg-ink/5 animate-pulse rounded-sm shimmer" />}>
+                  <PropertyMap lat={p.lat} lng={p.lng} title={p.title} className="aspect-[4/3] sm:aspect-[16/7] w-full" />
                 </Suspense>
               ) : (
-                <div className="relative border border-ink/10 aspect-[16/7] w-full">
+                <div className="relative border border-ink/10 aspect-[4/3] sm:aspect-[16/7] w-full">
                   <Placeholder label="No Location Pinned" className="w-full h-full" />
                 </div>
               )}
@@ -302,7 +328,7 @@ export default function PropertyDetail() {
         </div>
 
         {/* Right: sticky contact */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside id="inquiry-section" className="lg:sticky lg:top-24 lg:self-start mb-12 md:mb-0">
           <InquiryForm propertyId={p.id} sourcePage={`/properties/${p.slug}`} />
 
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -320,6 +346,27 @@ export default function PropertyDetail() {
             </a>
           </div>
         </aside>
+      </div>
+
+      {/* Sticky Bottom Inquiry Bar for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-ink/10 bg-teal/95 text-bone p-3 gap-3 md:hidden backdrop-blur">
+        <a
+          href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
+          className="flex-1 bg-ochre text-center py-3 font-mono text-[0.7rem] uppercase tracking-wider text-teal-dark font-semibold transition-colors active:bg-ochre-dark"
+        >
+          Call Us
+        </a>
+        <button
+          onClick={() => {
+            const element = document.getElementById('inquiry-section');
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          className="flex-1 border border-bone/30 text-center py-3 font-mono text-[0.7rem] uppercase tracking-wider transition-colors active:bg-bone/10 cursor-pointer"
+        >
+          Inquire Now
+        </button>
       </div>
     </div>
   )

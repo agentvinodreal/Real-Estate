@@ -20,10 +20,10 @@ const ICONS: Record<string, typeof KeyRound> = {
 export default function Services() {
   return (
     <section id="services" className="border-y border-teal-dark/30 bg-teal text-bone">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <Reveal className="max-w-2xl">
           <span className="kicker !text-ochre">What we do</span>
-          <h2 className="mt-4 font-display text-4xl font-normal tracking-tight text-bone sm:text-5xl">
+          <h2 className="mt-4 font-display text-2xl font-normal tracking-tight text-bone sm:text-4xl lg:text-5xl">
             Three ways we help you move.
           </h2>
         </Reveal>

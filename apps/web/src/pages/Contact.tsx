@@ -14,9 +14,9 @@ export default function Contact() {
 
       {/* Header */}
       <div className="border-b border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
           <span className="kicker">Get in touch</span>
-          <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
             Let's talk about your project.
           </h1>
           <p className="mt-3 max-w-xl text-ink-soft">
@@ -26,7 +26,7 @@ export default function Contact() {
       </div>
 
       {/* Main Grid */}
-      <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
           {/* Left Column - Info & Map */}
           <div>
@@ -101,7 +101,7 @@ export default function Contact() {
             </div>
 
             {/* Google Map Iframe */}
-            <div className="mt-8 relative overflow-hidden border border-ink/10 aspect-[16/8] w-full">
+            <div className="mt-8 relative overflow-hidden border border-ink/10 aspect-[4/3] sm:aspect-[16/8] w-full">
               <iframe
                 src="https://maps.google.com/maps?q=Kharadi%20IT%20Park,%20Pune&z=14&output=embed"
                 className="w-full h-full border-none"

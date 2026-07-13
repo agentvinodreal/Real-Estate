@@ -97,10 +97,10 @@ export default function Testimonials() {
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+    <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
       <Reveal className="max-w-2xl">
         <span className="kicker">In their words</span>
-        <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
           Trusted by 600+ families.
         </h2>
       </Reveal>

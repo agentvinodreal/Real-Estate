@@ -53,9 +53,9 @@ export default function About() {
 
       {/* Header */}
       <section className="border-b border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
           <span className="kicker">Our story</span>
-          <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.03] tracking-tight text-ink sm:text-6xl max-w-3xl">
+          <h1 className="mt-4 font-display text-3xl font-semibold leading-[1.03] tracking-tight text-ink sm:text-5xl lg:text-6xl max-w-3xl">
             Built on trust. <br />Delivered with <span className="text-ochre">craft.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
@@ -65,7 +65,7 @@ export default function About() {
       </section>
 
       {/* Founder / Team */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <Reveal>
             <Photo
@@ -76,7 +76,7 @@ export default function About() {
           </Reveal>
           <Reveal className="flex flex-col justify-center">
             <span className="kicker">Leadership</span>
-            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+            <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
               Meet our founder.
             </h2>
             <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-ochre-dark font-mono">
@@ -94,9 +94,9 @@ export default function About() {
 
       {/* Values */}
       <section className="bg-bone-dim border-y border-ink/10">
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
           <span className="kicker">Our philosophy</span>
-          <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
             Values we live by.
           </h2>
           <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -112,9 +112,9 @@ export default function About() {
       </section>
 
       {/* Timeline */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <span className="kicker">Milestones</span>
-        <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
           The path we travelled.
         </h2>
 

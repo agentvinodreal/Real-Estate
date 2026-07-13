@@ -7,7 +7,7 @@ import { useCart } from '../context/CartContext'
 type TabType = 'providers' | 'materials' | 'equipment'
 
 const tabClass = (active: boolean) =>
-  `flex-1 py-4 text-center font-mono text-xs uppercase tracking-[0.18em] transition-all border-b-2 cursor-pointer ${
+  `flex-1 shrink-0 py-3 sm:py-4 text-center font-mono text-[0.62rem] sm:text-xs uppercase tracking-wider sm:tracking-[0.18em] transition-all border-b-2 cursor-pointer ${
     active
       ? 'border-teal text-teal font-semibold bg-teal/5'
       : 'border-ink/10 text-concrete hover:text-ink hover:border-ink/30'
@@ -219,7 +219,7 @@ export default function Marketplace() {
       {/* Tab Navigation */}
       <div className="sticky top-[68px] z-30 border-b border-ink/10 bg-bone/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="flex border-x border-ink/5">
+          <div className="flex border-x border-ink/5 overflow-x-auto whitespace-nowrap scrollbar-none">
             <button
               onClick={() => setActiveTab('providers')}
               className={tabClass(activeTab === 'providers')}
@@ -365,7 +365,7 @@ export default function Marketplace() {
 
                           <div className="mt-6 border-t border-ink/5 pt-4">
                             {/* E-Commerce Inputs on Card */}
-                            <div className="grid grid-cols-2 gap-3 mb-4 bg-bone border border-ink/10 p-3">
+                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-4 bg-bone border border-ink/10 p-3">
                               <div className="flex flex-col items-center">
                                 <label className="font-mono text-[0.55rem] uppercase text-concrete mb-1">
                                   Count
@@ -639,7 +639,7 @@ export default function Marketplace() {
 
                           <div className="mt-6 border-t border-ink/5 pt-4">
                             {/* E-Commerce Inputs on Card */}
-                            <div className="grid grid-cols-2 gap-3 mb-4 bg-bone border border-ink/10 p-3">
+                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-4 bg-bone border border-ink/10 p-3">
                               <div className="flex flex-col items-center">
                                 <label className="font-mono text-[0.55rem] uppercase text-concrete mb-1">
                                   Count

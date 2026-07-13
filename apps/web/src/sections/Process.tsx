@@ -77,7 +77,7 @@ export default function Process() {
 
   return (
     <section id="process" className="border-y border-teal-dark/30 bg-teal/5">
-      <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           
@@ -85,7 +85,7 @@ export default function Process() {
           <div className="lg:sticky lg:top-28 lg:h-fit">
             <Reveal>
               <span className="kicker !text-ochre">How we construct</span>
-              <h2 className="mt-4 font-display text-4xl font-normal tracking-tight text-ink sm:text-5xl">
+              <h2 className="mt-4 font-display text-2xl font-normal tracking-tight text-ink sm:text-4xl lg:text-5xl">
                 A process you can watch, step by step.
               </h2>
               <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-soft">

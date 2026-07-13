@@ -22,13 +22,13 @@ export default function Hero() {
 
   return (
     <section id="top" className="relative overflow-hidden bg-teal text-bone">
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-24 lg:pt-20">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-12 pt-10 sm:px-8 sm:pb-16 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-24 lg:pt-20">
         {/* Copy */}
         <motion.div className="flex flex-col justify-center" variants={container} initial="hidden" animate="show">
           <motion.span variants={item} className="kicker !text-ochre">Sale · Resale · Construction</motion.span>
           <motion.h1
             variants={item}
-            className="mt-5 font-display text-5xl font-normal leading-[1.02] tracking-tight text-bone sm:text-6xl lg:text-7xl"
+            className="mt-5 font-display text-3xl font-normal leading-[1.02] tracking-tight text-bone sm:text-5xl lg:text-6xl xl:text-7xl"
           >
             We build the
             <br />

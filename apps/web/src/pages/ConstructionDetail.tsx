@@ -4,6 +4,7 @@ import Seo from '../components/Seo'
 import Placeholder from '../components/Placeholder'
 import Photo from '../components/Photo'
 import InquiryForm from '../components/InquiryForm'
+import { CONTACT } from '../lib/data'
 
 const BeforeAfterSlider = lazy(() => import('../components/BeforeAfterSlider'))
 
@@ -110,7 +111,7 @@ export default function ConstructionDetail() {
   const p = project
 
   return (
-    <div>
+    <div className="pb-20 md:pb-0">
       <Seo
         title={`${p.title} — ${p.category}`}
         description={p.description ?? `${p.category} in ${p.location} by Carry Construction.`}
@@ -217,13 +218,34 @@ export default function ConstructionDetail() {
         </div>
 
         {/* Sticky quote */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside id="inquiry-section" className="lg:sticky lg:top-24 lg:self-start mb-12 md:mb-0">
           <InquiryForm
             projectId={p.id}
             sourcePage={`/construction/${p.slug}`}
             heading="Build something like this"
           />
         </aside>
+      </div>
+
+      {/* Sticky Bottom Inquiry Bar for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-ink/10 bg-teal/95 text-bone p-3 gap-3 md:hidden backdrop-blur">
+        <a
+          href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
+          className="flex-1 bg-ochre text-center py-3 font-mono text-[0.7rem] uppercase tracking-wider text-teal-dark font-semibold transition-colors active:bg-ochre-dark"
+        >
+          Call Us
+        </a>
+        <button
+          onClick={() => {
+            const element = document.getElementById('inquiry-section');
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          className="flex-1 border border-bone/30 text-center py-3 font-mono text-[0.7rem] uppercase tracking-wider transition-colors active:bg-bone/10 cursor-pointer"
+        >
+          Inquire Now
+        </button>
       </div>
     </div>
   )

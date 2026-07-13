@@ -4,6 +4,7 @@ import Seo from '../components/Seo'
 import PropertyCard from '../components/PropertyCard'
 import PropertyCardSkeleton from '../components/PropertyCardSkeleton'
 import { api, type Property } from '@carry/shared'
+import { SlidersHorizontal } from 'lucide-react'
 
 const LISTING_TYPES = ['Sale', 'Resale', 'Under Construction']
 const PROPERTY_TYPES = ['Apartment', 'Villa', 'Plot', 'Commercial']
@@ -23,7 +24,7 @@ const SORTS = [
 ]
 
 const selectClass =
-  'w-full appearance-none border border-ink/20 bg-bone px-3 py-2.5 font-mono text-xs uppercase tracking-[0.12em] text-ink focus:border-teal focus:outline-none'
+  "w-full appearance-none border border-ink/20 bg-bone px-3 py-2.5 pr-8 font-mono text-xs uppercase tracking-[0.12em] text-ink focus:border-teal focus:outline-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%238b857a%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_8px_center] bg-[size:16px] bg-no-repeat"
 
 function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
@@ -45,6 +46,7 @@ export default function Properties() {
   const [items, setItems] = useState<Property[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [showFiltersMobile, setShowFiltersMobile] = useState(false)
 
   const filters = useMemo(
     () => ({
@@ -56,6 +58,14 @@ export default function Properties() {
       sort: params.get('sort') ?? 'newest',
     }),
     [params],
+  )
+
+  const activeCount = useMemo(
+    () =>
+      [filters.listingType, filters.propertyType, filters.bhk, filters.budget].filter(
+        Boolean
+      ).length,
+    [filters],
   )
 
   function update(key: string, value: string) {
@@ -108,7 +118,7 @@ export default function Properties() {
       <div className="border-b border-ink/10 bg-bone-dim">
         <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
           <span className="kicker">Properties</span>
-          <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+          <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
             Find your next address.
           </h1>
           <p className="mt-3 max-w-xl text-ink-soft">
@@ -120,31 +130,55 @@ export default function Properties() {
       {/* Filter bar */}
       <div className="sticky top-[68px] z-30 border-b border-ink/10 bg-bone/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-5 py-4 sm:px-8">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+          {/* Mobile Search and Filters toggle */}
+          <div className="flex gap-3 md:hidden">
             <input
               value={filters.q}
               onChange={(e) => update('q', e.target.value)}
               placeholder="Search locality…"
-              className="col-span-2 border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none md:col-span-1"
+              className="flex-1 border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none"
             />
-            <select className={selectClass} value={filters.listingType} onChange={(e) => update('listingType', e.target.value)}>
-              <option value="">All types</option>
-              {LISTING_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select className={selectClass} value={filters.propertyType} onChange={(e) => update('propertyType', e.target.value)}>
-              <option value="">Any property</option>
-              {PROPERTY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select className={selectClass} value={filters.bhk} onChange={(e) => update('bhk', e.target.value)}>
-              <option value="">Any BHK</option>
-              {BHKS.map((t) => <option key={t} value={t}>{t} BHK</option>)}
-            </select>
-            <select className={selectClass} value={filters.budget} onChange={(e) => update('budget', e.target.value)}>
-              {BUDGETS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
-            </select>
-            <select className={selectClass} value={filters.sort} onChange={(e) => update('sort', e.target.value)}>
-              {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
+            <button
+              onClick={() => setShowFiltersMobile((v) => !v)}
+              className={`flex items-center gap-2 border px-4 py-2.5 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
+                showFiltersMobile || activeCount > 0
+                  ? 'border-teal bg-teal text-bone'
+                  : 'border-ink/20 bg-bone text-ink'
+              }`}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>Filters {activeCount > 0 && `(${activeCount})`}</span>
+            </button>
+          </div>
+
+          {/* Desktop Filter Row & Mobile Accordion */}
+          <div className={`${showFiltersMobile ? 'block mt-3' : 'hidden'} md:block`}>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+              <input
+                value={filters.q}
+                onChange={(e) => update('q', e.target.value)}
+                placeholder="Search locality…"
+                className="hidden md:block border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none md:col-span-1"
+              />
+              <select className={`${selectClass} max-md:col-span-2 md:col-span-1`} value={filters.listingType} onChange={(e) => update('listingType', e.target.value)}>
+                <option value="">All types</option>
+                {LISTING_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select className={selectClass} value={filters.propertyType} onChange={(e) => update('propertyType', e.target.value)}>
+                <option value="">Any property</option>
+                {PROPERTY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select className={selectClass} value={filters.bhk} onChange={(e) => update('bhk', e.target.value)}>
+                <option value="">Any BHK</option>
+                {BHKS.map((t) => <option key={t} value={t}>{t} BHK</option>)}
+              </select>
+              <select className={selectClass} value={filters.budget} onChange={(e) => update('budget', e.target.value)}>
+                {BHKS.length > 0 && BUDGETS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+              </select>
+              <select className={selectClass} value={filters.sort} onChange={(e) => update('sort', e.target.value)}>
+                {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
           </div>
           {hasFilters && (
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink/5 pt-3">

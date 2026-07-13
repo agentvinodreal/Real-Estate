@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
-import { Sun, Moon, ShoppingCart } from 'lucide-react'
+import { Sun, Moon, ShoppingCart, X } from 'lucide-react'
 import { CONTACT } from '../lib/data'
 import { useCart } from '../context/CartContext'
+import { motion, AnimatePresence } from 'motion/react'
 
 const NAV: { label: string; to: string }[] = [
   { label: 'Buy', to: '/properties' },
@@ -45,6 +46,17 @@ export default function Header() {
     }
     localStorage.setItem('theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
@@ -114,7 +126,7 @@ export default function Header() {
         {/* mobile toggle */}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center md:hidden"
+          className="flex h-10 w-10 items-center justify-center md:hidden cursor-pointer"
           aria-label="Toggle menu"
         >
           <span className="relative block h-3 w-6">
@@ -124,64 +136,110 @@ export default function Header() {
         </button>
       </div>
 
-      {open && (
-        <nav className="border-t border-bone/10 bg-teal-dark px-5 pb-6 pt-2 md:hidden">
-          {NAV.map((item) => (
-            <Link
-              key={item.label}
-              to={item.to}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="block border-b border-bone/5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-bone/80"
+              className="fixed inset-0 z-40 bg-teal-dark/60 backdrop-blur-xs md:hidden"
+            />
+            {/* Drawer */}
+            <motion.nav
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
+              className="fixed inset-y-0 right-0 z-50 w-[290px] bg-teal-dark px-6 py-6 shadow-2xl flex flex-col md:hidden text-bone border-l border-bone/10"
             >
-              {item.label}
-            </Link>
-          ))}
-          <div className="flex items-center justify-between border-b border-bone/5 py-3">
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-bone/80">Cart ({cartCount})</span>
-            <button
-              onClick={() => {
-                setOpen(false)
-                toggleCart()
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-bone/20 text-bone/85"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="flex items-center justify-between border-b border-bone/5 py-3">
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-bone/80">Theme</span>
-            <button
-              onClick={toggleTheme}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-bone/20 text-bone/85"
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </button>
-          </div>
-          <div className="flex items-center justify-between border-b border-bone/5 py-3">
-            <SignedOut>
-              <SignInButton mode="modal">
+              {/* Drawer Header with Close Button */}
+              <div className="flex items-center justify-between pb-6 border-b border-bone/10 mb-4">
+                <span className="font-mono text-xs uppercase tracking-[0.18em] text-ochre">Menu</span>
                 <button
                   onClick={() => setOpen(false)}
-                  className="font-mono text-xs uppercase tracking-[0.18em] text-bone/80"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-bone/20 text-bone/80 hover:text-ochre hover:border-ochre transition-colors cursor-pointer"
+                  aria-label="Close menu"
                 >
-                  Sign in
+                  <X className="h-4 w-4" />
                 </button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
-          <a
-            href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
-            className="mt-4 inline-flex bg-ochre px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-teal-dark transition-colors hover:bg-ochre-dark hover:text-bone"
-          >
-            Call {CONTACT.phone}
-          </a>
-        </nav>
-      )}
+              </div>
+
+              {/* Navigation Links */}
+              <div className="flex-1 overflow-y-auto space-y-1">
+                {NAV.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to}
+                    onClick={() => setOpen(false)}
+                    className="block border-b border-bone/5 py-3 font-mono text-sm uppercase tracking-[0.18em] text-bone/85 hover:text-ochre transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Drawer Footer Actions */}
+              <div className="border-t border-bone/10 pt-4 space-y-3.5">
+                <div className="flex items-center justify-between text-bone/85">
+                  <span className="font-mono text-xs uppercase tracking-[0.18em]">Cart</span>
+                  <button
+                    onClick={() => {
+                      setOpen(false)
+                      toggleCart()
+                    }}
+                    className="relative flex h-9 w-9 items-center justify-center rounded-full border border-bone/20 text-bone hover:text-ochre hover:border-ochre transition-colors cursor-pointer"
+                    aria-label="Shopping Cart"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    {cartCount > 0 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-ochre font-mono text-[0.62rem] font-bold text-teal-dark">
+                        {cartCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-between text-bone/85">
+                  <span className="font-mono text-xs uppercase tracking-[0.18em]">Theme</span>
+                  <button
+                    onClick={toggleTheme}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-bone/20 text-bone hover:text-ochre hover:border-ochre transition-colors cursor-pointer"
+                    aria-label="Toggle theme"
+                  >
+                    {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-bone/5 pt-3.5">
+                  <SignedOut>
+                    <SignInButton mode="modal">
+                      <button
+                        onClick={() => setOpen(false)}
+                        className="font-mono text-xs uppercase tracking-[0.18em] text-bone/80 hover:text-ochre cursor-pointer"
+                      >
+                        Sign in
+                      </button>
+                    </SignInButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <UserButton />
+                  </SignedIn>
+                </div>
+
+                <a
+                  href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
+                  className="flex w-full items-center justify-center bg-ochre py-3 text-center font-mono text-xs uppercase tracking-[0.15em] text-teal-dark transition-colors hover:bg-ochre-dark hover:text-bone font-semibold"
+                >
+                  Call Us
+                </a>
+              </div>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   )
 }
