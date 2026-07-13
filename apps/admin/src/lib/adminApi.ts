@@ -1,4 +1,4 @@
-import type { ConstructionProject, Paginated, Property, Material } from '@carry/shared'
+import type { ConstructionProject, Paginated, Property, Material, BlogPost, Testimonial } from '@carry/shared'
 
 const BASE = '/api/v1'
 
@@ -103,5 +103,35 @@ export const adminApi = {
 
   async deleteMaterial(id: string): Promise<void> {
     await authFetch(`/materials/${id}`, { method: 'DELETE' })
+  },
+
+  // Blogs
+  async listBlogPosts(): Promise<BlogPost[]> {
+    const res = await fetch(`${BASE}/blog?includeUnpublished=true`)
+    return (await res.json()).data
+  },
+
+  async createBlogPost(data: Record<string, unknown>): Promise<BlogPost> {
+    const res = await authFetch('/blog', { method: 'POST', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async updateBlogPost(id: string, data: Record<string, unknown>): Promise<BlogPost> {
+    const res = await authFetch(`/blog/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async deleteBlogPost(id: string): Promise<void> {
+    await authFetch(`/blog/${id}`, { method: 'DELETE' })
+  },
+
+  // Testimonials / Reviews
+  async listTestimonialsAdmin(): Promise<Testimonial[]> {
+    const res = await authFetch('/testimonials/admin')
+    return (await res.json()).data
+  },
+
+  async deleteTestimonial(id: string): Promise<void> {
+    await authFetch(`/testimonials/${id}`, { method: 'DELETE' })
   },
 }

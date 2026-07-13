@@ -3,28 +3,34 @@
    Ink + Bone base, Ochre accent, Concrete/Sand neutrals, Steel contrast.
    Shared between the public web app and the admin panel. */
 :root {
-  --color-ink: #1c1b18;
-  --color-ink-soft: #33312c;
-  --color-bone: #f5f1e9;
-  --color-bone-dim: #ebe6da;
-  --color-concrete: #8b857a;
-  --color-sand: #e7e0d3;
-  --color-ochre: #b87333;
-  --color-ochre-dark: #9c5f28;
-  --color-steel: #2e3a40;
+  --color-ink: #122325;
+  --color-ink-soft: #2c3f41;
+  --color-bone: #fbfaf7;
+  --color-bone-dim: #f3f0e8;
+  --color-concrete: #7d8c8e;
+  --color-sand: #eae6db;
+  --color-ochre: #d5a96a;
+  --color-ochre-dark: #b58c4f;
+  --color-steel: #1b3d40;
+  --color-teal: #0f3d3e;
+  --color-teal-dark: #0a292a;
 }
 
 .dark {
-  --color-ink: #f5f1e9;
-  --color-ink-soft: #e2dcd0;
-  --color-bone: #141311;
-  --color-bone-dim: #1d1c1a;
-  --color-concrete: #a19a8e;
-  --color-sand: #292723;
-  --color-steel: #7d8c94;
-  --color-ochre: #cc8443;
-  --color-ochre-dark: #b87333;
+  --color-ink: #fbfaf7;
+  --color-ink-soft: #e2dfd7;
+  --color-bone: #0a1819;
+  --color-bone-dim: #0f2426;
+  --color-concrete: #8c9c9e;
+  --color-sand: #132f31;
+  --color-steel: #7da5a8;
+  --color-ochre: #e2c08c;
+  --color-ochre-dark: #d5a96a;
+  --color-teal: #3b8a8c;
+  --color-teal-dark: #2a6365;
 }
+
+@variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-ink: var(--color-ink);
@@ -36,6 +42,8 @@
   --color-ochre: var(--color-ochre);
   --color-ochre-dark: var(--color-ochre-dark);
   --color-steel: var(--color-steel);
+  --color-teal: var(--color-teal);
+  --color-teal-dark: var(--color-teal-dark);
 
   --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;

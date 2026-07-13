@@ -9,7 +9,7 @@ type Props = {
 }
 
 const inputClass =
-  'w-full border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-ochre focus:outline-none'
+  'w-full border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none'
 
 export default function InquiryForm({ propertyId, projectId, sourcePage, heading = 'Enquire about this property' }: Props) {
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
@@ -40,7 +40,7 @@ export default function InquiryForm({ propertyId, projectId, sourcePage, heading
 
   if (status === 'done') {
     return (
-      <div className="border border-ochre bg-sand p-6">
+      <div className="border border-teal bg-sand p-6">
         <h3 className="font-display text-xl font-semibold text-ink">Thanks, {form.name.split(' ')[0] || 'there'}!</h3>
         <p className="mt-2 text-sm text-ink-soft">
           We’ve got your enquiry and will call you back within one working day.
@@ -49,14 +49,28 @@ export default function InquiryForm({ propertyId, projectId, sourcePage, heading
     )
   }
 
+  const formId = propertyId || projectId || 'general'
+
   return (
     <form onSubmit={onSubmit} className="border border-ink/15 bg-bone-dim p-6">
       <h3 className="font-display text-xl font-semibold text-ink">{heading}</h3>
       <div className="mt-4 space-y-3">
-        <input required className={inputClass} placeholder="Your name" value={form.name} onChange={(e) => set('name', e.target.value)} />
-        <input required className={inputClass} placeholder="Phone number" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
-        <input className={inputClass} placeholder="Email (optional)" value={form.email} onChange={(e) => set('email', e.target.value)} />
-        <textarea className={`${inputClass} min-h-[90px]`} placeholder="Message (optional)" value={form.message} onChange={(e) => set('message', e.target.value)} />
+        <div>
+          <label htmlFor={`name-${formId}`} className="sr-only">Your name</label>
+          <input id={`name-${formId}`} required className={inputClass} placeholder="Your name" value={form.name} onChange={(e) => set('name', e.target.value)} />
+        </div>
+        <div>
+          <label htmlFor={`phone-${formId}`} className="sr-only">Phone number</label>
+          <input id={`phone-${formId}`} required className={inputClass} placeholder="Phone number" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+        </div>
+        <div>
+          <label htmlFor={`email-${formId}`} className="sr-only">Email (optional)</label>
+          <input id={`email-${formId}`} className={inputClass} placeholder="Email (optional)" value={form.email} onChange={(e) => set('email', e.target.value)} />
+        </div>
+        <div>
+          <label htmlFor={`message-${formId}`} className="sr-only">Message (optional)</label>
+          <textarea id={`message-${formId}`} className={`${inputClass} min-h-[90px]`} placeholder="Message (optional)" value={form.message} onChange={(e) => set('message', e.target.value)} />
+        </div>
       </div>
 
       {status === 'error' && (
@@ -66,7 +80,7 @@ export default function InquiryForm({ propertyId, projectId, sourcePage, heading
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="mt-4 w-full bg-ink py-3 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:bg-ochre-dark disabled:opacity-60"
+        className="mt-4 w-full bg-teal py-3 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:bg-teal-dark disabled:opacity-60"
       >
         {status === 'sending' ? 'Sending…' : 'Request a callback'}
       </button>

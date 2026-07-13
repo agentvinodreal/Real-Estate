@@ -10,10 +10,42 @@ export default async function materialsRoutes(app: FastifyInstance) {
       schema: {
         tags: ['Materials'],
         summary: 'List raw construction materials used in buildings',
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', minimum: 1 },
+            limit: { type: 'integer', minimum: 1, maximum: 100 },
+            category: { type: 'string' },
+          },
+        },
       },
     },
-    async () => {
+    async (request) => {
+      const q = request.query as { page?: number; limit?: number; category?: string }
+      const page = q.page ? Number(q.page) : undefined
+      const limit = q.limit ? Number(q.limit) : undefined
+      const category = q.category
+
+      const whereClause: any = {}
+      if (category) {
+        whereClause.category = category
+      }
+
+      if (page && limit) {
+        const [rows, total] = await Promise.all([
+          prisma.material.findMany({
+            where: whereClause,
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+          }),
+          prisma.material.count({ where: whereClause }),
+        ])
+        return { data: rows, total, page, limit }
+      }
+
       const rows = await prisma.material.findMany({
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
       })
       return { data: rows }
@@ -38,6 +70,9 @@ export default async function materialsRoutes(app: FastifyInstance) {
             brand: { type: 'string' },
             description: { type: 'string', nullable: true },
             imageUrl: { type: 'string', nullable: true },
+            price: { type: 'integer', nullable: true },
+            unit: { type: 'string', nullable: true },
+            available: { type: 'boolean' },
           },
         },
       },
@@ -101,6 +136,9 @@ export default async function materialsRoutes(app: FastifyInstance) {
             brand: { type: 'string' },
             description: { type: 'string', nullable: true },
             imageUrl: { type: 'string', nullable: true },
+            price: { type: 'integer', nullable: true },
+            unit: { type: 'string', nullable: true },
+            available: { type: 'boolean' },
           },
         },
       },
@@ -119,4 +157,5 @@ export default async function materialsRoutes(app: FastifyInstance) {
     },
   )
 }
+
 

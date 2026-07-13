@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Seo from '../components/Seo'
 import PropertyCard from '../components/PropertyCard'
+import PropertyCardSkeleton from '../components/PropertyCardSkeleton'
 import { api, type Property } from '@carry/shared'
 
 const LISTING_TYPES = ['Sale', 'Resale', 'Under Construction']
@@ -22,7 +23,22 @@ const SORTS = [
 ]
 
 const selectClass =
-  'w-full appearance-none border border-ink/20 bg-bone px-3 py-2.5 font-mono text-xs uppercase tracking-[0.12em] text-ink focus:border-ochre focus:outline-none'
+  'w-full appearance-none border border-ink/20 bg-bone px-3 py-2.5 font-mono text-xs uppercase tracking-[0.12em] text-ink focus:border-teal focus:outline-none'
+
+function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 border border-teal/40 bg-teal/10 px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-[0.12em] text-teal">
+      {label}
+      <button
+        onClick={onRemove}
+        aria-label={`Remove ${label} filter`}
+        className="hover:text-ochre font-bold cursor-pointer"
+      >
+        ✕
+      </button>
+    </span>
+  )
+}
 
 export default function Properties() {
   const [params, setParams] = useSearchParams()
@@ -109,7 +125,7 @@ export default function Properties() {
               value={filters.q}
               onChange={(e) => update('q', e.target.value)}
               placeholder="Search locality…"
-              className="col-span-2 border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-ochre focus:outline-none md:col-span-1"
+              className="col-span-2 border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none md:col-span-1"
             />
             <select className={selectClass} value={filters.listingType} onChange={(e) => update('listingType', e.target.value)}>
               <option value="">All types</option>
@@ -130,6 +146,31 @@ export default function Properties() {
               {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </div>
+          {hasFilters && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink/5 pt-3">
+              <span className="font-mono text-[0.6rem] uppercase tracking-[0.15em] text-concrete">
+                Active:
+              </span>
+              {filters.q && (
+                <FilterChip label={`"${filters.q}"`} onRemove={() => update('q', '')} />
+              )}
+              {filters.listingType && (
+                <FilterChip label={filters.listingType} onRemove={() => update('listingType', '')} />
+              )}
+              {filters.propertyType && (
+                <FilterChip label={filters.propertyType} onRemove={() => update('propertyType', '')} />
+              )}
+              {filters.bhk && (
+                <FilterChip label={`${filters.bhk} BHK`} onRemove={() => update('bhk', '')} />
+              )}
+              {filters.budget && (
+                <FilterChip
+                  label={BUDGETS.find((b) => b.value === filters.budget)?.label ?? filters.budget}
+                  onRemove={() => update('budget', '')}
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -138,15 +179,24 @@ export default function Properties() {
         <div className="mb-8 flex items-center justify-between">
           <p className="font-mono text-xs uppercase tracking-[0.15em] text-concrete">
             {loading ? 'Loading…' : `${total} propert${total === 1 ? 'y' : 'ies'}`}
+            {hasFilters && !loading && (
+              <span className="ml-2 text-ochre-dark">({total} match{total === 1 ? '' : 'es'})</span>
+            )}
           </p>
           {hasFilters && (
-            <button onClick={reset} className="font-mono text-xs uppercase tracking-[0.15em] text-ochre-dark hover:text-ink">
+            <button onClick={reset} className="font-mono text-xs uppercase tracking-[0.15em] text-ochre-dark hover:text-ink cursor-pointer">
               Clear filters ✕
             </button>
           )}
         </div>
 
-        {!loading && items.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PropertyCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
           <div className="border border-dashed border-ink/20 py-20 text-center">
             <p className="font-display text-2xl text-ink">No properties match those filters.</p>
             <button onClick={reset} className="mt-4 font-mono text-xs uppercase tracking-[0.15em] text-ochre-dark">

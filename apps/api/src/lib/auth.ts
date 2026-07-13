@@ -21,6 +21,14 @@ export async function verifyAdmin(request: FastifyRequest, reply: FastifyReply) 
 
   try {
     const payload = await verifyToken(token, { secretKey })
+    
+    // Check if role is present in custom session claims (Optimized Path: < 2ms)
+    const role = (payload as any).role || (payload as any).metadata?.role
+    if (role === 'admin') {
+      return
+    }
+
+    // Fallback path if custom claims aren't set in Clerk Dashboard yet (REST API Call)
     const user = await clerkClient.users.getUser(payload.sub)
     if (user.publicMetadata?.role !== 'admin') {
       return reply.code(403).send({ error: 'Forbidden' })

@@ -29,14 +29,31 @@ export default async function blogRoutes(app: FastifyInstance) {
           type: 'object',
           properties: {
             includeUnpublished: { type: 'boolean', default: false, description: 'Include drafts' },
+            page: { type: 'integer', minimum: 1 },
+            limit: { type: 'integer', minimum: 1, maximum: 100 },
           },
         },
       },
     },
     async (request) => {
-      const q = request.query as { includeUnpublished?: boolean }
+      const q = request.query as { includeUnpublished?: boolean; page?: number; limit?: number }
       const where = q.includeUnpublished ? {} : { published: true }
-      
+      const page = q.page ? Number(q.page) : undefined
+      const limit = q.limit ? Number(q.limit) : undefined
+
+      if (page && limit) {
+        const [rows, total] = await Promise.all([
+          prisma.blogPost.findMany({
+            where,
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+          }),
+          prisma.blogPost.count({ where }),
+        ])
+        return { data: rows, total, page, limit }
+      }
+
       const rows = await prisma.blogPost.findMany({
         where,
         orderBy: { createdAt: 'desc' },

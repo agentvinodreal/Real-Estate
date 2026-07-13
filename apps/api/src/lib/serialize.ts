@@ -24,16 +24,24 @@ export function serializeProperty(p: PropertyRow) {
 }
 
 type ProjectRow = Record<string, unknown> & {
-  processStages: string
+  processStages?: string
   beforeImages: string[]
   afterImages: string[]
   stageImages: string[]
 }
 
 export function serializeProject(p: ProjectRow) {
+  const defaultStages = [
+    { title: 'Foundation', body: 'Excavation, footings, and plinth beam casting.' },
+    { title: 'Structure', body: 'Column reinforcements, brickwork, and slab concrete casting.' },
+    { title: 'Finishing', body: 'Internal plastering, premium flooring tiles, and fixtures.' }
+  ]
+
   return {
     ...p,
-    processStages: parseJson<{ title: string; body: string }[]>(p.processStages, []),
+    processStages: p.processStages
+      ? parseJson<{ title: string; body: string }[]>(p.processStages, defaultStages)
+      : defaultStages,
     beforeImages: Array.isArray(p.beforeImages) ? p.beforeImages : [],
     afterImages: Array.isArray(p.afterImages) ? p.afterImages : [],
     stageImages: Array.isArray(p.stageImages) ? p.stageImages : [],

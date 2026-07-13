@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { adminApi } from '../lib/adminApi'
 import type { Property } from '@carry/shared'
 
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? 'piwpzbke'
+
 export default function Properties() {
   const [items, setItems] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
@@ -19,6 +21,27 @@ export default function Properties() {
     setItems((xs) => xs.filter((x) => x.id !== p.id))
   }
 
+  function exportJSONBackup(list: Property[]) {
+    const backupData = list.map((p) => {
+      const fullImages = (p.images ?? []).map((img) =>
+        img.startsWith('http') ? img : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${img}`
+      )
+      return {
+        ...p,
+        backupImages: fullImages,
+        exportedAt: new Date().toISOString(),
+      }
+    })
+
+    const jsonString = JSON.stringify(backupData, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `properties_db_backup_${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+  }
+
   return (
     <div>
       <div className="mb-8 flex items-end justify-between">
@@ -26,9 +49,17 @@ export default function Properties() {
           <h1 className="font-display text-3xl font-semibold text-ink">Properties</h1>
           <p className="mt-1 text-sm text-concrete">{items.length} active listings</p>
         </div>
-        <Link to="/properties/new" className="bg-ink px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark">
-          + New property
-        </Link>
+        <div className="flex gap-3">
+          <button
+            onClick={() => exportJSONBackup(items)}
+            className="border border-ink/20 bg-bone px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-ink hover:border-ochre hover:text-ochre transition-colors cursor-pointer"
+          >
+            Backup JSON
+          </button>
+          <Link to="/properties/new" className="bg-ink px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark">
+            + New property
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -47,6 +78,19 @@ export default function Properties() {
               className="group flex flex-col justify-between border border-ink/10 bg-bone p-5 hover:border-ink/20 shadow-sm transition-all"
             >
               <div>
+                {/* Photo preview */}
+                <div className="relative mb-4 overflow-hidden aspect-[16/9] w-full bg-ink border border-ink/5 flex items-center justify-center">
+                  {p.images && p.images.length > 0 ? (
+                    <img
+                      src={p.images[0].startsWith('http') ? p.images[0] : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_400,h_225,c_fill,q_auto,f_auto/${p.images[0]}`}
+                      alt={p.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-mono text-[0.6rem] text-concrete uppercase tracking-wider">No image uploaded</span>
+                  )}
+                </div>
+
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-sans text-lg font-semibold text-ink leading-snug">
                     {p.title}

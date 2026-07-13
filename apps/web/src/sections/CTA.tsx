@@ -3,7 +3,7 @@ import Reveal from '../components/motion/Reveal'
 
 export default function CTA() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-ochre to-ochre-dark text-bone shadow-inner">
+    <section className="relative overflow-hidden bg-gradient-to-br from-teal to-teal-dark text-bone shadow-inner">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_50%)]" />
       <Reveal
         as="div"

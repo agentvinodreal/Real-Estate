@@ -5,6 +5,9 @@ import type {
   Property,
   Testimonial,
   Material,
+  BlogPost,
+  ServiceProvider,
+  EquipmentRental,
 } from './types'
 
 const BASE = '/api/v1'
@@ -56,6 +59,16 @@ export const api = {
     return getJson<{ data: Testimonial[] }>('/testimonials')
   },
 
+  async submitTestimonial(body: Omit<Testimonial, 'id'>): Promise<Testimonial> {
+    const res = await fetch(`${BASE}/testimonials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error(`Could not submit testimonial (${res.status})`)
+    return res.json() as Promise<Testimonial>
+  },
+
   async createLead(body: LeadInput): Promise<{ id: string; status: string }> {
     const res = await fetch(`${BASE}/leads`, {
       method: 'POST',
@@ -66,7 +79,34 @@ export const api = {
     return res.json()
   },
 
-  listMaterials(): Promise<{ data: Material[] }> {
-    return getJson<{ data: Material[] }>('/materials')
+  listMaterials(filters: { category?: string } = {}): Promise<{ data: Material[] }> {
+    const params = new URLSearchParams()
+    if (filters.category) params.set('category', filters.category)
+    const qs = params.toString()
+    return getJson<{ data: Material[] }>(`/materials${qs ? `?${qs}` : ''}`)
+  },
+
+  listServiceProviders(filters: { role?: string; city?: string; q?: string } = {}): Promise<{ data: ServiceProvider[] }> {
+    const params = new URLSearchParams()
+    if (filters.role) params.set('role', filters.role)
+    if (filters.city) params.set('city', filters.city)
+    if (filters.q) params.set('q', filters.q)
+    const qs = params.toString()
+    return getJson<{ data: ServiceProvider[] }>(`/service-providers${qs ? `?${qs}` : ''}`)
+  },
+
+  listEquipmentRentals(filters: { category?: string } = {}): Promise<{ data: EquipmentRental[] }> {
+    const params = new URLSearchParams()
+    if (filters.category) params.set('category', filters.category)
+    const qs = params.toString()
+    return getJson<{ data: EquipmentRental[] }>(`/equipment-rentals${qs ? `?${qs}` : ''}`)
+  },
+
+  listBlogPosts(): Promise<{ data: BlogPost[] }> {
+    return getJson<{ data: BlogPost[] }>('/blog')
+  },
+
+  getBlogPost(slug: string): Promise<BlogPost> {
+    return getJson<BlogPost>(`/blog/${slug}`)
   },
 }

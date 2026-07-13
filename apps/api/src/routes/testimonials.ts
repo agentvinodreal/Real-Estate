@@ -5,10 +5,60 @@ import { verifyAdmin } from '../lib/auth.js'
 export default async function testimonialRoutes(app: FastifyInstance) {
   app.get(
     '/testimonials',
-    { schema: { tags: ['Testimonials'], summary: 'List published testimonials' } },
+    {
+      schema: {
+        tags: ['Testimonials'],
+        summary: 'List published testimonials',
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', minimum: 1 },
+            limit: { type: 'integer', minimum: 1, maximum: 100 },
+          },
+        },
+      },
+    },
+    async (request) => {
+      const q = request.query as { page?: number; limit?: number }
+      const page = q.page ? Number(q.page) : undefined
+      const limit = q.limit ? Number(q.limit) : undefined
+
+      const where = { published: true }
+
+      if (page && limit) {
+        const [rows, total] = await Promise.all([
+          prisma.testimonial.findMany({
+            where,
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+          }),
+          prisma.testimonial.count({ where }),
+        ])
+        return { data: rows, total, page, limit }
+      }
+
+      const rows = await prisma.testimonial.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+      })
+      return { data: rows }
+    },
+  )
+
+  // GET /testimonials/admin (admin - list all testimonials)
+  app.get(
+    '/testimonials/admin',
+    {
+      preHandler: verifyAdmin,
+      schema: {
+        tags: ['Testimonials'],
+        summary: 'List all testimonials (admin)',
+        security: [{ bearerAuth: [] }],
+      },
+    },
     async () => {
       const rows = await prisma.testimonial.findMany({
-        where: { published: true },
         orderBy: { createdAt: 'desc' },
       })
       return { data: rows }
@@ -18,27 +68,35 @@ export default async function testimonialRoutes(app: FastifyInstance) {
   app.post(
     '/testimonials',
     {
-      preHandler: verifyAdmin,
       schema: {
         tags: ['Testimonials'],
-        summary: 'Create testimonial (admin)',
-        security: [{ bearerAuth: [] }],
+        summary: 'Create testimonial / review (public)',
         body: {
           type: 'object',
-          required: ['name', 'quote'],
+          required: ['name', 'quote', 'rating'],
           properties: {
-            name: { type: 'string' },
+            name: { type: 'string', minLength: 2 },
             location: { type: 'string', nullable: true },
             rating: { type: 'integer', minimum: 1, maximum: 5 },
-            quote: { type: 'string' },
+            quote: { type: 'string', minLength: 5 },
             avatarUrl: { type: 'string', nullable: true },
-            published: { type: 'boolean' },
+            published: { type: 'boolean', default: true },
           },
         },
       },
     },
     async (request, reply) => {
-      const row = await prisma.testimonial.create({ data: request.body as never })
+      const body = request.body as any
+      const row = await prisma.testimonial.create({
+        data: {
+          name: body.name,
+          location: body.location ?? null,
+          rating: body.rating ?? 5,
+          quote: body.quote,
+          avatarUrl: body.avatarUrl ?? null,
+          published: body.published !== undefined ? body.published : true,
+        },
+      })
       return reply.code(201).send(row)
     },
   )

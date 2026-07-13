@@ -33,13 +33,37 @@ export default function Leads() {
     }
   }
 
+  function exportCSV(list: Lead[]) {
+    const rows = list.map(
+      (l) =>
+        `"${l.name.replace(/"/g, '""')}","${l.phone}","${l.email || ''}","${l.status}","${l.sourcePage || ''}","${
+          l.message ? l.message.replace(/"/g, '""') : ''
+        }","${new Date(l.createdAt).toLocaleDateString('en-IN')}"`
+    )
+    const csv = ['Name,Phone,Email,Status,Source Page,Message,Date', ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `leads_export_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+  }
+
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-semibold text-ink">Lead Pipeline</h1>
-        <p className="mt-1 text-sm text-concrete">
-          {leads.length} total enquiries · Manage customer status and visit schedules
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="font-display text-3xl font-semibold text-ink">Lead Pipeline</h1>
+          <p className="mt-1 text-sm text-concrete">
+            {leads.length} total enquiries · Manage customer status and visit schedules
+          </p>
+        </div>
+        <button
+          onClick={() => exportCSV(leads)}
+          className="border border-ink/20 bg-bone px-4 py-2 font-mono text-xs uppercase tracking-wider text-ink hover:border-ochre hover:text-ochre transition-colors cursor-pointer"
+        >
+          Export CSV
+        </button>
       </div>
 
       {loading ? (

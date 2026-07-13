@@ -6,7 +6,7 @@ import { verifyAdmin } from '../lib/auth.js'
 
 const propertyBody = {
   type: 'object',
-  required: ['slug', 'title', 'listingType', 'propertyType', 'priceInr', 'priceLabel', 'areaSqft', 'city', 'locality', 'status'],
+  required: ['slug', 'title', 'listingType', 'propertyType', 'priceInr', 'priceLabel', 'areaSqft', 'city', 'locality', 'status', 'agentId'],
   properties: {
     slug: { type: 'string' },
     title: { type: 'string' },
@@ -33,6 +33,7 @@ const propertyBody = {
     videoUrl: { type: 'string', nullable: true },
     featured: { type: 'boolean' },
     published: { type: 'boolean' },
+    agentId: { type: 'string' },
   },
 } as const
 
@@ -59,16 +60,18 @@ export default async function propertyRoutes(app: FastifyInstance) {
             sort: { type: 'string', enum: ['newest', 'price_asc', 'price_desc', 'area_desc'], default: 'newest' },
             page: { type: 'integer', minimum: 1, default: 1 },
             limit: { type: 'integer', minimum: 1, maximum: 60, default: 12 },
+            includeUnpublished: { type: 'boolean', default: false },
           },
         },
       },
     },
     async (request) => {
-      const q = request.query as Record<string, string | number | undefined>
+      const q = request.query as Record<string, any>
       const page = Number(q.page ?? 1)
       const limit = Number(q.limit ?? 12)
+      const includeUnpublished = q.includeUnpublished === true || q.includeUnpublished === 'true'
 
-      const where: Prisma.PropertyWhereInput = { published: true }
+      const where: Prisma.PropertyWhereInput = includeUnpublished ? {} : { published: true }
       if (q.listingType) where.listingType = String(q.listingType)
       if (q.propertyType) where.propertyType = String(q.propertyType)
       if (q.bhk) where.bhk = Number(q.bhk)

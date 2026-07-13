@@ -24,10 +24,10 @@ export default function Logo({ className = '', showWordmark = true, tone = 'ink'
         aria-label="Carry Construction Logo"
       >
         <defs>
-          <linearGradient id="logoOchreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#d98f4e" />
-            <stop offset="60%" stopColor="#b87333" />
-            <stop offset="100%" stopColor="#8c4e1f" />
+          <linearGradient id="logoGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ebd4b0" />
+            <stop offset="60%" stopColor="#d5a96a" />
+            <stop offset="100%" stopColor="#9e7338" />
           </linearGradient>
         </defs>
 
@@ -40,7 +40,7 @@ export default function Logo({ className = '', showWordmark = true, tone = 'ink'
         <circle cx="20" cy="20" r="14" stroke={gridColor} strokeWidth="0.5" fill="none" strokeDasharray="1 3" />
 
         {/* Interlocking geometric "C" */}
-        <g fill="url(#logoOchreGrad)" className="transition-transform duration-300 ease-out group-hover:translate-x-[0.5px]">
+        <g fill="url(#logoGoldGrad)" className="transition-transform duration-300 ease-out group-hover:translate-x-[0.5px]">
           {/* Top / Roof component */}
           <path 
             d="M10 9h15l5 5v3h-6v-3H10V9z" 
@@ -65,7 +65,7 @@ export default function Logo({ className = '', showWordmark = true, tone = 'ink'
 
       {showWordmark && (
         <span className="flex flex-col leading-none">
-          <span className="font-display text-[1.35rem] font-semibold tracking-tight text-ink group-hover:text-ochre-dark transition-colors duration-300">
+          <span className="font-display text-[1.35rem] font-semibold tracking-tight text-ink group-hover:text-ochre transition-colors duration-300">
             Carry
           </span>
           <span className="font-mono text-[0.6rem] font-medium uppercase tracking-[0.28em] text-concrete">

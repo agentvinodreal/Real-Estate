@@ -5,6 +5,11 @@ export const CONTACT = {
   whatsapp: '919000000000', // digits only for wa.me
   email: 'hello@carryconstruction.com',
   city: 'Pune, Maharashtra',
+  address: 'Carry Construction HQ, Kharadi Bypass, Kharadi, Pune 411014',
+  rera: 'P52100012345',
+  instagram: 'https://instagram.com/carryconstruction',
+  facebook: 'https://facebook.com/carryconstruction',
+  youtube: 'https://youtube.com/@carryconstruction',
 }
 
 export type Listing = {

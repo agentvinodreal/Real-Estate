@@ -7,7 +7,8 @@ const TABS = [
   { to: '/', label: 'Leads', end: true },
   { to: '/properties', label: 'Properties', end: false },
   { to: '/projects', label: 'Projects', end: false },
-  { to: '/materials', label: 'Materials', end: false },
+  { to: '/blog', label: 'Blog', end: false },
+  { to: '/testimonials', label: 'Reviews', end: false },
 ]
 
 export default function Layout() {

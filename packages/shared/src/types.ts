@@ -55,6 +55,21 @@ export type Testimonial = {
   rating: number
   quote: string
   avatarUrl: string | null
+  published?: boolean
+  createdAt?: string
+}
+
+export type BlogPost = {
+  id: string
+  slug: string
+  title: string
+  excerpt: string | null
+  coverImage: string | null
+  body: string
+  metaTitle: string | null
+  metaDescription: string | null
+  published: boolean
+  createdAt: string
 }
 
 export type Paginated<T> = { data: T[]; total: number; page: number; limit: number }
@@ -67,6 +82,9 @@ export type LeadInput = {
   sourcePage?: string
   propertyId?: string
   projectId?: string
+  marketplaceType?: 'Material' | 'Equipment' | 'ServiceProvider'
+  itemId?: string
+  itemQty?: number
 }
 
 export type Material = {
@@ -76,5 +94,39 @@ export type Material = {
   brand: string
   description: string | null
   imageUrl: string | null
+  price: number | null
+  unit: string | null
+  available: boolean
+  createdAt: string
+}
+
+export type ServiceProvider = {
+  id: string
+  name: string
+  role: 'Contractor' | 'Civil Engineer' | 'Architect' | 'Labour'
+  phone: string
+  email: string | null
+  city: string
+  locality: string | null
+  experienceYears: number | null
+  rating: number | null
+  profilePhotoUrl: string | null
+  description: string | null
+  specialties: string[]
+  minimumRate: number | null
+  rateUnit: string | null
+  reviewStatus: string
+  createdAt: string
+}
+
+export type EquipmentRental = {
+  id: string
+  name: string
+  category: string
+  rentPerDay: number
+  imageUrl: string | null
+  description: string | null
+  specs: string[]
+  available: boolean
   createdAt: string
 }

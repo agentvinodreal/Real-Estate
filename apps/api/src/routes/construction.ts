@@ -27,10 +27,41 @@ const projectBody = {
 export default async function constructionRoutes(app: FastifyInstance) {
   app.get(
     '/construction-projects',
-    { schema: { tags: ['Construction'], summary: 'List construction projects' } },
-    async () => {
+    {
+      schema: {
+        tags: ['Construction'],
+        summary: 'List construction projects',
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', minimum: 1 },
+            limit: { type: 'integer', minimum: 1, maximum: 100 },
+          },
+        },
+      },
+    },
+    async (request) => {
+      const q = request.query as { page?: number; limit?: number }
+      const page = q.page ? Number(q.page) : undefined
+      const limit = q.limit ? Number(q.limit) : undefined
+
+      const where = { published: true }
+
+      if (page && limit) {
+        const [rows, total] = await Promise.all([
+          prisma.constructionProject.findMany({
+            where,
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+          }),
+          prisma.constructionProject.count({ where }),
+        ])
+        return { data: rows.map(serializeProject), total, page, limit }
+      }
+
       const rows = await prisma.constructionProject.findMany({
-        where: { published: true },
+        where,
         orderBy: { createdAt: 'desc' },
       })
       return { data: rows.map(serializeProject) }
@@ -58,14 +89,13 @@ export default async function constructionRoutes(app: FastifyInstance) {
     '/construction-projects',
     { preHandler: verifyAdmin, schema: { tags: ['Construction'], summary: 'Create project (admin)', security: [{ bearerAuth: [] }], body: projectBody } },
     async (request, reply) => {
-      const body = request.body as Record<string, unknown>
+      const { processStages, beforeImages, afterImages, stageImages, ...rest } = request.body as Record<string, any>
       const row = await prisma.constructionProject.create({
         data: {
-          ...body,
-          processStages: JSON.stringify(body.processStages ?? []),
-          beforeImages: (body.beforeImages as string[]) ?? [],
-          afterImages: (body.afterImages as string[]) ?? [],
-          stageImages: (body.stageImages as string[]) ?? [],
+          ...rest,
+          beforeImages: beforeImages ?? [],
+          afterImages: afterImages ?? [],
+          stageImages: stageImages ?? [],
         } as Prisma.ConstructionProjectCreateInput,
       })
       return reply.code(201).send(serializeProject(row))
@@ -117,14 +147,12 @@ export default async function constructionRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const body = request.body as Record<string, unknown>
-      const data: Record<string, unknown> = { ...body }
-      if (body.processStages) data.processStages = JSON.stringify(body.processStages)
+      const { processStages, ...body } = request.body as Record<string, any>
 
       try {
         const row = await prisma.constructionProject.update({
           where: { id },
-          data: data as any,
+          data: body as any,
         })
         return serializeProject(row)
       } catch {

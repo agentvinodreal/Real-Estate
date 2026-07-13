@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import Seo from '../components/Seo'
-import Placeholder from '../components/Placeholder'
+import Photo from '../components/Photo'
 import ConstructionCard from '../components/ConstructionCard'
 import InquiryForm from '../components/InquiryForm'
+import Process from '../sections/Process'
 import { api, type ConstructionProject, type Material } from '@carry/shared'
-import { PILLARS, PACKAGES, PROCESS } from '../lib/data'
+import { PILLARS, PACKAGES } from '../lib/data'
 
 export default function Construction() {
   const [projects, setProjects] = useState<ConstructionProject[]>([])
@@ -55,7 +56,19 @@ export default function Construction() {
               </a>
             </div>
           </div>
-          <Placeholder label="Featured build" className="aspect-[4/3] w-full lg:aspect-auto" />
+          <div className="relative overflow-hidden aspect-[4/3] w-full lg:aspect-auto">
+            <Photo
+              seed="construction-hero"
+              label="Carry Construction Featured Build"
+              className="h-full w-full"
+            />
+            {/* Floating spec card */}
+            <div className="absolute -bottom-5 -left-5 hidden bg-ink border border-bone/10 px-6 py-5 text-bone sm:block z-10">
+              <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ochre">Featured Build</div>
+              <div className="mt-1 font-display text-xl font-semibold text-bone">Modern Villa, Baner</div>
+              <div className="mt-1 font-mono text-xs text-bone/60">4 BHK · Design & Build complete</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -76,24 +89,8 @@ export default function Construction() {
         </div>
       </section>
 
-      {/* Process */}
-      <section className="border-y border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-          <span className="kicker">How it works</span>
-          <h2 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-            A process you can watch, step by step.
-          </h2>
-          <ol className="mt-12 grid gap-px overflow-hidden border border-ink/10 bg-ink/10 md:grid-cols-5">
-            {PROCESS.map((s) => (
-              <li key={s.step} className="bg-bone-dim p-6">
-                <span className="font-mono text-sm text-ochre-dark">{s.step}</span>
-                <h3 className="mt-4 font-display text-lg font-semibold text-ink">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{s.body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+      {/* Process Scroll Timeline */}
+      <Process />
 
       {/* Packages */}
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">

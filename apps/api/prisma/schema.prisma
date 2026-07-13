@@ -32,48 +32,44 @@ model Agent {
 
 // ── Property ───────────────────────────────────────────────────────────
 model Property {
-  id           String   @id @default(cuid())
-  slug         String?  @unique
-  title        String
-  propertyType String // "Apartment" | "Villa" | "Plot" | "Commercial"
-  listingType  String // "Sale" | "Resale" | "Under Construction"
-  bhk          Int?
-  priceInr     Int
-  priceLabel   String // pre-formatted "₹1.35 Cr"
-  areaSqft     Int
-  locality     String
-  city         String
-  address      String?
-  reraNumber   String?
-  status       String // "Ready" | "Under Construction"
-  furnishing   String? // "Unfurnished" | "Semi-Furnished" | "Furnished"
-  description  String?
-  images       String[] @default([]) // Cloudinary public IDs (Postgres native array)
-  floorPlanUrl String? // single Cloudinary public ID
-  videoUrl     String?  // for public website virtual tours
-  featured     Boolean  @default(false)
-  amenities    String[] @default([])
-  lat          Float?
-  lng          Float?
-  reviewStatus String   @default("pending") // "pending" | "reviewed" | "deleted"
-  published    Boolean  @default(false)
-
-  // Rent-specific fields
-  securityDeposit    Int?
+  id                 String   @id @default(cuid())
+  title              String
+  propertyType       String
+  listingType        String
+  bhk                Int?
+  priceInr           Int
+  priceLabel         String
+  areaSqft           Int
+  locality           String
+  city               String
+  address            String?
+  reraNumber         String?
+  status             String
+  furnishing         String?
+  description        String?
+  images             String[] @default([])
+  floorPlanUrl       String?
+  lat                Float?
+  lng                Float?
+  reviewStatus       String   @default("pending")
+  agentId            String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
   availableFrom      String?
-  preferredTenant    String?
-  petFriendly        Boolean?
-  maintenanceCharges Int?
+  camCharges         Int?
   leaseDuration      Int?
   lockInPeriod       Int?
-  camCharges         Int?
+  maintenanceCharges Int?
+  petFriendly        Boolean?
   plotAllowedUse     String?
-
-  agentId String
-  agent   Agent  @relation(fields: [agentId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  preferredTenant    String?
+  securityDeposit    Int?
+  published          Boolean  @default(false)
+  slug               String?  @unique
+  featured           Boolean  @default(false)
+  videoUrl           String?
+  amenities          String[] @default([])
+  agent              Agent    @relation(fields: [agentId], references: [id])
 
   @@index([agentId])
   @@index([reviewStatus])
@@ -84,26 +80,23 @@ model Property {
 // ── ConstructionProject ────────────────────────────────────────────────
 model ConstructionProject {
   id             String   @id @default(cuid())
-  slug           String?  @unique
   title          String
-  category       String // "Turnkey Villa" | "Renovation" | "Interior" | "Commercial Build"
+  category       String
   location       String
   areaSqft       Int?
   durationMonths Int?
-  packageTier    String? // "Basic" | "Premium" | "Luxury"
+  packageTier    String?
   description    String?
-  processStages  String   @default("[]") // JSON string of stages (compatibility)
-  beforeImages   String[] @default([]) // Cloudinary public IDs
+  beforeImages   String[] @default([])
   afterImages    String[] @default([])
   stageImages    String[] @default([])
   reviewStatus   String   @default("pending")
+  agentId        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   published      Boolean  @default(false)
-
-  agentId String
-  agent   Agent  @relation(fields: [agentId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slug               String?  @unique
+  agent          Agent    @relation(fields: [agentId], references: [id])
 
   @@index([agentId])
   @@index([reviewStatus])
@@ -113,29 +106,25 @@ model ConstructionProject {
 
 // ── Labour ─────────────────────────────────────────────────────────────
 model Labour {
-  id              String  @id @default(cuid())
+  id              String   @id @default(cuid())
   fullName        String
   age             Int
-  gender          String // "Male" | "Female" | "Other"
-  skillLevel      String // "Skilled" | "Non-Skilled"
-  skillType       String? // only if Skilled — from SKILL_TYPES list
+  gender          String
+  skillLevel      String
+  skillType       String?
   phone           String
-  profilePhotoUrl String? // single Cloudinary public ID
-
-  // Availability address
-  houseNo  String?
-  street   String?
-  locality String?
-  city     String?
-  pincode  String?
-
-  reviewStatus String @default("pending")
-
-  agentId String
-  agent   Agent  @relation(fields: [agentId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  profilePhotoUrl String?
+  houseNo         String?
+  street          String?
+  locality        String?
+  city            String?
+  pincode         String?
+  reviewStatus    String   @default("pending")
+  agentId         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  minimumWage     Int?
+  agent           Agent    @relation(fields: [agentId], references: [id])
 
   @@index([agentId])
   @@index([reviewStatus])
@@ -145,41 +134,45 @@ model Labour {
 
 // ── Shop ────────────────────────────────────────────────────────────────
 model Shop {
-  id          String  @id @default(cuid())
-  shopName    String
-  shopType    String                    // free-text: "Cement", "Bricks", etc.
-  keeperName  String
-  keeperPhone String
-  address     String?
-  lat         Float?
-  lng         Float?
-  images      String[] @default([])
-  reviewStatus String  @default("pending") // "pending" | "reviewed" | "deleted"
-
-  agentId String
-  agent   Agent  @relation(fields: [agentId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  shopName     String
+  shopType     String
+  keeperName   String
+  keeperPhone  String
+  address      String?
+  lat          Float?
+  lng          Float?
+  reviewStatus String   @default("pending")
+  agentId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  images       String[] @default([])
+  agent        Agent    @relation(fields: [agentId], references: [id])
 
   @@index([agentId])
   @@index([reviewStatus])
+  @@index([shopType])
   @@map("shops")
 }
 
 // ── Lead (from Real Estate) ────────────────────────────────────────────
 model Lead {
-  id         String   @id @default(cuid())
-  name       String
-  phone      String
-  email      String?
-  sourcePage String?
-  propertyId String?
-  projectId  String?
-  message    String?
-  status     String   @default("new") // new | contacted | visit | closed
-  createdAt  DateTime @default(now())
+  id              String   @id @default(cuid())
+  name            String
+  phone           String
+  email           String?
+  sourcePage      String?
+  propertyId      String?
+  projectId       String?
+  message         String?
+  status          String   @default("new") // new | contacted | visit | closed
+  marketplaceType String?  // "Material" | "Equipment" | "ServiceProvider"
+  itemId          String?  // References specific item
+  itemQty         Int?     // Quantity (number of bags, rental days, etc.)
+  createdAt       DateTime @default(now())
 
+  @@index([status])
+  @@index([createdAt])
   @@map("leads")
 }
 
@@ -194,6 +187,7 @@ model Testimonial {
   published Boolean  @default(true)
   createdAt DateTime @default(now())
 
+  @@index([published, createdAt])
   @@map("testimonials")
 }
 
@@ -205,8 +199,12 @@ model Material {
   brand       String   // e.g. "Tata Tiscon", "Ultratech"
   description String?
   imageUrl    String?
+  price       Int?     // Price in INR (optional)
+  unit        String?  // Unit of price (e.g. "per bag", "per ton")
+  available   Boolean  @default(true)
   createdAt   DateTime @default(now())
 
+  @@index([createdAt])
   @@map("materials")
 }
 
@@ -224,5 +222,48 @@ model BlogPost {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@index([published, createdAt])
   @@map("blog_posts")
+}
+
+// ── ServiceProvider (from Real Estate) ─────────────────────────────────
+model ServiceProvider {
+  id              String   @id @default(cuid())
+  name            String
+  role            String   // "Contractor" | "Civil Engineer" | "Architect" | "Labour"
+  phone           String
+  email           String?
+  city            String
+  locality        String?
+  experienceYears Int?
+  rating          Float?   @default(5.0)
+  profilePhotoUrl String?
+  description     String?
+  specialties     String[] @default([])
+  minimumRate     Int?     // rate in INR
+  rateUnit        String?  // "per day", "per sqft", "per project"
+  reviewStatus    String   @default("approved")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([role])
+  @@index([city])
+  @@map("service_providers")
+}
+
+// ── EquipmentRental (from Real Estate) ─────────────────────────────────
+model EquipmentRental {
+  id           String   @id @default(cuid())
+  name         String   // e.g. "JCB Excavator 3DX", "Concrete Mixer Machine"
+  category     String   // e.g. "Earthmoving", "Concrete", "Scaffolding"
+  rentPerDay   Int      // Rent in INR per day
+  imageUrl     String?
+  description  String?
+  specs        String[] @default([])
+  available    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@map("equipment_rentals")
 }

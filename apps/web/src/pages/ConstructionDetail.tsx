@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Seo from '../components/Seo'
 import Placeholder from '../components/Placeholder'
+import Photo from '../components/Photo'
 import InquiryForm from '../components/InquiryForm'
+
+const BeforeAfterSlider = lazy(() => import('../components/BeforeAfterSlider'))
+
 import { api, type ConstructionProject } from '@carry/shared'
 
 function Fact({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -33,7 +37,63 @@ export default function ConstructionDetail() {
   }, [slug])
 
   if (state === 'loading') {
-    return <p className="mx-auto max-w-7xl px-5 py-24 font-mono text-sm text-concrete sm:px-8">Loading project…</p>
+    return (
+      <div className="animate-pulse">
+        {/* Breadcrumb + title skeleton */}
+        <div className="mx-auto max-w-7xl px-5 pb-8 pt-6 sm:px-8">
+          <div className="shimmer bg-ink/5 h-4 w-28 rounded-sm mb-4" />
+          <div className="shimmer bg-ochre/15 h-5 w-20 rounded-sm mb-3" />
+          <div className="shimmer bg-ink/10 h-10 w-2/3 sm:h-12 rounded-sm" />
+          <div className="shimmer bg-ink/5 mt-2 h-4 w-32 rounded-sm" />
+        </div>
+
+        {/* Hero Image skeleton */}
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <div className="shimmer blueprint aspect-[16/9] w-full" />
+        </div>
+
+        {/* Facts skeleton */}
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 border-b border-ink/10">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="border-l border-ink/15 pl-4">
+                <div className="shimmer bg-ink/5 h-3 w-16 rounded-sm mb-1" />
+                <div className="shimmer bg-ink/10 h-6 w-24 rounded-sm" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Body content skeleton */}
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[1.6fr_1fr]">
+          <div>
+            <div className="shimmer bg-ink/10 h-7 w-40 rounded-sm mb-4" />
+            <div className="space-y-2 mb-10">
+              <div className="shimmer bg-ink/5 h-4 w-full rounded-sm" />
+              <div className="shimmer bg-ink/5 h-4 w-full rounded-sm" />
+              <div className="shimmer bg-ink/5 h-4 w-3/4 rounded-sm" />
+            </div>
+
+            <div className="shimmer bg-ink/10 h-7 w-32 rounded-sm mb-4" />
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex gap-6 py-5 border-b border-ink/10">
+                  <div className="shimmer bg-ochre/15 h-6 w-6 rounded-sm" />
+                  <div className="flex-1">
+                    <div className="shimmer bg-ink/10 h-5 w-40 rounded-sm mb-2" />
+                    <div className="shimmer bg-ink/5 h-4 w-full rounded-sm" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="shimmer bg-ink/5 h-[320px] w-full border border-ink/10 rounded-sm" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (state === 'notfound' || !project) {
@@ -55,6 +115,7 @@ export default function ConstructionDetail() {
         title={`${p.title} — ${p.category}`}
         description={p.description ?? `${p.category} in ${p.location} by Carry Construction.`}
         path={`/construction/${p.slug}`}
+        image={p.afterImages && p.afterImages.length > 0 ? p.afterImages[0] : undefined}
       />
       {/* Breadcrumb + title */}
       <div className="mx-auto max-w-7xl px-5 pb-8 pt-6 sm:px-8">
@@ -70,7 +131,11 @@ export default function ConstructionDetail() {
 
       {/* Hero image */}
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <Placeholder label={`${p.title} — completed`} className="aspect-[16/9] w-full" />
+        {p.afterImages && p.afterImages.length > 0 ? (
+          <Photo src={p.afterImages[0]} seed={p.slug} label={`${p.title} - completed`} className="aspect-[16/9] w-full" />
+        ) : (
+          <Placeholder label={`${p.title} — completed`} className="aspect-[16/9] w-full" />
+        )}
       </div>
 
       {/* Facts */}
@@ -111,27 +176,42 @@ export default function ConstructionDetail() {
           )}
 
           {/* Before / after */}
-          <section className="mt-10">
-            <h2 className="font-display text-2xl font-semibold text-ink">Before &amp; after</h2>
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div>
-                <Placeholder label="Before" className="aspect-[4/3] w-full" />
-                <p className="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-concrete">Before</p>
+          {p.beforeImages && p.beforeImages.length > 0 && p.afterImages && p.afterImages.length > 0 ? (
+            <section className="mt-10">
+              <h2 className="font-display text-2xl font-semibold text-ink mb-4">Before &amp; after</h2>
+              <Suspense fallback={<div className="aspect-[16/9] w-full bg-ink/5 animate-pulse rounded-sm shimmer" />}>
+                <BeforeAfterSlider before={p.beforeImages[0]} after={p.afterImages[0]} className="aspect-[16/9] w-full" />
+              </Suspense>
+            </section>
+          ) : (
+            <section className="mt-10">
+              <h2 className="font-display text-2xl font-semibold text-ink">Before &amp; after</h2>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <Placeholder label="Before" className="aspect-[4/3] w-full" />
+                  <p className="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-concrete">Before</p>
+                </div>
+                <div>
+                  <Placeholder label="After" className="aspect-[4/3] w-full" />
+                  <p className="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-concrete">After</p>
+                </div>
               </div>
-              <div>
-                <Placeholder label="After" className="aspect-[4/3] w-full" />
-                <p className="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-concrete">After</p>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* Stage gallery */}
           <section className="mt-10">
             <h2 className="font-display text-2xl font-semibold text-ink">On-site progress</h2>
             <div className="mt-4 grid grid-cols-3 gap-3">
-              {['Foundation', 'Structure', 'Finishing'].map((s) => (
-                <Placeholder key={s} label={s} className="aspect-square w-full" />
-              ))}
+              {p.stageImages && p.stageImages.length > 0 ? (
+                p.stageImages.slice(0, 6).map((imgUrl, i) => (
+                  <Photo key={imgUrl} src={imgUrl} seed={`${p.slug}-stage-${i}`} className="aspect-square w-full" />
+                ))
+              ) : (
+                ['Foundation', 'Structure', 'Finishing'].map((s) => (
+                  <Placeholder key={s} label={s} className="aspect-square w-full" />
+                ))
+              )}
             </div>
           </section>
         </div>

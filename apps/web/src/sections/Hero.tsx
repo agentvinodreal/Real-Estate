@@ -21,14 +21,14 @@ export default function Hero() {
   const can3D = useCanRender3D()
 
   return (
-    <section id="top" className="relative overflow-hidden">
+    <section id="top" className="relative overflow-hidden bg-teal text-bone">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-24 lg:pt-20">
         {/* Copy */}
         <motion.div className="flex flex-col justify-center" variants={container} initial="hidden" animate="show">
-          <motion.span variants={item} className="kicker">Sale · Resale · Construction</motion.span>
+          <motion.span variants={item} className="kicker !text-ochre">Sale · Resale · Construction</motion.span>
           <motion.h1
             variants={item}
-            className="mt-5 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl"
+            className="mt-5 font-display text-5xl font-normal leading-[1.02] tracking-tight text-bone sm:text-6xl lg:text-7xl"
           >
             We build the
             <br />
@@ -36,7 +36,7 @@ export default function Hero() {
             <br />
             <span className="text-ochre">call home.</span>
           </motion.h1>
-          <motion.p variants={item} className="mt-6 max-w-md text-lg leading-relaxed text-ink-soft">
+          <motion.p variants={item} className="mt-6 max-w-md text-lg leading-relaxed text-bone/80">
             From finding the right property to constructing it end-to-end —
             Carry Construction takes you from design to execution with one
             accountable team.
@@ -45,30 +45,30 @@ export default function Hero() {
           <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-3">
             <Link
               to="/properties"
-              className="inline-flex items-center bg-ink px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:bg-ochre-dark"
+              className="inline-flex items-center bg-ochre px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-teal-dark transition-colors hover:bg-ochre-dark hover:text-bone"
             >
               View properties
             </Link>
             <a
               href={`https://wa.me/${CONTACT.whatsapp}`}
-              className="inline-flex items-center border border-ink/25 px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-ink transition-colors hover:border-ochre hover:text-ochre-dark"
+              className="inline-flex items-center border border-bone/35 px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:border-ochre hover:text-ochre"
             >
               Talk on WhatsApp
             </a>
           </motion.div>
 
-          <motion.div variants={item} className="mt-10 flex items-center gap-8 border-t border-ink/10 pt-6">
+          <motion.div variants={item} className="mt-10 flex items-center gap-8 border-t border-bone/15 pt-6">
             <div>
-              <div className="font-display text-2xl font-semibold text-ink">12+</div>
-              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-concrete">Years</div>
+              <div className="font-display text-2xl font-semibold text-bone">12+</div>
+              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-bone/60">Years</div>
             </div>
             <div>
-              <div className="font-display text-2xl font-semibold text-ink">40</div>
-              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-concrete">Projects</div>
+              <div className="font-display text-2xl font-semibold text-bone">40</div>
+              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-bone/60">Projects</div>
             </div>
             <div>
-              <div className="font-display text-2xl font-semibold text-ink">2.5M</div>
-              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-concrete">Sq ft built</div>
+              <div className="font-display text-2xl font-semibold text-bone">2.5M</div>
+              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-bone/60">Sq ft built</div>
             </div>
           </motion.div>
         </motion.div>
@@ -85,9 +85,9 @@ export default function Hero() {
             <Photo seed="hero-project" label="Hero project" className="aspect-[4/5] w-full" />
           )}
           {/* floating spec card */}
-          <div className="absolute -bottom-5 -left-5 hidden bg-ink px-6 py-5 text-bone sm:block">
+          <div className="absolute -bottom-5 -left-5 hidden bg-teal-dark border border-bone/10 px-6 py-5 text-bone sm:block">
             <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ochre">Now building</div>
-            <div className="mt-1 font-display text-xl font-semibold">Skyline Heights, Kharadi</div>
+            <div className="mt-1 font-display text-xl font-semibold text-bone">Skyline Heights, Kharadi</div>
             <div className="mt-1 font-mono text-xs text-bone/60">3 BHK · 1,450 sq ft · RERA verified</div>
           </div>
         </div>

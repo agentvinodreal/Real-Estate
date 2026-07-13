@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api, formatInr } from '@carry/shared'
 import { adminApi } from '../lib/adminApi'
 
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? 'piwpzbke'
+
 const empty = {
   id: '',
   title: '',
@@ -278,7 +280,11 @@ export default function PropertyForm() {
                 const isHero = idx === 0
                 return (
                   <div key={imgUrl} className={`group relative aspect-[4/3] border overflow-hidden bg-bone-dim ${isHero ? 'border-ochre shadow-md ring-1 ring-ochre' : 'border-ink/10'}`}>
-                    <img src={imgUrl} alt={`Gallery item ${idx}`} className="h-full w-full object-cover" />
+                    <img
+                      src={imgUrl.startsWith('http') ? imgUrl : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${imgUrl}`}
+                      alt={`Gallery item ${idx}`}
+                      className="h-full w-full object-cover"
+                    />
                     
                     {isHero && (
                       <span className="absolute left-1.5 top-1.5 bg-ochre px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-bone">

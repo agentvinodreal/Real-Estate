@@ -16,6 +16,8 @@ import uploadsRoutes from './routes/uploads.js'
 import materialsRoutes from './routes/materials.js'
 import blogRoutes from './routes/blog.js'
 import geocodeRoutes from './routes/geocode.js'
+import serviceProvidersRoutes from './routes/serviceProviders.js'
+import equipmentRentalsRoutes from './routes/equipmentRentals.js'
 
 const PORT = Number(process.env.PORT ?? 4000)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -71,6 +73,8 @@ async function main() {
     await api.register(materialsRoutes)
     await api.register(blogRoutes)
     await api.register(geocodeRoutes)
+    await api.register(serviceProvidersRoutes)
+    await api.register(equipmentRentalsRoutes)
   }, { prefix: API_PREFIX })
 
   // ── Serve built web app (SPA fallback) ───────────────────────

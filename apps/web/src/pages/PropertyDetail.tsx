@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Seo from '../components/Seo'
 import Placeholder from '../components/Placeholder'
 import Photo from '../components/Photo'
 import InquiryForm from '../components/InquiryForm'
+
+const GalleryLightbox = lazy(() => import('../components/GalleryLightbox'))
+const PropertyMap = lazy(() => import('../components/PropertyMap'))
+
 import { api, pricePerSqft, statusLabel, type Property } from '@carry/shared'
 import { CONTACT } from '../lib/data'
 
@@ -21,6 +25,8 @@ export default function PropertyDetail() {
   const { slug } = useParams<{ slug: string }>()
   const [property, setProperty] = useState<Property | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'notfound'>('loading')
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [galleryIndex, setGalleryIndex] = useState(0)
 
   useEffect(() => {
     if (!slug) return
@@ -35,7 +41,70 @@ export default function PropertyDetail() {
   }, [slug])
 
   if (state === 'loading') {
-    return <p className="mx-auto max-w-7xl px-5 py-24 font-mono text-sm text-concrete sm:px-8">Loading property…</p>
+    return (
+      <div className="animate-pulse">
+        {/* Breadcrumb skeleton */}
+        <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8">
+          <div className="shimmer bg-ink/5 h-4 w-28 rounded-sm" />
+        </div>
+
+        {/* Title skeleton */}
+        <div className="mx-auto max-w-7xl px-5 pb-8 pt-4 sm:px-8">
+          <div className="shimmer bg-ink/5 h-3.5 w-16 rounded-sm mb-3" />
+          <div className="shimmer bg-ink/10 h-10 w-2/3 sm:h-12 rounded-sm" />
+        </div>
+
+        {/* Gallery skeleton */}
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <div className="shimmer blueprint aspect-[16/9] w-full" />
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="shimmer blueprint aspect-[4/3] w-full" />
+            ))}
+          </div>
+        </div>
+
+        {/* Price block skeleton */}
+        <div className="mx-auto max-w-7xl px-5 mt-6 sm:px-8 flex items-baseline justify-between border-b border-ink/10 pb-6">
+          <div>
+            <div className="shimmer bg-ink/5 h-3 w-10 rounded-sm mb-1" />
+            <div className="shimmer bg-ochre/15 h-8 w-40 rounded-sm" />
+          </div>
+          <div>
+            <div className="shimmer bg-ink/5 h-3 w-10 rounded-sm mb-1" />
+            <div className="shimmer bg-ink/5 h-5 w-24 rounded-sm" />
+          </div>
+        </div>
+
+        {/* Body skeleton */}
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[1.6fr_1fr]">
+          {/* Left column */}
+          <div>
+            <div className="shimmer bg-ink/10 h-7 w-32 rounded-sm mb-4" />
+            <div className="space-y-2 mb-10">
+              <div className="shimmer bg-ink/5 h-4 w-full rounded-sm" />
+              <div className="shimmer bg-ink/5 h-4 w-full rounded-sm" />
+              <div className="shimmer bg-ink/5 h-4 w-3/4 rounded-sm" />
+            </div>
+
+            <div className="shimmer bg-ink/10 h-7 w-40 rounded-sm mb-4" />
+            <div className="grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="border-t border-ink/10 py-3">
+                  <div className="shimmer bg-ink/5 h-3 w-12 rounded-sm mb-1" />
+                  <div className="shimmer bg-ink/5 h-5 w-24 rounded-sm" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div>
+            <div className="shimmer bg-ink/5 h-[320px] w-full border border-ink/10 rounded-sm" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (state === 'notfound' || !property) {
@@ -73,6 +142,7 @@ export default function PropertyDetail() {
         title={`${p.title}, ${p.locality}`}
         description={p.description ?? `${p.listingType} — ${p.propertyType} in ${p.locality}, ${p.city}. ${p.priceLabel}.`}
         path={`/properties/${p.slug}`}
+        image={p.images && p.images.length > 0 ? p.images[0] : undefined}
         jsonLd={jsonLd}
       />
       {/* Breadcrumb */}
@@ -95,14 +165,37 @@ export default function PropertyDetail() {
       {/* Gallery */}
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         {p.images && p.images.length > 0 ? (
-          <Photo src={p.images[0]} seed={p.slug} label={`${p.title} - main`} className="aspect-[16/9] w-full bg-ink" objectFit="contain" />
+          <div className="relative group cursor-pointer overflow-hidden" onClick={() => { setGalleryOpen(true); setGalleryIndex(0) }}>
+            <Photo src={p.images[0]} seed={p.slug} label={`${p.title} - main`} className="aspect-[16/9] w-full bg-ink transition-transform duration-500 group-hover:scale-[1.02]" objectFit="contain" />
+            {p.images.length > 1 && (
+              <button 
+                className="absolute bottom-4 right-4 bg-ink/80 hover:bg-ochre hover:text-ink text-bone font-mono text-[0.65rem] uppercase tracking-[0.15em] px-4 py-2 transition-colors duration-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setGalleryOpen(true);
+                  setGalleryIndex(0);
+                }}
+              >
+                View all {p.images.length} photos
+              </button>
+            )}
+          </div>
         ) : (
           <Placeholder label={`${p.title} — main`} className="aspect-[16/9] w-full" />
         )}
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {p.images && p.images.length > 1 ? (
             p.images.slice(1, 5).map((imgUrl, idx) => (
-              <Photo key={imgUrl} src={imgUrl} seed={`${p.slug}-${idx}`} className="aspect-[4/3] w-full bg-ink" objectFit="contain" />
+              <button
+                key={imgUrl}
+                onClick={() => {
+                  setGalleryOpen(true);
+                  setGalleryIndex(idx + 1);
+                }}
+                className="group relative overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ochre aspect-[4/3] w-full bg-ink"
+              >
+                <Photo src={imgUrl} seed={`${p.slug}-${idx}`} className="h-full w-full transition-transform duration-300 group-hover:scale-105" objectFit="cover" />
+              </button>
             ))
           ) : (
             ['Living', 'Kitchen', 'Bedroom', 'Exterior'].map((lbl) => (
@@ -111,6 +204,17 @@ export default function PropertyDetail() {
           )}
         </div>
       </div>
+
+      {p.images && p.images.length > 0 && (
+        <Suspense fallback={null}>
+          <GalleryLightbox
+            images={p.images}
+            open={galleryOpen}
+            startIndex={galleryIndex}
+            onClose={() => setGalleryOpen(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Price block below images */}
       <div className="mx-auto max-w-7xl px-5 mt-6 sm:px-8 flex items-baseline justify-between border-b border-ink/10 pb-6">
@@ -183,18 +287,15 @@ export default function PropertyDetail() {
             <h2 className="font-display text-2xl font-semibold text-ink">Location</h2>
             {p.address && <p className="mt-3 text-sm text-ink-soft">{p.address}</p>}
             <p className="mt-1 text-sm font-semibold text-ink">{p.locality}, {p.city}</p>
-            <div className="relative mt-4 overflow-hidden border border-ink/10 aspect-[16/7] w-full">
-              {/* ponytail: native iframe embed avoids Google Maps API key / JS SDK overhead */}
+            <div className="mt-4">
               {p.lat && p.lng ? (
-                <iframe
-                  src={`https://maps.google.com/maps?q=${p.lat},${p.lng}&z=15&output=embed`}
-                  className="w-full h-full border-none"
-                  allowFullScreen
-                  loading="lazy"
-                  title="Location Map"
-                />
+                <Suspense fallback={<div className="aspect-[16/7] w-full bg-ink/5 animate-pulse rounded-sm shimmer" />}>
+                  <PropertyMap lat={p.lat} lng={p.lng} title={p.title} className="aspect-[16/7] w-full" />
+                </Suspense>
               ) : (
-                <Placeholder label="No Location Pinned" className="w-full h-full" />
+                <div className="relative border border-ink/10 aspect-[16/7] w-full">
+                  <Placeholder label="No Location Pinned" className="w-full h-full" />
+                </div>
               )}
             </div>
           </section>

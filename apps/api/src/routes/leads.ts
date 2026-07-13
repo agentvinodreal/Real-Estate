@@ -23,6 +23,9 @@ export default async function leadRoutes(app: FastifyInstance) {
             propertyId: { type: 'string', nullable: true },
             projectId: { type: 'string', nullable: true },
             message: { type: 'string', nullable: true },
+            marketplaceType: { type: 'string', nullable: true },
+            itemId: { type: 'string', nullable: true },
+            itemQty: { type: 'integer', nullable: true },
           },
         },
       },
@@ -36,6 +39,9 @@ export default async function leadRoutes(app: FastifyInstance) {
         propertyId?: string
         projectId?: string
         message?: string
+        marketplaceType?: string
+        itemId?: string
+        itemQty?: number
       }
       const lead = await prisma.lead.create({ data: body })
       // TODO: fire Resend email + WhatsApp deep link here.
@@ -46,8 +52,38 @@ export default async function leadRoutes(app: FastifyInstance) {
   // ── Leads inbox (admin) ──────────────────────────────────────────
   app.get(
     '/leads',
-    { preHandler: verifyAdmin, schema: { tags: ['Leads'], summary: 'List leads (admin)', security: [{ bearerAuth: [] }] } },
-    async () => {
+    {
+      preHandler: verifyAdmin,
+      schema: {
+        tags: ['Leads'],
+        summary: 'List leads (admin)',
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', minimum: 1 },
+            limit: { type: 'integer', minimum: 1, maximum: 100 },
+          },
+        },
+      },
+    },
+    async (request) => {
+      const q = request.query as { page?: number; limit?: number }
+      const page = q.page ? Number(q.page) : undefined
+      const limit = q.limit ? Number(q.limit) : undefined
+
+      if (page && limit) {
+        const [rows, total] = await Promise.all([
+          prisma.lead.findMany({
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { createdAt: 'desc' },
+          }),
+          prisma.lead.count(),
+        ])
+        return { data: rows, total, page, limit }
+      }
+
       const rows = await prisma.lead.findMany({ orderBy: { createdAt: 'desc' } })
       return { data: rows }
     },
