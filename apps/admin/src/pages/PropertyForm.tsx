@@ -16,7 +16,7 @@ const empty = {
   areaSqft: '',
   carpetAreaSqft: '',
   builtupAreaSqft: '',
-  city: 'Pune',
+  city: 'Patna',
   locality: '',
   status: 'ready',
   furnishing: '',

@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { Link } from 'react-router-dom'
+// import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import Photo from '../components/Photo'
 import { CONTACT } from '../lib/data'
@@ -43,12 +43,12 @@ export default function Hero() {
           </motion.p>
 
           <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-3">
-            <Link
+            {/* <Link
               to="/properties"
               className="inline-flex items-center bg-ochre px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-teal-dark transition-colors hover:bg-ochre-dark hover:text-bone"
             >
               View properties
-            </Link>
+            </Link> */}
             <a
               href={`https://wa.me/${CONTACT.whatsapp}`}
               className="inline-flex items-center border border-bone/35 px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:border-ochre hover:text-ochre"
@@ -87,7 +87,7 @@ export default function Hero() {
           {/* floating spec card */}
           <div className="absolute -bottom-5 -left-5 hidden bg-teal-dark border border-bone/10 px-6 py-5 text-bone sm:block">
             <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ochre">Now building</div>
-            <div className="mt-1 font-display text-xl font-semibold text-bone">Skyline Heights, Kharadi</div>
+            <div className="mt-1 font-display text-xl font-semibold text-bone">Skyline Heights, Boring Road</div>
             <div className="mt-1 font-mono text-xs text-bone/60">3 BHK · 1,450 sq ft · RERA verified</div>
           </div>
         </div>

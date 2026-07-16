@@ -6,6 +6,7 @@ import Header from './Header'
 import Footer from './Footer'
 import CranePullController from './CranePullController'
 import CartDrawer from './CartDrawer'
+import ProfileDrawer from './ProfileDrawer'
 import { CONTACT } from '../lib/data'
 
 /** Scroll to top on navigation, or to a #hash target if present. */
@@ -27,6 +28,7 @@ function ScrollManager() {
 export default function Layout() {
   const { pathname } = useLocation()
   const [visible, setVisible] = useState(true)
+  const [profileOpen, setProfileOpen] = useState(false)
   const lastY = useRef(0)
 
   useEffect(() => {
@@ -52,9 +54,10 @@ export default function Layout() {
         Skip to content
       </a>
       <ScrollManager />
-      <Header />
+      <Header onProfileClick={() => setProfileOpen(true)} />
       <CranePullController />
       <CartDrawer />
+      <ProfileDrawer isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
 
       <main id="main-content" className="flex-1 overflow-hidden">
         <motion.div

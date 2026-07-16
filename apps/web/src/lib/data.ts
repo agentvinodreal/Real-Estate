@@ -1,11 +1,11 @@
 // Dummy content — swap for real listings/projects/photos later.
 
 export const CONTACT = {
-  phone: '+91 90000 00000',
-  whatsapp: '919000000000', // digits only for wa.me
-  email: 'hello@carryconstruction.com',
-  city: 'Pune, Maharashtra',
-  address: 'Carry Construction HQ, Kharadi Bypass, Kharadi, Pune 411014',
+  phone: '+91 870 036 5768',
+  whatsapp: '918700365768', // digits only for wa.me
+  email: 'murlimurliktr007@gmail.com',
+  city: 'Patna, Bihar',
+  address: 'Carry Construction HQ, Boring Road Chauraha, Boring Road, Patna 800001',
   rera: 'P52100012345',
   instagram: 'https://instagram.com/carryconstruction',
   facebook: 'https://facebook.com/carryconstruction',
@@ -29,8 +29,8 @@ export const LISTINGS: Listing[] = [
   {
     slug: 'skyline-heights-3bhk',
     title: 'Skyline Heights',
-    locality: 'Kharadi',
-    city: 'Pune',
+    locality: 'Boring Road',
+    city: 'Patna',
     type: 'Apartment',
     listing: 'Sale',
     bhk: 3,
@@ -41,8 +41,8 @@ export const LISTINGS: Listing[] = [
   {
     slug: 'the-orchard-villa',
     title: 'The Orchard Villa',
-    locality: 'Baner',
-    city: 'Pune',
+    locality: 'Danapur',
+    city: 'Patna',
     type: 'Villa',
     listing: 'Sale',
     bhk: 4,
@@ -53,8 +53,8 @@ export const LISTINGS: Listing[] = [
   {
     slug: 'green-meadows-plot',
     title: 'Green Meadows Plot',
-    locality: 'Wagholi',
-    city: 'Pune',
+    locality: 'Kankarbagh',
+    city: 'Patna',
     type: 'Plot',
     listing: 'Resale',
     bhk: null,
@@ -65,8 +65,8 @@ export const LISTINGS: Listing[] = [
   {
     slug: 'metro-square-2bhk',
     title: 'Metro Square',
-    locality: 'Hinjewadi',
-    city: 'Pune',
+    locality: 'Bailey Road',
+    city: 'Patna',
     type: 'Apartment',
     listing: 'Under Construction',
     bhk: 2,
@@ -77,8 +77,8 @@ export const LISTINGS: Listing[] = [
   {
     slug: 'riverside-resale-3bhk',
     title: 'Riverside Residency',
-    locality: 'Mundhwa',
-    city: 'Pune',
+    locality: 'Patliputra Colony',
+    city: 'Patna',
     type: 'Apartment',
     listing: 'Resale',
     bhk: 3,
@@ -89,8 +89,8 @@ export const LISTINGS: Listing[] = [
   {
     slug: 'commerce-hub-office',
     title: 'Commerce Hub',
-    locality: 'Viman Nagar',
-    city: 'Pune',
+    locality: 'Raja Bazar',
+    city: 'Patna',
     type: 'Commercial',
     listing: 'Sale',
     bhk: null,
@@ -141,19 +141,19 @@ export const TESTIMONIALS = [
     quote:
       'Carry Construction handled our villa from the first drawing to the final coat of paint. Zero surprises, delivered on time.',
     name: 'Rohan & Meera Kulkarni',
-    location: 'Baner, Pune',
+    location: 'Danapur, Patna',
   },
   {
     quote:
       'They found us a resale flat, negotiated well, and sorted every document. It felt genuinely transparent.',
     name: 'Aditya Sharma',
-    location: 'Kharadi, Pune',
+    location: 'Boring Road, Patna',
   },
   {
     quote:
       'The site updates every week meant I always knew where my money was going. Rare in this industry.',
     name: 'Fatima Shaikh',
-    location: 'Wagholi, Pune',
+    location: 'Kankarbagh, Patna',
   },
 ]
 

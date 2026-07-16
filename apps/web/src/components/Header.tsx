@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
-import { Sun, Moon, ShoppingCart, X } from 'lucide-react'
+import { Sun, Moon, ShoppingCart, X, User } from 'lucide-react'
 import { CONTACT } from '../lib/data'
 import { useCart } from '../context/CartContext'
 import { motion, AnimatePresence } from 'motion/react'
 
 const NAV: { label: string; to: string }[] = [
-  { label: 'Buy', to: '/properties' },
+  // { label: 'Buy', to: '/properties' },
   { label: 'Construction', to: '/construction' },
   { label: 'Marketplace', to: '/marketplace' },
+  // { label: 'Home Designer', to: '/home-designer' },
   { label: 'About', to: '/about' },
   { label: 'Blog', to: '/blog' },
   { label: 'Contact', to: '/contact' },
 ]
 
-export default function Header() {
+export default function Header({ onProfileClick }: { onProfileClick: () => void }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { toggleCart, cartCount } = useCart()
@@ -113,7 +114,13 @@ export default function Header() {
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <UserButton />
+            <button
+              onClick={onProfileClick}
+              className="flex items-center gap-1.5 border border-bone/25 hover:border-ochre bg-transparent px-4 py-2 font-mono text-[0.7rem] uppercase tracking-[0.15em] text-bone/90 hover:text-ochre transition-colors cursor-pointer"
+            >
+              <User className="h-3.5 w-3.5" />
+              <span>Profile</span>
+            </button>
           </SignedIn>
           <a
             href={`tel:${CONTACT.phone.replace(/\s/g, '')}`}
@@ -225,7 +232,16 @@ export default function Header() {
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
-                    <UserButton />
+                    <button
+                      onClick={() => {
+                        setOpen(false)
+                        onProfileClick()
+                      }}
+                      className="flex items-center gap-1.5 border border-bone/20 hover:border-ochre bg-transparent px-3.5 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.15em] text-bone/90 hover:text-ochre transition-colors cursor-pointer w-full justify-center"
+                    >
+                      <User className="h-3.5 w-3.5" />
+                      <span>My Profile</span>
+                    </button>
                   </SignedIn>
                 </div>
 

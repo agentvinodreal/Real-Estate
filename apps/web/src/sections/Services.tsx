@@ -6,8 +6,8 @@ import Reveal from '../components/motion/Reveal'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
 const LINKS: Record<string, string> = {
-  Sale: '/properties',
-  Resale: '/properties?listingType=Resale',
+  Sale: '/contact',
+  Resale: '/contact',
   Build: '/construction',
 }
 

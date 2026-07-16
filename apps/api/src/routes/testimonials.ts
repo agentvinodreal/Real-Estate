@@ -169,7 +169,8 @@ export default async function testimonialRoutes(app: FastifyInstance) {
           where: { id },
         })
         return reply.code(200).send({ deleted: true })
-      } catch {
+      } catch (err) {
+        request.log.error(err, `Error deleting testimonial ${id}`)
         return reply.code(404).send({ error: 'Testimonial not found' })
       }
     },

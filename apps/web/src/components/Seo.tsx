@@ -3,7 +3,7 @@
 
 const SITE = 'https://www.carryconstruction.com'
 const DEFAULT_DESC =
-  'Carry Construction — property sale, resale, and turnkey construction services from design to execution in Pune.'
+  'Carry Construction — property sale, resale, and turnkey construction services from design to execution in Patna.'
 
 type SeoProps = {
   title?: string

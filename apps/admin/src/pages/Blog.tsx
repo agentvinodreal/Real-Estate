@@ -141,7 +141,7 @@ export default function Blog() {
                 className={field}
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="e.g. Turnkey Construction Costs in Pune (2026)"
+                placeholder="e.g. Turnkey Construction Costs in Patna (2026)"
               />
               <p className="mt-1 font-mono text-[0.6rem] text-concrete">
                 Slug: /blog/{slugify(form.title || 'untitled')}

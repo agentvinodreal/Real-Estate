@@ -14,13 +14,19 @@ export default async function equipmentRentalsRoutes(app: FastifyInstance) {
           type: 'object',
           properties: {
             category: { type: 'string' },
+            includeUnavailable: { type: 'boolean' },
           },
         },
       },
     },
     async (request) => {
-      const query = request.query as { category?: string }
-      const whereClause: any = { available: true }
+      const query = request.query as { category?: string; includeUnavailable?: boolean }
+      const whereClause: any = {}
+
+      const includeUnavailable = query.includeUnavailable === true || (query.includeUnavailable as any) === 'true'
+      if (!includeUnavailable) {
+        whereClause.available = true
+      }
 
       if (query.category) {
         whereClause.category = query.category
@@ -53,6 +59,7 @@ export default async function equipmentRentalsRoutes(app: FastifyInstance) {
             imageUrl: { type: 'string', nullable: true },
             description: { type: 'string', nullable: true },
             specs: { type: 'array', items: { type: 'string' } },
+            available: { type: 'boolean' },
           },
         },
       },

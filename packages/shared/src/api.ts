@@ -10,7 +10,31 @@ import type {
   EquipmentRental,
 } from './types'
 
-const BASE = '/api/v1'
+const BASE = ((import.meta as any).env?.VITE_API_URL || '') + '/api/v1'
+
+let getToken: (() => Promise<string | null>) | null = null
+export function setTokenGetter(fn: () => Promise<string | null>) {
+  getToken = fn
+}
+
+async function authFetch(path: string, init: RequestInit = {}) {
+  const token = getToken ? await getToken() : null
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token ?? ''}`,
+  }
+  if (init.body) {
+    headers['Content-Type'] = 'application/json'
+  }
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: {
+      ...headers,
+      ...init.headers,
+    },
+  })
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+  return res
+}
 
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`)
@@ -108,5 +132,10 @@ export const api = {
 
   getBlogPost(slug: string): Promise<BlogPost> {
     return getJson<BlogPost>(`/blog/${slug}`)
+  },
+
+  async listMyLeads(): Promise<{ data: any[] }> {
+    const res = await authFetch('/leads/my')
+    return res.json()
   },
 }

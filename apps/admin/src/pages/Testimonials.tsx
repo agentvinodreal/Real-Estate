@@ -25,7 +25,7 @@ export default function Testimonials() {
       await adminApi.deleteTestimonial(item.id)
       setItems((xs) => xs.filter((x) => x.id !== item.id))
     } catch (err) {
-      alert('Failed to delete testimonial')
+      alert(`Failed to delete testimonial: ${err instanceof Error ? err.message : String(err)}`)
       console.error(err)
     }
   }

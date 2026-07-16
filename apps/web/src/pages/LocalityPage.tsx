@@ -14,54 +14,54 @@ type LocalityConfig = {
 }
 
 const LOCALITIES: Record<string, LocalityConfig> = {
-  kharadi: {
-    name: 'Kharadi',
-    tagline: "Pune's IT Corridor",
-    description: "Kharadi has emerged as one of Pune's premier residential & commercial IT hubs. Home to EON Free Zone and World Trade Center, it offers excellent rental yields and premium gated communities.",
-    landmarks: ['EON IT Park', 'World Trade Center', 'Radisson Blu Hotel', 'Phoenix Marketcity Mall'],
-    avgPricePerSqft: '₹7,500 – ₹9,200',
+  'boring-road': {
+    name: 'Boring Road',
+    tagline: "Patna's Commercial Core",
+    description: "Boring Road has emerged as one of Patna's premier residential & commercial hubs. Home to key business complexes, coaching centers, and premium shopping, it offers excellent rental yields.",
+    landmarks: ['Boring Road Chauraha', 'Pantaloon Store', 'Harihar Chamber', 'Mona Cinema'],
+    avgPricePerSqft: '₹8,500 – ₹10,200',
   },
-  baner: {
-    name: 'Baner',
-    tagline: "Premium Residential & Café District",
-    description: "Baner is known for its sophisticated café culture, proximity to Hinjewadi Phase 1, and upscale residential high-rises. A favorite choice for IT professionals and high-income families.",
-    landmarks: ['Balewadi High Street', 'Jupiter Hospital', 'National Insurance Academy', 'Baner Hill Reserve'],
-    avgPricePerSqft: '₹8,500 – ₹10,500',
+  danapur: {
+    name: 'Danapur',
+    tagline: "Premium Residential Extension",
+    description: "Danapur is known for its quiet residential neighborhoods, proximity to the Ganges, and upscale high-rises. A favorite choice for professionals, army personnel, and high-income families.",
+    landmarks: ['Danapur Railway Station', 'Army Cantonment Area', 'Radiant International School', 'Danapur Ghat'],
+    avgPricePerSqft: '₹5,500 – ₹7,500',
   },
-  wakad: {
-    name: 'Wakad',
-    tagline: "Connectivity Center of West Pune",
-    description: "Wakad is a hyper-growth residential hub positioned right on the Pune-Bangalore highway. Offering vast options in multi-specialty developments, it boasts quick access to Hinjewadi IT park.",
-    landmarks: ['Phoenix Mall of the Millennium', 'D-Mart Wakad', 'Indira College', 'Bhujbal Chowk'],
-    avgPricePerSqft: '₹6,800 – ₹8,200',
+  'ashiana-nagar': {
+    name: 'Ashiana Nagar',
+    tagline: "Connectivity Center of West Patna",
+    description: "Ashiana Nagar is a hyper-growth residential hub positioned right off Bailey Road. Offering vast options in multi-specialty developments, it boasts quick access to top schools and markets.",
+    landmarks: ['Ashiana Mod', 'D-Mart Bailey Road', 'St. Karen\'s School', 'Passport Seva Kendra'],
+    avgPricePerSqft: '₹6,500 – ₹8,000',
   },
-  hinjewadi: {
-    name: 'Hinjewadi',
-    tagline: "Silicon Valley of Pune",
-    description: "Hinjewadi is the engine of Pune's IT growth, housing hundreds of global tech companies across Phase 1, 2, and 3. Gated layouts here offer high connectivity and solid appreciation.",
-    landmarks: ['Infosys Circle Phase 1', 'Wipro Phase 2', 'Grand Highstreet Mall', 'Hinjewadi Metro Line'],
-    avgPricePerSqft: '₹6,200 – ₹7,800',
+  'bailey-road': {
+    name: 'Bailey Road',
+    tagline: "Development Corridor of Patna",
+    description: "Bailey Road is the engine of Patna's growth, housing key administrative buildings, luxury hotels, and transit routes. Gated layouts here offer high connectivity and solid appreciation.",
+    landmarks: ['Patna Zoo', 'Saguna More', 'Paras HMRI Hospital', 'Patliputra Junction'],
+    avgPricePerSqft: '₹7,200 – ₹9,800',
   },
-  'viman-nagar': {
-    name: 'Viman Nagar',
-    tagline: "Central, Upscale & Connected",
-    description: "Viman Nagar stands as one of Pune's most affluent central neighborhoods, located directly next to the Pune Airport. Excellent infrastructure, luxury shopping, and top schools define this hub.",
-    landmarks: ['Pune International Airport', 'Symbiosis Campus', 'Phoenix Marketcity', 'Joggers Park'],
-    avgPricePerSqft: '₹10,000 – ₹13,000',
+  'raja-bazar': {
+    name: 'Raja Bazar',
+    tagline: "Central & Accessible Medical Hub",
+    description: "Raja Bazar stands as one of Patna's busiest central neighborhoods, located directly along Bailey Road. Excellent infrastructure, medical services, and retail define this hub.",
+    landmarks: ['IGIMS Hospital', 'Pillar 50 (Bailey Road)', 'Raja Bazar Flyover', 'Patna Market'],
+    avgPricePerSqft: '₹8,000 – ₹11,000',
   },
-  'koregaon-park': {
-    name: 'Koregaon Park',
-    tagline: "Pune's Most Prestigious Address",
-    description: "Koregaon Park is famous for its leafy green lanes, luxury bungalows, high-end fine dining, and historical significance. It remains the gold standard of real estate in Pune.",
-    landmarks: ['Osho Ashram', 'German Bakery', 'Jewel Square Mall', 'Mundwa Bridge Junction'],
-    avgPricePerSqft: '₹14,000 – ₹18,500',
+  'patliputra-colony': {
+    name: 'Patliputra Colony',
+    tagline: "Patna's Most Prestigious Address",
+    description: "Patliputra Colony is famous for its leafy green lanes, luxury bungalows, corporate offices, and peaceful residential layout. It remains the gold standard of real estate in Patna.",
+    landmarks: ['Patliputra Golambar', 'Kurji Holy Family Hospital', 'Pataliputra Sports Complex', 'Loyola High School'],
+    avgPricePerSqft: '₹11,000 – ₹15,500',
   },
-  hadapsar: {
-    name: 'Hadapsar',
-    tagline: "Magarpatta & Industrial Hub",
-    description: "Hadapsar hosts Magarpatta City and SP Infocity, making it a self-contained IT township hub. Gated townships here feature massive gardens, sports clubs, and integrated schools.",
-    landmarks: ['Magarpatta Cybercity', 'Amanora Mall', 'Seasons Mall', 'SP Infocity'],
-    avgPricePerSqft: '₹7,000 – ₹8,800',
+  kankarbagh: {
+    name: 'Kankarbagh',
+    tagline: "Massive Planned Residential Colony",
+    description: "Kankarbagh is one of the largest planned residential colonies in Asia. It features self-contained sectors with parks, sports stadiums, hospitals, and integrated markets.",
+    landmarks: ['Patliputra Sports Complex Stadium', 'Kankarbagh Auto Stand', 'Doctor\'s Colony', 'Tiwari Bechar Chowk'],
+    avgPricePerSqft: '₹6,000 – ₹8,200',
   },
 }
 
@@ -107,8 +107,8 @@ export default function LocalityPage() {
   return (
     <div>
       <Seo
-        title={`Properties for sale in ${config.name}, Pune — Guide & Listings`}
-        description={`Explore flats, apartments, villas, and commercial real estate in ${config.name}, Pune. Average rates: ${config.avgPricePerSqft}.`}
+        title={`Properties for sale in ${config.name}, Patna — Guide & Listings`}
+        description={`Explore flats, apartments, villas, and commercial real estate in ${config.name}, Patna. Average rates: ${config.avgPricePerSqft}.`}
         path={`/properties/area/${slug}`}
       />
 

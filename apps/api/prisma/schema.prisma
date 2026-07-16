@@ -267,3 +267,23 @@ model EquipmentRental {
   @@index([category])
   @@map("equipment_rentals")
 }
+
+// ── FloorPlanGeneration (from Real Estate) ─────────────────────────────────────
+model FloorPlanGeneration {
+  id           String   @id @default(cuid())
+  userId       String   // Clerk User ID (sub)
+  inputs       Json     // Store user inputs { bhk, areaSqft, style, facing, extras, floor }
+  promptUsed   String   @db.Text
+  imageUrl     String   // Cloudinary CDN URL
+  cloudinaryId String?  // Cloudinary public_id (for deletion)
+  aiModel      String   // e.g., "gemini" | "openai"
+  costUsd      Decimal? @db.Decimal(8, 6)
+  status       String   @default("completed") // "pending" | "completed" | "failed"
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("floor_plan_generations")
+}
+

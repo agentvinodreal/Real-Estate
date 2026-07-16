@@ -6,8 +6,8 @@ import Reveal from '../components/motion/Reveal'
 import { CONTACT } from '../lib/data'
 
 const MILESTONES = [
-  { year: '2012', title: 'Founded in Pune', body: 'Started as a boutique construction consultancy focused on quality structural engineering.' },
-  { year: '2015', title: 'First 100 Homes', body: 'Expanded to end-to-end turnkey residential builds across West Pune.' },
+  { year: '2012', title: 'Founded in Motihari', body: 'Started as a boutique construction consultancy focused on quality structural engineering.' },
+  { year: '2015', title: 'First 100 Homes', body: 'Expanded to end-to-end turnkey residential builds across Patna.' },
   { year: '2018', title: 'RERA Registration & Compliance', body: 'Enforced full RERA alignment on all managed properties for absolute client safety.' },
   { year: '2021', title: 'Commercial & Layouts Expansion', body: 'Launched commercial design services and custom layout plotting divisions.' },
   { year: '2024', title: '600+ Families Served', body: 'Crossed the milestone of 600+ families trusted us with their buy, resale, or construction needs.' },
@@ -32,8 +32,8 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About Us — 12+ Years building homes in Pune"
-        description="Learn more about Carry Construction. Turnkey residential home builders, structural design experts, and RERA-verified property experts in Pune."
+        title="About Us — 12+ Years Building Homes Across Bihar"
+        description="Learn about Carry Construction — Bihar's trusted turnkey residential builders, structural design experts, and RERA-registered property consultants serving Patna, Gaya, Muzaffarpur and all of Bihar."
         path="/about"
         jsonLd={{
           '@context': 'https://schema.org',
@@ -43,11 +43,11 @@ export default function About() {
           telephone: CONTACT.phone,
           address: {
             '@type': 'PostalAddress',
-            addressLocality: 'Pune',
-            addressRegion: 'Maharashtra',
+            addressLocality: 'Patna',
+            addressRegion: 'Bihar',
             addressCountry: 'IN'
           },
-          description: 'Property sale, resale, and turnkey construction services in Pune.'
+          description: 'Property sale, resale, and turnkey construction services in Patna.'
         }}
       />
 
@@ -59,7 +59,7 @@ export default function About() {
             Built on trust. <br />Delivered with <span className="text-ochre">craft.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-            For over a decade, Carry Construction has simplified home construction and real estate acquisition in Pune. We bridge the gap between design and delivery under one accountable roof.
+            For over a decade, Carry Construction has simplified home construction and real estate acquisition in Patna. We bridge the gap between design and delivery under one accountable roof.
           </p>
         </div>
       </section>
@@ -69,8 +69,9 @@ export default function About() {
         <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <Reveal>
             <Photo
+              src="/founder.png"
               seed="founder-portrait"
-              label="Carry Construction Team Leader"
+              label="Mr. Manohar Kumar - Carry Construction Founder"
               className="aspect-[4/5] w-full max-w-md border border-ink/10 shadow-sm"
             />
           </Reveal>
@@ -80,13 +81,13 @@ export default function About() {
               Meet our founder.
             </h2>
             <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-ochre-dark font-mono">
-              Mr. Carry Dev — Founder & Technical Director
+              Manohar Kumar — Founder & Technical Director
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              With a degree in structural engineering and over 15 years of construction experience, Mr. Carry Dev founded this firm with one goal: to replace client anxiety with accountability.
+              With over 15 years of construction experience, Manohar Kumar founded this firm with one goal: to replace client anxiety with accountability.
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              “In Pune, homebuilders often struggle with delays, structural compromises, and pricing surprises. We set out to change this by vertical integration — structural engineering, architectural layouting, and real estate advising all happening within the same room.”
+              “In Patna, homebuilders often struggle with delays, structural compromises, and pricing surprises. We set out to change this by vertical integration — structural engineering, architectural layouting, and real estate advising all happening within the same room.”
             </p>
           </Reveal>
         </div>

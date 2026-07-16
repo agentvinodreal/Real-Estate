@@ -287,7 +287,7 @@ export default function Marketplace() {
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                   <input
                     type="text"
-                    placeholder="Search servicemen (e.g. Plumber, Baner)..."
+                    placeholder="Search servicemen (e.g. Plumber, Kankarbagh)..."
                     value={providerSearch}
                     onChange={(e) => setProviderSearch(e.target.value)}
                     className="flex-1 border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none"

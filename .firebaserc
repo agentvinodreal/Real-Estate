@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "carry-construction-82df"
+  },
+  "targets": {
+    "carry-construction-82df": {
+      "hosting": {
+        "web": [
+          "carry-construction-82df"
+        ],
+        "admin": [
+          "carry-construction-82df-admin"
+        ]
+      }
+    }
+  }
+}

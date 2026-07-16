@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma.js'
-import { verifyAdmin } from '../lib/auth.js'
+import { verifyAdmin, verifyUser, clerkClient } from '../lib/auth.js'
 
 export default async function leadRoutes(app: FastifyInstance) {
   // ── Submit a lead (public) ───────────────────────────────────────
@@ -115,6 +115,56 @@ export default async function leadRoutes(app: FastifyInstance) {
       } catch {
         return reply.code(404).send({ error: 'Lead not found' })
       }
+    },
+  )
+
+  // ── User's own leads (authenticated) ───────────────────────────────
+  app.get(
+    '/leads/my',
+    {
+      preHandler: verifyUser,
+      schema: {
+        tags: ['Leads'],
+        summary: 'List my own enquiries / orders',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request) => {
+      const payload = (request as any).user
+      const user = await clerkClient.users.getUser(payload.sub)
+      
+      const emails = user.emailAddresses.map((e) => e.emailAddress).filter(Boolean) as string[]
+      const phones = user.phoneNumbers.map((p) => p.phoneNumber).filter(Boolean) as string[]
+
+      // Generate search conditions matching email or last 10 digits of phone number
+      const emailOrPhoneConditions: any[] = []
+      
+      if (emails.length > 0) {
+        emailOrPhoneConditions.push({ email: { in: emails } })
+      }
+      
+      for (const phone of phones) {
+        const cleanPhone = phone.replace(/[^0-9]/g, '')
+        if (cleanPhone.length >= 10) {
+          const suffix = cleanPhone.slice(-10)
+          emailOrPhoneConditions.push({ phone: { contains: suffix } })
+        } else {
+          emailOrPhoneConditions.push({ phone: { contains: cleanPhone } })
+        }
+      }
+
+      if (emailOrPhoneConditions.length === 0) {
+        return { data: [] }
+      }
+
+      const rows = await prisma.lead.findMany({
+        where: {
+          OR: emailOrPhoneConditions,
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+
+      return { data: rows }
     },
   )
 }

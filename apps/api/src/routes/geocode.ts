@@ -53,30 +53,30 @@ export default async function geocodeRoutes(app: FastifyInstance) {
         }
       }
 
-      // Fallback/Mock geocoding for development (covers standard locales in Pune)
+      // Fallback/Mock geocoding for development (covers standard locales in Patna)
       const queryLower = q.toLowerCase()
-      let lat = 18.5204
-      let lng = 73.8567
-      let formattedAddress = `${q}, Pune, Maharashtra, India`
+      let lat = 25.5941
+      let lng = 85.1376
+      let formattedAddress = `${q}, Patna, Bihar, India`
 
-      if (queryLower.includes('baner')) {
-        lat = 18.559
-        lng = 73.779
-      } else if (queryLower.includes('kharadi')) {
-        lat = 18.551
-        lng = 73.943
-      } else if (queryLower.includes('wagholi')) {
-        lat = 18.580
-        lng = 73.980
-      } else if (queryLower.includes('mundhwa')) {
-        lat = 18.536
-        lng = 73.916
-      } else if (queryLower.includes('viman nagar')) {
-        lat = 18.567
-        lng = 73.914
-      } else if (queryLower.includes('hinjewadi')) {
-        lat = 18.591
-        lng = 73.738
+      if (queryLower.includes('danapur')) {
+        lat = 25.6200
+        lng = 85.0400
+      } else if (queryLower.includes('boring road') || queryLower.includes('boringroad')) {
+        lat = 25.6178
+        lng = 85.1226
+      } else if (queryLower.includes('kankarbagh')) {
+        lat = 25.5900
+        lng = 85.1500
+      } else if (queryLower.includes('patliputra')) {
+        lat = 25.6320
+        lng = 85.1100
+      } else if (queryLower.includes('raja bazar') || queryLower.includes('rajabazar')) {
+        lat = 25.6080
+        lng = 85.0930
+      } else if (queryLower.includes('bailey road') || queryLower.includes('baileyroad')) {
+        lat = 25.6110
+        lng = 85.0800
       }
 
       return {

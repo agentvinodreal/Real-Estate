@@ -1,4 +1,4 @@
-import type { ConstructionProject, Paginated, Property, Material, BlogPost, Testimonial } from '@carry/shared'
+import type { ConstructionProject, Paginated, Property, Material, BlogPost, Testimonial, EquipmentRental, ServiceProvider } from '@carry/shared'
 
 const BASE = '/api/v1'
 
@@ -15,11 +15,16 @@ export function setTokenGetter(fn: () => Promise<string | null>) {
 
 async function authFetch(path: string, init: RequestInit = {}) {
   const token = getToken ? await getToken() : null
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token ?? ''}`,
+  }
+  if (init.body) {
+    headers['Content-Type'] = 'application/json'
+  }
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token ?? ''}`,
+      ...headers,
       ...init.headers,
     },
   })
@@ -38,6 +43,9 @@ export type Lead = {
   projectId: string | null
   message: string | null
   status: string
+  marketplaceType: string | null
+  itemId: string | null
+  itemQty: number | null
   createdAt: string
 }
 
@@ -101,8 +109,53 @@ export const adminApi = {
     return res.json()
   },
 
+  async updateMaterial(id: string, data: Record<string, unknown>): Promise<Material> {
+    const res = await authFetch(`/materials/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+    return res.json()
+  },
+
   async deleteMaterial(id: string): Promise<void> {
     await authFetch(`/materials/${id}`, { method: 'DELETE' })
+  },
+
+  // Equipment Rentals
+  async listEquipmentRentalsAdmin(): Promise<EquipmentRental[]> {
+    const res = await authFetch('/equipment-rentals?includeUnavailable=true')
+    return (await res.json()).data
+  },
+
+  async createEquipmentRental(data: Record<string, unknown>): Promise<EquipmentRental> {
+    const res = await authFetch('/equipment-rentals', { method: 'POST', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async updateEquipmentRental(id: string, data: Record<string, unknown>): Promise<EquipmentRental> {
+    const res = await authFetch(`/equipment-rentals/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async deleteEquipmentRental(id: string): Promise<void> {
+    await authFetch(`/equipment-rentals/${id}`, { method: 'DELETE' })
+  },
+
+  // Service Providers
+  async listServiceProvidersAdmin(): Promise<ServiceProvider[]> {
+    const res = await authFetch('/service-providers?includeAll=true')
+    return (await res.json()).data
+  },
+
+  async createServiceProvider(data: Record<string, unknown>): Promise<ServiceProvider> {
+    const res = await authFetch('/service-providers', { method: 'POST', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async updateServiceProvider(id: string, data: Record<string, unknown>): Promise<ServiceProvider> {
+    const res = await authFetch(`/service-providers/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+    return res.json()
+  },
+
+  async deleteServiceProvider(id: string): Promise<void> {
+    await authFetch(`/service-providers/${id}`, { method: 'DELETE' })
   },
 
   // Blogs

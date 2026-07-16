@@ -11,7 +11,8 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "seed": "tsx prisma/seed.ts",
-    "set-admin-role": "tsx scripts/set-admin-role.ts"
+    "set-admin-role": "tsx scripts/set-admin-role.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

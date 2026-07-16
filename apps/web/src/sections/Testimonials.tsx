@@ -251,7 +251,7 @@ export default function Testimonials() {
                       id="review-location"
                       type="text"
                       className={inputClass}
-                      placeholder="e.g. Pune"
+                      placeholder="e.g. Patna"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                     />

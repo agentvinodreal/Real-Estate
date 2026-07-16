@@ -110,8 +110,8 @@ export default function Properties() {
   return (
     <div>
       <Seo
-        title="Properties for sale & resale in Pune"
-        description="Browse RERA-verified apartments, villas, plots, and commercial properties for sale and resale across Pune."
+        title="Properties for Sale & Resale in Patna, Bihar"
+        description="Browse RERA-verified apartments, villas, plots, and commercial properties for sale and resale across Patna and major cities in Bihar. New and ready-to-move options available."
         path="/properties"
       />
       {/* Page header */}
@@ -122,7 +122,7 @@ export default function Properties() {
             Find your next address.
           </h1>
           <p className="mt-3 max-w-xl text-ink-soft">
-            Sale, resale, and under-construction homes across {items[0]?.city ?? 'Pune'} — every listing RERA-verified.
+            Sale, resale, and under-construction homes across {items[0]?.city ?? 'Patna'} — every listing RERA-verified.
           </p>
         </div>
       </div>

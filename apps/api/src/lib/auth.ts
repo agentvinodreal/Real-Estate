@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify'
 import { createClerkClient, verifyToken } from '@clerk/backend'
 
 const secretKey = process.env.CLERK_SECRET_KEY ?? ''
-const clerkClient = createClerkClient({ secretKey })
+export const clerkClient = createClerkClient({ secretKey })
 
 /**
  * Admin guard for write routes. Verifies a Clerk session token (sent as
@@ -37,3 +37,24 @@ export async function verifyAdmin(request: FastifyRequest, reply: FastifyReply) 
     return reply.code(401).send({ error: 'Unauthorized' })
   }
 }
+
+/**
+ * User guard for standard authenticated routes. Verifies a Clerk session token
+ * and attaches the decoded token payload to request.user.
+ */
+export async function verifyUser(request: FastifyRequest, reply: FastifyReply) {
+  const header = request.headers.authorization ?? ''
+  const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+
+  if (!token || !secretKey) {
+    return reply.code(401).send({ error: 'Unauthorized' })
+  }
+
+  try {
+    const payload = await verifyToken(token, { secretKey })
+    ;(request as any).user = payload
+  } catch {
+    return reply.code(401).send({ error: 'Unauthorized' })
+  }
+}
+

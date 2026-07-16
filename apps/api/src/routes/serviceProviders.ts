@@ -16,13 +16,19 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
             role: { type: 'string' },
             city: { type: 'string' },
             q: { type: 'string' },
+            includeAll: { type: 'boolean' },
           },
         },
       },
     },
     async (request) => {
-      const query = request.query as { role?: string; city?: string; q?: string }
-      const whereClause: any = { reviewStatus: 'approved' }
+      const query = request.query as { role?: string; city?: string; q?: string; includeAll?: boolean }
+      const whereClause: any = {}
+
+      const includeAll = query.includeAll === true || (query.includeAll as any) === 'true'
+      if (!includeAll) {
+        whereClause.reviewStatus = 'approved'
+      }
 
       if (query.role) {
         whereClause.role = query.role
@@ -67,6 +73,7 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
             specialties: { type: 'array', items: { type: 'string' } },
             minimumRate: { type: 'integer', nullable: true },
             rateUnit: { type: 'string', nullable: true },
+            reviewStatus: { type: 'string' },
           },
         },
       },
@@ -110,6 +117,7 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
             specialties: { type: 'array', items: { type: 'string' } },
             minimumRate: { type: 'integer', nullable: true },
             rateUnit: { type: 'string', nullable: true },
+            reviewStatus: { type: 'string' },
           },
         },
       },

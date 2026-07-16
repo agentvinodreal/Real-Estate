@@ -2,81 +2,105 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.carryconstruction.com/</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.carryconstruction.com/properties</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.carryconstruction.com/construction</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.carryconstruction.com/marketplace</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.carryconstruction.com/about</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.carryconstruction.com/blog</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.carryconstruction.com/contact</loc>
-    <lastmod>2026-07-13</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <!-- Locality pages -->
+  <!-- Locality pages: Bihar -->
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/kharadi</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/boring-road</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/baner</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/kankarbagh</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/wakad</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/rajendra-nagar</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/hinjewadi</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/bailey-road</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/viman-nagar</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/patliputra-colony</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/koregaon-park</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/danapur</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.carryconstruction.com/properties/area/hadapsar</loc>
-    <lastmod>2026-07-13</lastmod>
+    <loc>https://www.carryconstruction.com/properties/area/ashiana-nagar</loc>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.carryconstruction.com/properties/area/raja-bazar</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.carryconstruction.com/properties/area/gaya</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.carryconstruction.com/properties/area/muzaffarpur</loc>
+    <lastmod>2026-07-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
   </url>
 </urlset>

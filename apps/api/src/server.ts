@@ -6,6 +6,7 @@ import swaggerUi from '@fastify/swagger-ui'
 import fastifyStatic from '@fastify/static'
 import { fileURLToPath } from 'url'
 import path from 'path'
+import fs from 'fs'
 
 import healthRoutes from './routes/health.js'
 import propertyRoutes from './routes/properties.js'
@@ -18,6 +19,7 @@ import blogRoutes from './routes/blog.js'
 import geocodeRoutes from './routes/geocode.js'
 import serviceProvidersRoutes from './routes/serviceProviders.js'
 import equipmentRentalsRoutes from './routes/equipmentRentals.js'
+import homeDesignerRoutes from './routes/homeDesigner.js'
 
 const PORT = Number(process.env.PORT ?? 4000)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -25,9 +27,9 @@ const WEB_DIST = path.resolve(__dirname, '../../web/dist')
 const ADMIN_DIST = path.resolve(__dirname, '../../admin/dist')
 const API_PREFIX = '/api/v1'
 
-async function main() {
-  const app = Fastify({ logger: true })
+const app = Fastify({ logger: true })
 
+async function init() {
   await app.register(cors, { origin: true })
 
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' })
@@ -53,6 +55,7 @@ async function main() {
         { name: 'Testimonials' },
         { name: 'Blog' },
         { name: 'System' },
+        { name: 'Home Designer' },
       ],
     },
   })
@@ -75,38 +78,54 @@ async function main() {
     await api.register(geocodeRoutes)
     await api.register(serviceProvidersRoutes)
     await api.register(equipmentRentalsRoutes)
+    await api.register(homeDesignerRoutes)
   }, { prefix: API_PREFIX })
 
   // ── Serve built web app (SPA fallback) ───────────────────────
-  await app.register(fastifyStatic, {
-    root: WEB_DIST,
-    prefix: '/',
-  })
+  const serveStatic = fs.existsSync(WEB_DIST) && fs.existsSync(ADMIN_DIST)
+  if (serveStatic) {
+    await app.register(fastifyStatic, {
+      root: WEB_DIST,
+      prefix: '/',
+    })
 
-  // ── Serve built admin app at /admin ───────────────────────
-  await app.register(fastifyStatic, {
-    root: ADMIN_DIST,
-    prefix: '/admin/',
-    decorateReply: false,
-  })
+    // ── Serve built admin app at /admin ───────────────────────
+    await app.register(fastifyStatic, {
+      root: ADMIN_DIST,
+      prefix: '/admin/',
+      decorateReply: false,
+    })
 
-  // SPA fallback — /admin/* → admin index.html, everything else → web index.html
-  app.setNotFoundHandler((req, reply) => {
-    if (req.url.startsWith('/admin')) {
-      reply.sendFile('index.html', ADMIN_DIST)
-    } else {
-      reply.sendFile('index.html', WEB_DIST)
-    }
-  })
+    // SPA fallback — /admin/* → admin index.html, everything else → web index.html
+    app.setNotFoundHandler((req, reply) => {
+      if (req.url.startsWith('/admin')) {
+        reply.sendFile('index.html', ADMIN_DIST)
+      } else {
+        reply.sendFile('index.html', WEB_DIST)
+      }
+    })
+  }
 
   await app.ready()
-
-  await app.listen({ port: PORT, host: '0.0.0.0' })
-  app.log.info(`Swagger UI → http://localhost:${PORT}/api/docs`)
-  app.log.info(`Web app    → http://localhost:${PORT}/`)
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+const initPromise = init()
+
+if (!process.env.VERCEL) {
+  initPromise
+    .then(async () => {
+      await app.listen({ port: PORT, host: '0.0.0.0' })
+      app.log.info(`Swagger UI → http://localhost:${PORT}/api/docs`)
+      app.log.info(`Web app    → http://localhost:${PORT}/`)
+    })
+    .catch((err) => {
+      console.error(err)
+      process.exit(1)
+    })
+}
+
+export default async function handler(req: any, res: any) {
+  await initPromise
+  app.server.emit('request', req, res)
+}
+

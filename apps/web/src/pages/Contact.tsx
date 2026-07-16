@@ -8,7 +8,7 @@ export default function Contact() {
     <div>
       <Seo
         title="Contact Us — Carry Construction Office & Enquiries"
-        description="Get in touch with Carry Construction in Pune. Contact us for property sale, resale, or custom design-and-build turnkey quotes."
+        description="Get in touch with Carry Construction in Bihar. Contact us for property sale, resale, or custom design-and-build turnkey quotes."
         path="/contact"
       />
 
@@ -20,7 +20,7 @@ export default function Contact() {
             Let's talk about your project.
           </h1>
           <p className="mt-3 max-w-xl text-ink-soft">
-            Whether you want to buy a home, list your resale property, or get an estimate for end-to-end turnkey construction in Pune — we are here to help.
+            Whether you want to buy a home, list your resale property, or get an estimate for end-to-end turnkey construction in Patna — we are here to help.
           </p>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function Contact() {
               <div>
                 <h3 className="font-mono text-[0.6rem] uppercase tracking-wider text-concrete">Office Address</h3>
                 <p className="mt-1 text-sm text-ink-soft leading-relaxed">
-                  Carry Construction HQ, 3rd Floor, Landmark Plaza, Kharadi Bypass, Kharadi, Pune, Maharashtra 411014
+                  Carry Construction HQ, New Market Katihar ,Bihar ,854105
                 </p>
               </div>
             </div>
@@ -103,7 +103,7 @@ export default function Contact() {
             {/* Google Map Iframe */}
             <div className="mt-8 relative overflow-hidden border border-ink/10 aspect-[4/3] sm:aspect-[16/8] w-full">
               <iframe
-                src="https://maps.google.com/maps?q=Kharadi%20IT%20Park,%20Pune&z=14&output=embed"
+                src="https://maps.google.com/maps?q=Boring%20Road,%20Patna&z=14&output=embed"
                 className="w-full h-full border-none"
                 allowFullScreen
                 loading="lazy"

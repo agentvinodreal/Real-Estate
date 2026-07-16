@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { adminApi, type Lead } from '../lib/adminApi'
+import { useOutletContext } from 'react-router-dom'
+import type { Lead } from '../lib/adminApi'
 
 const STATUS_ORDER = ['new', 'contacted', 'visit', 'closed']
 const COLUMNS = [
@@ -9,19 +9,20 @@ const COLUMNS = [
   { id: 'closed', title: 'Closed', color: 'border-concrete bg-concrete/5' },
 ]
 
-export default function Leads() {
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [loading, setLoading] = useState(true)
+type OutletContext = {
+  leads: Lead[]
+  loading: boolean
+  changeLeadStatus: (id: string, status: string) => Promise<void>
+  loadLeads: () => Promise<void>
+}
 
-  function load() {
-    setLoading(true)
-    adminApi.listLeads().then(setLeads).finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+export default function Leads() {
+  const { leads, loading, changeLeadStatus } = useOutletContext<OutletContext>()
+  const isOrder = (l: Lead) => !!l.marketplaceType || l.sourcePage === '/marketplace-cart' || l.sourcePage?.startsWith('/marketplace')
+  const filteredLeads = leads.filter((l) => !isOrder(l))
 
   async function change(id: string, status: string) {
-    await adminApi.setLeadStatus(id, status)
-    setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, status } : l)))
+    await changeLeadStatus(id, status)
   }
 
   async function moveLead(id: string, currentStatus: string, direction: number) {
@@ -55,11 +56,11 @@ export default function Leads() {
         <div>
           <h1 className="font-display text-3xl font-semibold text-ink">Lead Pipeline</h1>
           <p className="mt-1 text-sm text-concrete">
-            {leads.length} total enquiries · Manage customer status and visit schedules
+            {filteredLeads.length} total enquiries · Manage customer status and visit schedules
           </p>
         </div>
         <button
-          onClick={() => exportCSV(leads)}
+          onClick={() => exportCSV(filteredLeads)}
           className="border border-ink/20 bg-bone px-4 py-2 font-mono text-xs uppercase tracking-wider text-ink hover:border-ochre hover:text-ochre transition-colors cursor-pointer"
         >
           Export CSV
@@ -70,14 +71,14 @@ export default function Leads() {
         <div className="flex h-48 items-center justify-center">
           <p className="font-mono text-sm text-concrete animate-pulse">Loading Pipeline…</p>
         </div>
-      ) : leads.length === 0 ? (
+      ) : filteredLeads.length === 0 ? (
         <p className="border border-dashed border-ink/20 p-10 text-center text-ink-soft bg-bone-dim/30">
           No leads received yet.
         </p>
       ) : (
         <div className="grid gap-6 md:grid-cols-4 align-top">
           {COLUMNS.map((col) => {
-            const list = leads.filter((l) => l.status === col.id)
+            const list = filteredLeads.filter((l) => l.status === col.id)
             return (
               <div key={col.id} className="flex flex-col border border-ink/10 bg-bone-dim/10">
                 {/* Column Header */}

@@ -34,7 +34,7 @@ export default function Photo({ seed, label, className = '', w = 800, h = 600, r
     return <Placeholder label={label ?? seed} className={className} />
   }
 
-  const isUrl = src && (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:'))
+  const isUrl = src && (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:') || src.startsWith('/'))
   const resolvedSrc = src ? (isUrl ? src : getCloudinaryUrl(src, w)) : dummyPhoto(seed, w, h)
 
   return (

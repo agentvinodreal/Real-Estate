@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react'
 import Seo from '../components/Seo'
 import Photo from '../components/Photo'
-import ConstructionCard from '../components/ConstructionCard'
+// import ConstructionCard from '../components/ConstructionCard'
 import InquiryForm from '../components/InquiryForm'
 import Process from '../sections/Process'
-import { api, type ConstructionProject, type Material } from '@carry/shared'
+import { api, type Material } from '@carry/shared'
 import { PILLARS, PACKAGES } from '../lib/data'
 
 export default function Construction() {
-  const [projects, setProjects] = useState<ConstructionProject[]>([])
-  const [loading, setLoading] = useState(true)
+  // const [projects, setProjects] = useState<ConstructionProject[]>([])
+  // const [loading, setLoading] = useState(true)
   const [materials, setMaterials] = useState<Material[]>([])
   const [loadingMaterials, setLoadingMaterials] = useState(true)
 
   useEffect(() => {
+    /*
     api
       .listConstruction()
       .then((res) => setProjects(res.data))
       .catch(() => setProjects([]))
       .finally(() => setLoading(false))
+    */
 
     api
       .listMaterials()
@@ -30,8 +32,8 @@ export default function Construction() {
   return (
     <div>
       <Seo
-        title="Construction services — design to execution"
-        description="Turnkey home construction in Pune: architecture, structure, interiors, and project management under one accountable team."
+        title="Turnkey Construction Services in Bihar — Design to Handover"
+        description="End-to-end turnkey home construction across Bihar — architecture, structural engineering, interiors, and project management under one accountable team. Serving Patna, Gaya, Muzaffarpur, and beyond."
         path="/construction"
       />
       {/* Hero */}
@@ -58,6 +60,7 @@ export default function Construction() {
           </div>
           <div className="relative overflow-hidden aspect-[4/3] w-full lg:aspect-auto">
             <Photo
+              src="/scaffolding.png"
               seed="construction-hero"
               label="Carry Construction Featured Build"
               className="h-full w-full"
@@ -65,7 +68,7 @@ export default function Construction() {
             {/* Floating spec card */}
             <div className="absolute -bottom-5 -left-5 hidden bg-ink border border-bone/10 px-6 py-5 text-bone sm:block z-10">
               <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ochre">Featured Build</div>
-              <div className="mt-1 font-display text-xl font-semibold text-bone">Modern Villa, Baner</div>
+              <div className="mt-1 font-display text-xl font-semibold text-bone">Modern Villa, Danapur</div>
               <div className="mt-1 font-mono text-xs text-bone/60">4 BHK · Design & Build complete</div>
             </div>
           </div>
@@ -130,7 +133,7 @@ export default function Construction() {
         </div>
       </section>
 
-      {/* Projects */}
+      {/* Projects
       <section id="projects" className="border-t border-ink/10 bg-bone-dim">
         <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
           <span className="kicker">Recent work</span>
@@ -148,6 +151,7 @@ export default function Construction() {
           )}
         </div>
       </section>
+      */}
 
       {/* Materials Showcase */}
       {!loadingMaterials && materials.length > 0 && (
