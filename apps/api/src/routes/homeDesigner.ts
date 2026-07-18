@@ -132,6 +132,32 @@ export default async function homeDesignerRoutes(app: FastifyInstance) {
               type: 'string', 
               enum: ['ground', 'first', 'second', 'third', 'penthouse'] 
             },
+            layout: {
+              type: 'object',
+              properties: {
+                plotWidthFt: { type: 'number' },
+                plotHeightFt: { type: 'number' },
+                rooms: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      label: { type: 'string' },
+                      category: { type: 'string' },
+                      x: { type: 'number' },
+                      y: { type: 'number' },
+                      width: { type: 'number' },
+                      height: { type: 'number' },
+                      areaSqft: { type: 'number' },
+                      zone: { type: 'string' },
+                      zoneLabel: { type: 'string' },
+                    }
+                  }
+                }
+              },
+              additionalProperties: true,
+            },
           },
         },
       },

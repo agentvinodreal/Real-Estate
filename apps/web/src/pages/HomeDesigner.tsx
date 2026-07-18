@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth, SignInButton } from '@clerk/clerk-react'
 import { motion } from 'motion/react'
 import Seo from '../components/Seo'
 import FloorPlan2D from '../components/home-designer/FloorPlan2D'
+import { computeFloorPlanLayout } from '../lib/floorPlanLayout'
 import {
   Sparkles, 
   Trash2, 
@@ -14,7 +15,11 @@ import {
   AlertTriangle,
   History,
   Lock,
-  ArrowRight
+  ArrowRight,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Move
 } from 'lucide-react'
 
 interface Plan {
@@ -26,6 +31,22 @@ interface Plan {
     facing: string;
     extras: string[];
     floor: string;
+    layout?: {
+      plotWidthFt: number;
+      plotHeightFt: number;
+      rooms: Array<{
+        id: string;
+        label: string;
+        category: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        areaSqft: number;
+        zone?: string;
+        zoneLabel?: string;
+      }>;
+    };
   };
   imageUrl: string;
   status: string;
@@ -37,6 +58,120 @@ interface Quota {
   limit: number;
   remaining: number;
   resetsAt: string;
+}
+
+/* ── Interactive Pan / Zoom Viewer for the 3D render ─────────────── */
+function PanZoomImage({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
+  const [scale, setScale] = useState(1)
+  const [pos, setPos] = useState({ x: 0, y: 0 })
+  const [dragging, setDragging] = useState(false)
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
+
+  const clamp = (s: number) => Math.min(4, Math.max(1, Math.round(s * 100) / 100))
+
+  const zoomBy = (delta: number) =>
+    setScale((s) => {
+      const next = clamp(s + delta)
+      if (next === 1) setPos({ x: 0, y: 0 })
+      return next
+    })
+
+  const reset = () => {
+    setScale(1)
+    setPos({ x: 0, y: 0 })
+  }
+
+  const onWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    zoomBy(e.deltaY < 0 ? 0.25 : -0.25)
+  }
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (scale <= 1) return
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y }
+    setDragging(true)
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current) return
+    setPos({
+      x: dragRef.current.origX + (e.clientX - dragRef.current.startX),
+      y: dragRef.current.origY + (e.clientY - dragRef.current.startY),
+    })
+  }
+
+  const onPointerUp = () => {
+    dragRef.current = null
+    setDragging(false)
+  }
+
+  return (
+    <div className={`relative w-full h-full ${className}`}>
+      <div
+        className="relative w-full h-full overflow-hidden bg-bone-dark/20 border border-ink/10 select-none rounded-sm"
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+        style={{ cursor: scale > 1 ? (dragging ? 'grabbing' : 'grab') : 'default', touchAction: 'none' }}
+      >
+        <img
+          src={src}
+          alt={alt}
+          draggable={false}
+          className="absolute inset-0 m-auto max-h-full max-w-full object-contain"
+          style={{
+            transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
+            transition: dragging ? 'none' : 'transform 0.15s ease-out',
+          }}
+        />
+
+        {scale === 1 && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-ink/70 text-bone px-2 py-1 rounded-full text-[0.58rem] font-mono uppercase tracking-wide pointer-events-none">
+            <Move className="h-3 w-3" />
+            Scroll to zoom · drag to move
+          </div>
+        )}
+      </div>
+
+      {/* Zoom controls */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-ink/85 backdrop-blur-sm rounded-full px-1 py-1 shadow-lg">
+        <button
+          type="button"
+          onClick={() => zoomBy(-0.5)}
+          disabled={scale <= 1}
+          className="p-1.5 text-bone/90 hover:text-bone disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label="Zoom out"
+        >
+          <ZoomOut className="h-3.5 w-3.5" />
+        </button>
+        <span className="text-bone/90 font-mono text-[0.6rem] tabular-nums w-8 text-center">
+          {Math.round(scale * 100)}%
+        </span>
+        <button
+          type="button"
+          onClick={() => zoomBy(0.5)}
+          disabled={scale >= 4}
+          className="p-1.5 text-bone/90 hover:text-bone disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label="Zoom in"
+        >
+          <ZoomIn className="h-3.5 w-3.5" />
+        </button>
+        <span className="w-px h-4 bg-bone/20 mx-0.5" />
+        <button
+          type="button"
+          onClick={reset}
+          disabled={scale === 1 && pos.x === 0 && pos.y === 0}
+          className="p-1.5 text-bone/90 hover:text-bone disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label="Reset view"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  )
 }
 
 const STYLES = [
@@ -214,6 +349,7 @@ export default function HomeDesigner() {
           facing,
           extras,
           floor,
+          layout: aiLayout || computeFloorPlanLayout({ bhk, areaSqft, style, facing, floor, extras })
         }),
       })
 
@@ -635,7 +771,7 @@ export default function HomeDesigner() {
                 </div>
 
                 {/* Preview Viewport */}
-                <div className="w-full h-[450px] flex items-center justify-center border border-ink/5 bg-sand/10 relative overflow-hidden">
+                <div className="w-full h-[520px] sm:h-[640px] lg:h-[720px] flex items-center justify-center border border-ink/5 bg-sand/10 relative overflow-hidden">
 
                   {activeTab === '2d' ? (
                     <div className="w-full h-full relative">
@@ -687,17 +823,43 @@ export default function HomeDesigner() {
                     </div>
                   ) : activePlan ? (
                     /* Display Generated AI Visualization */
-                    <div className="w-full h-full flex flex-col items-center justify-center p-2">
-                      <img
-                        src={activePlan.imageUrl}
-                        alt="AI 3D Visualization"
-                        className="max-h-[380px] w-auto object-contain border border-ink/10 shadow-sm"
-                      />
-                      <div className="mt-3 text-center">
+                    <div className="w-full h-full flex flex-col p-2 gap-2">
+                      <div className="flex-1 min-h-0">
+                        <PanZoomImage src={activePlan.imageUrl} alt="AI 3D Visualization" />
+                      </div>
+
+                      <div className="text-center w-full shrink-0">
                         <p className="font-mono text-[0.65rem] uppercase tracking-wider text-concrete">
                           Specs: {activePlan.inputs.bhk}BHK · {activePlan.inputs.areaSqft} sqft · {activePlan.inputs.style} · {activePlan.inputs.facing} Facing
                         </p>
                       </div>
+
+                      {activePlan.inputs.layout && activePlan.inputs.layout.rooms && (
+                        <div className="w-full border-t border-ink/10 pt-3 text-left shrink-0">
+                          <h4 className="font-display font-semibold text-[0.7rem] text-ink mb-2 uppercase tracking-[0.08em] flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-teal" />
+                            Room Legend · Names &amp; Sizes (L × B)
+                          </h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[130px] overflow-y-auto pr-1">
+                            {activePlan.inputs.layout.rooms.map((room: any, i: number) => (
+                              <div key={room.id} className="bg-bone-dark/40 border border-ink/5 p-2 rounded flex items-start gap-2">
+                                <span className="shrink-0 mt-0.5 h-4 w-4 flex items-center justify-center rounded-full bg-teal text-bone font-mono font-semibold text-[0.58rem]">
+                                  {i + 1}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <span className="font-display font-medium text-[0.68rem] text-ink block line-clamp-1">{room.label}</span>
+                                  <div className="flex items-center justify-between mt-1 text-[0.6rem] text-concrete font-mono">
+                                    <span>{room.width.toFixed(1)} × {room.height.toFixed(1)} ft</span>
+                                    {room.zone && (
+                                      <span className="bg-teal/10 text-teal px-1 rounded uppercase font-semibold text-[0.55rem]">{room.zone}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     /* Fallback / CTA */

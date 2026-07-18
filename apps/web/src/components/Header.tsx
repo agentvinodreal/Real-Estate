@@ -11,7 +11,7 @@ const NAV: { label: string; to: string }[] = [
   // { label: 'Buy', to: '/properties' },
   { label: 'Construction', to: '/construction' },
   { label: 'Marketplace', to: '/marketplace' },
-  // { label: 'Home Designer', to: '/home-designer' },
+  { label: 'Home Designer', to: '/home-designer' },
   { label: 'About', to: '/about' },
   { label: 'Blog', to: '/blog' },
   { label: 'Contact', to: '/contact' },

@@ -1,4 +1,6 @@
 import type { FloorPlanInputs } from '../services/promptBuilder.js'
+import { generateText } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
 
 export interface RoomRect {
   id: string
@@ -80,40 +82,67 @@ Layout guidelines:
 5. Modify the room layout, dimensions, or relative positioning based on the User Special Requirements (e.g., if they ask for a "massive master bedroom" or "open kitchen next to living room", adjust the sizes/layout accordingly).
 6. Return ONLY the raw JSON object. Do not wrap it in markdown code blocks (\`\`\`json) or include any surrounding conversational text.`
 
+  const gatewayKey = process.env.AI_GATEWAY_API_KEY
+  const gatewayUrl = process.env.AI_GATEWAY_URL
   const openrouterKey = process.env.OPENROUTER_API_KEY
   const geminiKey = process.env.GEMINI_API_KEY
   const openaiKey = process.env.OPENAI_API_KEY
 
-  if (openrouterKey) {
+  // 1. Try Vercel AI Gateway (Recommended for Dev/Test)
+  if (gatewayKey && gatewayUrl) {
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openrouterKey}`,
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [{ role: 'user', content: prompt }],
-          response_format: { type: 'json_object' },
-        }),
+      console.log('Generating 2D layout via Vercel AI Gateway...')
+      const gatewayOpenAI = createOpenAI({
+        apiKey: gatewayKey,
+        baseURL: gatewayUrl,
+      })
+      const modelName = process.env.AI_GATEWAY_TEXT_MODEL || 'google/gemini-2.5-flash'
+
+      const { text } = await generateText({
+        model: gatewayOpenAI(modelName),
+        prompt: prompt,
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        const text = data.choices?.[0]?.message?.content
-        if (text) {
-          const layout = JSON.parse(text)
-          if (layout.rooms && layout.rooms.length > 0) return layout
-        }
+      if (text) {
+        const layout = JSON.parse(text)
+        if (layout.rooms && layout.rooms.length > 0) return layout
       }
-    } catch (err) {
-      console.warn('Failed to generate 2D layout via OpenRouter, trying fallback:', err)
+    } catch (err: any) {
+      console.warn('Failed to generate 2D layout via Vercel AI Gateway:', err)
+      // Fall through
     }
   }
 
+  // 2. Try OpenRouter (Production / Fallback)
+  if (openrouterKey) {
+    try {
+      console.log('Generating 2D layout via OpenRouter...')
+      const model = process.env.OPENROUTER_TEXT_MODEL || 'google/gemini-2.5-flash'
+      
+      const openrouter = createOpenAI({
+        apiKey: openrouterKey,
+        baseURL: 'https://openrouter.ai/api/v1',
+      })
+
+      const { text } = await generateText({
+        model: openrouter(model),
+        prompt: prompt,
+      })
+
+      if (text) {
+        const layout = JSON.parse(text)
+        if (layout.rooms && layout.rooms.length > 0) return layout
+      }
+    } catch (err: any) {
+      console.warn('Failed to generate 2D layout via OpenRouter:', err)
+      // Fall through
+    }
+  }
+
+  // 3. Try Direct Gemini API
   if (geminiKey) {
     try {
+      console.log('Generating 2D layout via direct Gemini API...')
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
         {
@@ -131,47 +160,41 @@ Layout guidelines:
       )
 
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json() as any
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text
         if (text) {
           const layout = JSON.parse(text)
           if (layout.rooms && layout.rooms.length > 0) return layout
         }
       }
-    } catch (err) {
-      console.warn('Failed to generate 2D layout via Gemini API, trying fallback:', err)
+    } catch (err: any) {
+      console.warn('Failed to generate 2D layout via direct Gemini API:', err)
     }
   }
 
+  // 4. Try Direct OpenAI API
   if (openaiKey) {
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openaiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          response_format: { type: 'json_object' },
-        }),
+      console.log('Generating 2D layout via direct OpenAI API...')
+      const directOpenAI = createOpenAI({
+        apiKey: openaiKey,
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        const text = data.choices?.[0]?.message?.content
-        if (text) {
-          const layout = JSON.parse(text)
-          if (layout.rooms && layout.rooms.length > 0) return layout
-        }
+      const { text } = await generateText({
+        model: directOpenAI('gpt-4o-mini'),
+        prompt: prompt,
+      })
+
+      if (text) {
+        const layout = JSON.parse(text)
+        if (layout.rooms && layout.rooms.length > 0) return layout
       }
-    } catch (err) {
-      console.warn('Failed to generate 2D layout via OpenAI, falling back to mock:', err)
+    } catch (err: any) {
+      console.warn('Failed to generate 2D layout via direct OpenAI API:', err)
     }
   }
 
-  // Fallback / Mock Behavior
+  // Fallback / Mock Behavior if all providers failed or no keys are configured
   console.warn('Using mock AI layout generation fallback.')
   return generateMockCustomLayout(plotWidthFt, plotHeightFt, inputs, specialRequirements)
 }
@@ -182,12 +205,10 @@ function generateMockCustomLayout(
   inputs: FloorPlanInputs,
   reqs: string
 ): FloorPlanLayout {
-  // Let's create a simple tiled 2D layout mimicking the user inputs
   const rooms: RoomRect[] = []
   const halfW = w / 2
   const halfH = h / 2
 
-  // Simple quadrant tiling based on BHK
   if (inputs.bhk === 1) {
     rooms.push({
       id: 'living',

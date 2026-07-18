@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma.js'
 
-const DAILY_LIMIT = 3
+const DAILY_LIMIT = process.env.DAILY_LIMIT ? parseInt(process.env.DAILY_LIMIT, 10) : 100
 
 export interface RateLimitStatus {
   allowed: boolean;
