@@ -18,7 +18,19 @@ export default function useCanRender3D(): boolean {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
 
     function evaluate() {
-      setCanRender(widthQuery.matches && !motionQuery.matches && hasWebGL())
+      const isDesktop = widthQuery.matches
+      const isMotionTolerant = !motionQuery.matches
+      const supportsWebGL = hasWebGL()
+      const matches = isDesktop && isMotionTolerant && supportsWebGL
+      
+      console.log('🔍 3D Render Check:', {
+        canRender: matches,
+        isDesktop,
+        isMotionTolerant,
+        supportsWebGL
+      })
+
+      setCanRender(matches)
     }
 
     evaluate()

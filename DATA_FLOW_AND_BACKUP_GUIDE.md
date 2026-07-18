@@ -45,11 +45,14 @@ graph TD
 ## 🗄️ Database Configuration & Sync (Neon PostgreSQL)
 
 ### 1. Connection Parameters
-- The backend API connects to a Neon PostgreSQL instance via `DATABASE_URL` declared in [apps/api/.env](file:///Users/binova/Documents/Projects/Suru/Real-Estate/apps/api/.env).
-- **CRITICAL WARNING:** This database is **shared** with another external admin panel (`carry-admin-suryansh.web.app`). Under no circumstances should existing shared tables (`Agent`, `Labour`, `Shop`, `Property`, `ConstructionProject`) be altered, truncated, or dropped, as it will break the other live panel.
+- The backend API connects to a Neon PostgreSQL instance via `DATABASE_URL` declared in [apps/api/.env](file:///Users/yashswisingh/Documents/New project/Real-Estate/apps/api/.env).
+- **Environment Separation:**
+  * **Development (`carry_dev`):** Local development uses the `carry_dev` database (configured in `.env`). Database pushes (`npm run prisma:push`) and seeds (`npm run seed`) should only be executed against `carry_dev`.
+  * **Production (`neondb`):** The live deployed environment connects to the `neondb` database. A backup of the production configurations is stored locally in `.env.production` (which is git-ignored).
+- **CRITICAL WARNING:** The production database (`neondb`) is **shared** with another external admin panel (`carry-admin-suryansh.web.app`). Under no circumstances should existing shared tables on the production database (`Agent`, `Labour`, `Shop`, `Property`, `ConstructionProject`) be altered, truncated, or dropped, as it will break the other live panel.
 
 ### 2. Marketing Tables Synchronization
-- The following marketing-specific tables were created locally and synced safely using `npx prisma db push`:
+- The following marketing-specific tables were created locally and synced safely using `npx prisma db push` to `carry_dev` (development) and then to `neondb` (production):
   * `leads`
   * `testimonials`
   * `materials`
