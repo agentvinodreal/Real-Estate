@@ -1,6 +1,10 @@
 import type { ConstructionProject, Paginated, Property, Material, BlogPost, Testimonial, EquipmentRental, ServiceProvider } from '@carry/shared'
 
-const BASE = '/api/v1'
+// In dev, Vite proxies `/api` to the local Fastify server (vite.config.ts), so a
+// relative path works. In production this app is static-hosted on Firebase with
+// no proxy, so it must call the deployed API's own origin — same pattern as
+// packages/shared/src/api.ts.
+const BASE = ((import.meta as any).env?.VITE_API_URL || '') + '/api/v1'
 
 /**
  * `adminApi.*` is called from plain page components (not hooks), but needs a

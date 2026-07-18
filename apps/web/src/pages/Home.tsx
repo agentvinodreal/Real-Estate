@@ -1,7 +1,7 @@
 import Seo from '../components/Seo'
 import Hero from '../sections/Hero'
 import Services from '../sections/Services'
-// import FeaturedListings from '../sections/FeaturedListings'
+import FeaturedListings from '../sections/FeaturedListings'
 import Stats from '../sections/Stats'
 import Process from '../sections/Process'
 import Testimonials from '../sections/Testimonials'
@@ -14,7 +14,7 @@ export default function Home() {
       <Seo path="/" />
       <Hero />
       <Services />
-      {/* <FeaturedListings /> */}
+      <FeaturedListings />
       <Stats />
       <Process />
       <Testimonials />

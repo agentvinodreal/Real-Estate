@@ -1,174 +1,138 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react'
 import { useAuth, SignInButton } from '@clerk/clerk-react'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import Seo from '../components/Seo'
 import FloorPlan2D from '../components/home-designer/FloorPlan2D'
-import { computeFloorPlanLayout } from '../lib/floorPlanLayout'
+import { computeFloorPlanLayout, auditVastu } from '../lib/floorPlanLayout'
+// three.js is a heavy dependency — keep it out of the initial page bundle.
+const FloorPlan3D = lazy(() => import('../components/home-designer/FloorPlan3D'))
 import {
-  Sparkles, 
-  Trash2, 
-  Download, 
-  Loader2, 
-  Compass, 
-  Check, 
-  Home, 
-  AlertTriangle,
-  History,
+  Sparkles,
+  Loader2,
+  Compass,
+  Check,
+  Home,
   Lock,
   ArrowRight,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  Move
+  Ruler,
+  Building2,
+  PencilRuler,
 } from 'lucide-react'
 
-interface Plan {
-  id: string;
-  inputs: {
-    bhk: number;
-    areaSqft: number;
-    style: string;
-    facing: string;
-    extras: string[];
-    floor: string;
-    layout?: {
-      plotWidthFt: number;
-      plotHeightFt: number;
-      rooms: Array<{
-        id: string;
-        label: string;
-        category: string;
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        areaSqft: number;
-        zone?: string;
-        zoneLabel?: string;
-      }>;
-    };
-  };
-  imageUrl: string;
-  status: string;
-  createdAt: string;
-}
+/* ── Generation loaders ──────────────────────────────────────────────
+   Purely decorative: the underlying layout math is instant, but a bare
+   flash-to-content read as broken, so each tab gets its own themed
+   "drafting" animation timed to the artificial delay it sits behind. */
 
-interface Quota {
-  used: number;
-  limit: number;
-  remaining: number;
-  resetsAt: string;
-}
-
-/* ── Interactive Pan / Zoom Viewer for the 3D render ─────────────── */
-function PanZoomImage({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
-  const [scale, setScale] = useState(1)
-  const [pos, setPos] = useState({ x: 0, y: 0 })
-  const [dragging, setDragging] = useState(false)
-  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
-
-  const clamp = (s: number) => Math.min(4, Math.max(1, Math.round(s * 100) / 100))
-
-  const zoomBy = (delta: number) =>
-    setScale((s) => {
-      const next = clamp(s + delta)
-      if (next === 1) setPos({ x: 0, y: 0 })
-      return next
-    })
-
-  const reset = () => {
-    setScale(1)
-    setPos({ x: 0, y: 0 })
-  }
-
-  const onWheel = (e: React.WheelEvent) => {
-    e.preventDefault()
-    zoomBy(e.deltaY < 0 ? 0.25 : -0.25)
-  }
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (scale <= 1) return
-    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y }
-    setDragging(true)
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-  }
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current) return
-    setPos({
-      x: dragRef.current.origX + (e.clientX - dragRef.current.startX),
-      y: dragRef.current.origY + (e.clientY - dragRef.current.startY),
-    })
-  }
-
-  const onPointerUp = () => {
-    dragRef.current = null
-    setDragging(false)
-  }
-
+function BlueprintLoader({ durationMs }: { durationMs: number }) {
   return (
-    <div className={`relative w-full h-full ${className}`}>
-      <div
-        className="relative w-full h-full overflow-hidden bg-bone-dark/20 border border-ink/10 select-none rounded-sm"
-        onWheel={onWheel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-        style={{ cursor: scale > 1 ? (dragging ? 'grabbing' : 'grab') : 'default', touchAction: 'none' }}
-      >
-        <img
-          src={src}
-          alt={alt}
-          draggable={false}
-          className="absolute inset-0 m-auto max-h-full max-w-full object-contain"
-          style={{
-            transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-            transition: dragging ? 'none' : 'transform 0.15s ease-out',
-          }}
+    <div className="flex flex-col items-center justify-center gap-5 p-8">
+      <div className="relative h-28 w-36">
+        <svg viewBox="0 0 144 112" className="h-full w-full" fill="none">
+          <motion.rect
+            x={4}
+            y={4}
+            width={136}
+            height={104}
+            stroke="#1f6f66"
+            strokeWidth={1.5}
+            strokeDasharray="6 4"
+            initial={{ pathLength: 0, opacity: 0.3 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ duration: durationMs / 1000, ease: 'easeInOut' }}
+          />
+          {[28, 58, 88].map((x, i) => (
+            <motion.line
+              key={x}
+              x1={x}
+              y1={4}
+              x2={x}
+              y2={108}
+              stroke="#1f6f66"
+              strokeWidth={0.75}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.35 }}
+              transition={{ duration: 0.4, delay: 0.15 * i }}
+            />
+          ))}
+          <motion.line
+            x1={4}
+            y1={56}
+            x2={140}
+            y2={56}
+            stroke="#1f6f66"
+            strokeWidth={0.75}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.35 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          />
+        </svg>
+        {/* Scanning sweep, like a drafting pen tracing the plot */}
+        <motion.div
+          className="absolute left-0 right-0 h-6 bg-gradient-to-b from-transparent via-ochre/25 to-transparent"
+          initial={{ top: '-10%' }}
+          animate={{ top: '100%' }}
+          transition={{ duration: durationMs / 1000, repeat: Infinity, ease: 'linear' }}
         />
-
-        {scale === 1 && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-ink/70 text-bone px-2 py-1 rounded-full text-[0.58rem] font-mono uppercase tracking-wide pointer-events-none">
-            <Move className="h-3 w-3" />
-            Scroll to zoom · drag to move
-          </div>
-        )}
+        <PencilRuler className="absolute -bottom-2 -right-2 h-5 w-5 text-ochre" />
       </div>
 
-      {/* Zoom controls */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-ink/85 backdrop-blur-sm rounded-full px-1 py-1 shadow-lg">
-        <button
-          type="button"
-          onClick={() => zoomBy(-0.5)}
-          disabled={scale <= 1}
-          className="p-1.5 text-bone/90 hover:text-bone disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          aria-label="Zoom out"
+      <div className="w-40 space-y-2 text-center">
+        <p className="font-mono text-[0.65rem] uppercase tracking-wider text-ink">
+          Drafting Blueprint
+        </p>
+        <div className="h-0.5 w-full overflow-hidden rounded-full bg-ink/10">
+          <motion.div
+            className="h-full bg-teal"
+            initial={{ width: '0%' }}
+            animate={{ width: '100%' }}
+            transition={{ duration: durationMs / 1000, ease: 'easeInOut' }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ModelLoader({ durationMs }: { durationMs: number }) {
+  const floors = [0, 1, 2, 3]
+  const stagger = durationMs / 1000 / (floors.length + 1)
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-6 p-8">
+      <div className="relative flex h-28 w-28 items-end justify-center" style={{ perspective: 400 }}>
+        <motion.div
+          className="flex flex-col-reverse items-center gap-1"
+          animate={{ rotateY: 360 }}
+          transition={{ duration: durationMs / 1000, repeat: Infinity, ease: 'linear' }}
+          style={{ transformStyle: 'preserve-3d' }}
         >
-          <ZoomOut className="h-3.5 w-3.5" />
-        </button>
-        <span className="text-bone/90 font-mono text-[0.6rem] tabular-nums w-8 text-center">
-          {Math.round(scale * 100)}%
-        </span>
-        <button
-          type="button"
-          onClick={() => zoomBy(0.5)}
-          disabled={scale >= 4}
-          className="p-1.5 text-bone/90 hover:text-bone disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          aria-label="Zoom in"
-        >
-          <ZoomIn className="h-3.5 w-3.5" />
-        </button>
-        <span className="w-px h-4 bg-bone/20 mx-0.5" />
-        <button
-          type="button"
-          onClick={reset}
-          disabled={scale === 1 && pos.x === 0 && pos.y === 0}
-          className="p-1.5 text-bone/90 hover:text-bone disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          aria-label="Reset view"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-        </button>
+          {floors.map((f) => (
+            <motion.div
+              key={f}
+              className="h-4 w-16 border border-teal/60 bg-teal/15"
+              initial={{ scaleY: 0, opacity: 0 }}
+              animate={{ scaleY: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: f * stagger, ease: 'backOut' }}
+              style={{ transformOrigin: 'bottom' }}
+            />
+          ))}
+        </motion.div>
+        <Building2 className="absolute -right-3 -top-1 h-5 w-5 text-ochre" />
+      </div>
+
+      <div className="w-44 space-y-2 text-center">
+        <p className="font-mono text-[0.65rem] uppercase tracking-wider text-ink">
+          Constructing Model
+        </p>
+        <div className="h-0.5 w-full overflow-hidden rounded-full bg-ink/10">
+          <motion.div
+            className="h-full bg-ochre"
+            initial={{ width: '0%' }}
+            animate={{ width: '100%' }}
+            transition={{ duration: durationMs / 1000, ease: 'easeInOut' }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -176,10 +140,8 @@ function PanZoomImage({ src, alt, className = '' }: { src: string; alt: string; 
 
 const STYLES = [
   { value: 'modern', label: 'Modern Contemporary', desc: 'Clean lines, open concept' },
-  { value: 'traditional', label: 'Traditional Indian', desc: 'Separate formal spaces & kitchen' },
   { value: 'vastu', label: 'Vastu Compliant', desc: 'Optimized directional energies' },
   { value: 'minimalist', label: 'Minimalist', desc: 'Maximum simplicity, fewer walls' },
-  { value: 'open-plan', label: 'Open Plan', desc: 'Seamlessly connected spaces' },
 ]
 
 const FACINGS = [
@@ -204,10 +166,15 @@ const EXTRAS = [
   { value: 'store_room', label: 'Store Room' },
   { value: 'balcony', label: 'Attached Balcony' },
   { value: 'gym', label: 'Home Gym Space' },
+  { value: 'staircase', label: 'Internal Staircase' },
 ]
 
+const BLUEPRINT_DELAY_MS = 1500
+const MODEL_DELAY_MS = 4000
+const MODEL_GENERATION_LIMIT = 5
+
 export default function HomeDesigner() {
-  const { isLoaded, isSignedIn, getToken } = useAuth()
+  const { isLoaded, isSignedIn, userId } = useAuth()
 
   // Form State
   const [bhk, setBhk] = useState<number>(3)
@@ -217,217 +184,90 @@ export default function HomeDesigner() {
   const [floor, setFloor] = useState<string>('ground')
   const [extras, setExtras] = useState<string[]>([])
 
-  // Quota & Plans State
-  const [quota, setQuota] = useState<Quota | null>(null)
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [activePlan, setActivePlan] = useState<Plan | null>(null)
-
-  // UX State
-  const [isGenerating, setIsGenerating] = useState<boolean>(false)
-  const [genError, setGenError] = useState<string | null>(null)
-  const [loadingHistory, setLoadingHistory] = useState<boolean>(false)
-  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  // Studio State
   const [activeTab, setActiveTab] = useState<'2d' | '3d'>('2d')
+  const [isGenerating2D, setIsGenerating2D] = useState<boolean>(false)
+  const [isGenerating3D, setIsGenerating3D] = useState<boolean>(false)
+  const [ready2D, setReady2D] = useState<boolean>(false)
+  const [ready3D, setReady3D] = useState<boolean>(false)
+  const timer2DRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const timer3DRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Custom AI 2D Layout State
-  const [specialRequirements, setSpecialRequirements] = useState<string>('')
-  const [aiLayout, setAiLayout] = useState<any>(null)
-  const [isGeneratingLayout, setIsGeneratingLayout] = useState<boolean>(false)
+  // Caps how many 3D models a signed-in user can build, tracked per Clerk
+  // userId in localStorage — the model is free/local, this just guards
+  // against unbounded repeat clicks rather than metering a paid resource.
+  const [used3D, setUsed3D] = useState<number>(0)
+  const quota3DKey = userId ? `hd_3d_generations_${userId}` : null
 
-  // Reset custom AI layout when any core parameters change
   useEffect(() => {
-    setAiLayout(null)
-  }, [bhk, areaSqft, style, facing, floor, extras])
+    if (!quota3DKey) return
+    const stored = Number(localStorage.getItem(quota3DKey) ?? '0')
+    setUsed3D(Number.isFinite(stored) ? stored : 0)
+  }, [quota3DKey])
 
-  // Fetch quota & plans on load / auth state change
+  // The layout both the 2D blueprint and the 3D model are built from.
+  const activeLayout = useMemo(
+    () => computeFloorPlanLayout({ bhk, areaSqft, style, facing, floor, extras }),
+    [bhk, areaSqft, style, facing, floor, extras]
+  )
+
+  const vastuFindings = useMemo(
+    () => auditVastu(activeLayout, { bhk, areaSqft, style, facing, floor, extras }),
+    [activeLayout, bhk, areaSqft, style, facing, floor, extras]
+  )
+
+  // Any spec change invalidates whatever was already drafted/built —
+  // both previews go back behind their "Generate" gate.
   useEffect(() => {
-    if (isSignedIn) {
-      fetchQuota()
-      fetchPlans()
-    }
-  }, [isSignedIn])
+    if (timer2DRef.current) clearTimeout(timer2DRef.current)
+    if (timer3DRef.current) clearTimeout(timer3DRef.current)
+    setIsGenerating2D(false)
+    setIsGenerating3D(false)
+    setReady2D(false)
+    setReady3D(false)
+  }, [activeLayout])
 
-  const fetchQuota = async () => {
-    try {
-      const token = await getToken()
-      const res = await fetch('/api/v1/home-designer/quota', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setQuota(data)
-      }
-    } catch (err) {
-      console.error('Failed to fetch quota:', err)
+  useEffect(() => {
+    return () => {
+      if (timer2DRef.current) clearTimeout(timer2DRef.current)
+      if (timer3DRef.current) clearTimeout(timer3DRef.current)
     }
-  }
-
-  const fetchPlans = async () => {
-    setLoadingHistory(true)
-    try {
-      const token = await getToken()
-      const res = await fetch('/api/v1/home-designer/my-plans', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setPlans(data)
-        if (data.length > 0 && !activePlan) {
-          setActivePlan(data[0])
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch plans:', err)
-    } finally {
-      setLoadingHistory(false)
-    }
-  }
+  }, [])
 
   const handleExtraToggle = (value: string) => {
-    setExtras(prev => 
+    setExtras(prev =>
       prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
     )
   }
 
-  const handleGenerate2DLayout = async () => {
-    if (isGeneratingLayout) return
-    setIsGeneratingLayout(true)
-    setGenError(null)
-
-    try {
-      const token = await getToken()
-      const response = await fetch('/api/v1/home-designer/generate-2d', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          bhk,
-          areaSqft,
-          style,
-          facing,
-          extras,
-          floor,
-          specialRequirements,
-        }),
-      })
-
-      if (!response.ok) {
-        const errData = await response.json()
-        throw new Error(errData.error || 'Failed to generate custom AI layout')
-      }
-
-      const data = await response.json()
-      setAiLayout(data.layout)
-      fetchQuota()
-    } catch (err: any) {
-      setGenError(err.message || 'Failed to customize blueprint with AI. Please try again.')
-    } finally {
-      setIsGeneratingLayout(false)
-    }
+  const handleGenerate2D = () => {
+    if (isGenerating2D) return
+    setReady2D(false)
+    setIsGenerating2D(true)
+    timer2DRef.current = setTimeout(() => {
+      setIsGenerating2D(false)
+      setReady2D(true)
+    }, BLUEPRINT_DELAY_MS)
   }
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (isGenerating) return
-    setIsGenerating(true)
-    setGenError(null)
-
-    try {
-      const token = await getToken()
-      const response = await fetch('/api/v1/home-designer/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          bhk,
-          areaSqft,
-          style,
-          facing,
-          extras,
-          floor,
-          layout: aiLayout || computeFloorPlanLayout({ bhk, areaSqft, style, facing, floor, extras })
-        }),
-      })
-
-      if (!response.ok) {
-        const errData = await response.json()
-        throw new Error(errData.error || 'Failed to generate visualization')
-      }
-
-      const data = await response.json()
-      
-      // Build a local Plan object from success payload
-      const newPlan: Plan = {
-        id: data.generationId,
-        inputs: data.inputs,
-        imageUrl: data.imageUrl,
-        status: 'completed',
-        createdAt: new Date().toISOString(),
-      }
-
-      setPlans(prev => [newPlan, ...prev])
-      setActivePlan(newPlan)
-      setActiveTab('3d')
-      fetchQuota() // update remaining count
-    } catch (err: any) {
-      setGenError(err.message || 'Something went wrong. Please try again.')
-    } finally {
-      setIsGenerating(false)
+  const handleGenerate3D = () => {
+    if (isGenerating3D || used3D >= MODEL_GENERATION_LIMIT) return
+    setReady3D(false)
+    setIsGenerating3D(true)
+    if (quota3DKey) {
+      const next = used3D + 1
+      setUsed3D(next)
+      localStorage.setItem(quota3DKey, String(next))
     }
+    timer3DRef.current = setTimeout(() => {
+      setIsGenerating3D(false)
+      setReady3D(true)
+    }, MODEL_DELAY_MS)
   }
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (isDeleting) return
-    setIsDeleting(id)
-    setGenError(null)
-
-    try {
-      const token = await getToken()
-      const res = await fetch(`/api/v1/home-designer/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || `Server responded with status ${res.status}`)
-      }
-
-      setPlans(prev => prev.filter(p => p.id !== id))
-      if (activePlan?.id === id) {
-        const remaining = plans.filter(p => p.id !== id)
-        setActivePlan(remaining.length > 0 ? remaining[0] : null)
-      }
-      fetchQuota()
-    } catch (err: any) {
-      console.error('Delete failed:', err)
-      setGenError(err.message || 'Failed to delete the floor plan.')
-    } finally {
-      setIsDeleting(null)
-    }
-  }
-
-  const handleDownload = async (imageUrl: string, filename: string) => {
-    try {
-      const response = await fetch(imageUrl)
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${filename}.jpg`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      // Fallback
-      window.open(imageUrl, '_blank')
-    }
+  const handleGenerate = () => {
+    if (activeTab === '2d') handleGenerate2D()
+    else handleGenerate3D()
   }
 
   if (!isLoaded) {
@@ -438,6 +278,8 @@ export default function HomeDesigner() {
     )
   }
 
+  const isGenerating = activeTab === '2d' ? isGenerating2D : isGenerating3D
+
   return (
     <div className="bg-bone min-h-screen relative overflow-hidden">
       {/* Drafting grid background overlay */}
@@ -445,12 +287,12 @@ export default function HomeDesigner() {
 
       <Seo
         title="AI Home Designer — Carry Construction"
-        description="Design to-scale 2D floor plan blueprints instantly, and generate optional AI 3D visualizations of your custom layout."
+        description="Design a to-scale 2D floor plan blueprint and an interactive 3D model from your own dimensions and specifications."
         path="/home-designer"
       />
 
       {/* Header Banner */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -462,7 +304,7 @@ export default function HomeDesigner() {
             Home Designer
           </h1>
           <p className="mt-2 max-w-xl text-xs sm:text-sm text-ink-soft">
-            Input your dimensions and specifications for an instant to-scale 2D blueprint, then optionally generate an AI 3D visualization on demand.
+            Input your dimensions and specifications, then generate a to-scale 2D blueprint or an interactive 3D model of your layout.
           </p>
         </div>
       </motion.div>
@@ -470,7 +312,7 @@ export default function HomeDesigner() {
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 relative z-10">
         {!isSignedIn ? (
           /* Locked State for Guest Users */
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -483,7 +325,7 @@ export default function HomeDesigner() {
               Authenticate to Start Designing
             </h2>
             <p className="mt-3 text-xs sm:text-sm text-ink-soft leading-relaxed">
-              To control costs and maintain plan quality, our interactive AI Home Designer requires registration. Signing in grants you <strong>3 free generations daily</strong>.
+              Sign in to use the interactive Home Designer studio and draft your own to-scale layouts.
             </p>
             <div className="mt-8">
               <SignInButton mode="modal">
@@ -499,29 +341,29 @@ export default function HomeDesigner() {
         ) : (
           /* Main Workspace Grid */
           <div className="grid gap-8 lg:grid-cols-[1fr_1.3fr] lg:gap-12">
-            
+
             {/* LEFT COLUMN: Input Form */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
               className="flex flex-col gap-6"
             >
-              {quota && (
+              {activeTab === '3d' && (
                 <div className="flex items-center justify-between border border-ink/10 bg-sand/20 px-4 py-3 shadow-xs">
                   <div className="flex items-center gap-2">
-                    <div className={`h-2.5 w-2.5 rounded-full ${quota.remaining > 0 ? 'bg-teal' : 'bg-ochre'}`} />
+                    <div className={`h-2.5 w-2.5 rounded-full ${used3D < MODEL_GENERATION_LIMIT ? 'bg-teal' : 'bg-ochre'}`} />
                     <span className="font-mono text-[0.68rem] uppercase tracking-wider text-ink-soft">
-                      Daily Usage Quota
+                      3D Model Generations
                     </span>
                   </div>
                   <span className="font-mono text-xs font-bold text-ink">
-                    {quota.remaining} of {quota.limit} Left
+                    {Math.max(MODEL_GENERATION_LIMIT - used3D, 0)} of {MODEL_GENERATION_LIMIT} Left
                   </span>
                 </div>
               )}
 
-              <form onSubmit={handleGenerate} className="border border-ink/10 bg-bone p-6 space-y-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="border border-ink/10 bg-bone p-6 space-y-6 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <h2 className="font-display text-lg font-semibold text-ink border-b border-ink/10 pb-3">
                   Specifications
                 </h2>
@@ -672,41 +514,32 @@ export default function HomeDesigner() {
                   </div>
                 </div>
 
-                {/* Special Requirements */}
-                <div>
-                  <label className="font-mono text-[0.68rem] uppercase tracking-wider text-concrete block mb-2">
-                    Special Requirements (AI 2D Customization)
-                  </label>
-                  <textarea
-                    value={specialRequirements}
-                    onChange={(e) => setSpecialRequirements(e.target.value)}
-                    placeholder="e.g. make the master bedroom massive, place kitchen next to living room, add front lawn area..."
-                    rows={3}
-                    className="w-full border border-ink/10 bg-bone px-3 py-2 text-xs text-ink focus:border-teal focus:outline-none placeholder-concrete font-sans resize-none"
-                  />
-                </div>
-
-                {genError && (
-                  <div className="flex gap-2 border border-ochre/40 bg-ochre/5 p-3 text-xs text-ochre-dark">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    <p>{genError}</p>
-                  </div>
-                )}
-
                 <p className="text-[0.65rem] text-concrete leading-relaxed">
-                  Your 2D Blueprint updates instantly on the right as you edit specs above — no generation needed.
-                  Use the button below only when you want an AI-rendered photorealistic 3D visualization (uses your daily quota).
+                  {activeTab === '3d' && used3D >= MODEL_GENERATION_LIMIT
+                    ? `You've used all ${MODEL_GENERATION_LIMIT} of your 3D model generations.`
+                    : `Edit your specs above any time — switch to the ${activeTab === '2d' ? '2D Blueprint' : '3D Visualize'} tab on the right and hit the button below to draft it.`}
                 </p>
 
                 <button
-                  type="submit"
-                  disabled={isGenerating || (quota !== null && quota.remaining <= 0)}
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={isGenerating || (activeTab === '3d' && used3D >= MODEL_GENERATION_LIMIT)}
                   className="w-full flex items-center justify-center gap-2 bg-ochre hover:bg-ochre-dark disabled:bg-sand text-ink disabled:text-concrete py-3 font-mono text-xs uppercase tracking-wider transition-colors duration-200 cursor-pointer font-bold"
                 >
                   {isGenerating ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Rendering Visualization...
+                      {activeTab === '2d' ? 'Drafting Blueprint...' : 'Constructing Model...'}
+                    </>
+                  ) : activeTab === '3d' && used3D >= MODEL_GENERATION_LIMIT ? (
+                    <>
+                      <Lock className="h-4 w-4" />
+                      3D Limit Reached
+                    </>
+                  ) : activeTab === '2d' ? (
+                    <>
+                      <Ruler className="h-4 w-4" />
+                      Generate 2D Visualization
                     </>
                   ) : (
                     <>
@@ -715,17 +548,17 @@ export default function HomeDesigner() {
                     </>
                   )}
                 </button>
-              </form>
+              </div>
             </motion.div>
 
-            {/* RIGHT COLUMN: Studio Preview & History */}
-            <motion.div 
+            {/* RIGHT COLUMN: Studio Preview */}
+            <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
               className="space-y-6"
             >
-              
+
               {/* Studio Window */}
               <div className="border border-ink/10 bg-bone p-4 flex flex-col shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink/10 pb-3 mb-4">
@@ -760,188 +593,136 @@ export default function HomeDesigner() {
                       </button>
                     </div>
                   </div>
-                  {activeTab === '3d' && activePlan && (
-                    <button
-                      onClick={() => handleDownload(activePlan.imageUrl, `carry_floor_plan_${activePlan.id.slice(0, 8)}`)}
-                      className="flex items-center gap-1.5 border border-ink/15 hover:border-teal hover:text-teal px-3 py-1 font-mono text-[0.62rem] uppercase tracking-wider text-ink transition-colors duration-150 cursor-pointer"
-                    >
-                      <Download className="h-3 w-3" /> Save Layout
-                    </button>
-                  )}
                 </div>
 
                 {/* Preview Viewport */}
                 <div className="w-full h-[520px] sm:h-[640px] lg:h-[720px] flex items-center justify-center border border-ink/5 bg-sand/10 relative overflow-hidden">
 
-                  {activeTab === '2d' ? (
-                    <div className="w-full h-full relative">
-                      <FloorPlan2D
-                        bhk={bhk}
-                        areaSqft={areaSqft}
-                        style={style}
-                        facing={facing}
-                        floor={floor}
-                        extras={extras}
-                        customLayout={aiLayout}
-                      />
-                      <div className="absolute bottom-12 left-2 right-2 flex items-center justify-between bg-bone/90 backdrop-blur-sm border border-ink/10 px-3 py-2 shadow-sm">
-                        <p className="text-[0.65rem] text-concrete font-mono">
-                          {aiLayout ? "✨ CUSTOM AI 2D BLUEPRINT ACTIVE" : "💡 ADD SPECIAL REQUIREMENTS TO CUSTOMIZE WITH AI"}
-                        </p>
-                        {specialRequirements.trim().length > 0 && (
-                          <button
-                            type="button"
-                            onClick={handleGenerate2DLayout}
-                            disabled={isGeneratingLayout}
-                            className="flex items-center gap-1 bg-teal hover:bg-teal-dark disabled:bg-sand text-bone disabled:text-concrete px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider transition-colors duration-150 cursor-pointer font-bold"
-                          >
-                            {isGeneratingLayout ? (
-                              <>
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                Customizing...
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles className="h-3 w-3" />
-                                Generate AI 2D Blueprint
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ) : isGenerating ? (
-                    /* Loading State */
-                    <div className="text-center p-8 space-y-3 z-10">
-                      <Loader2 className="h-10 w-10 animate-spin text-teal mx-auto" />
-                      <p className="font-display text-sm font-semibold text-ink animate-pulse">
-                        Rendering Visualization...
-                      </p>
-                      <p className="text-[0.68rem] text-concrete max-w-xs mx-auto">
-                        Generating a photorealistic AI render of this layout. Please hold.
-                      </p>
-                    </div>
-                  ) : activePlan ? (
-                    /* Display Generated AI Visualization */
-                    <div className="w-full h-full flex flex-col p-2 gap-2">
-                      <div className="flex-1 min-h-0">
-                        <PanZoomImage src={activePlan.imageUrl} alt="AI 3D Visualization" />
-                      </div>
-
-                      <div className="text-center w-full shrink-0">
-                        <p className="font-mono text-[0.65rem] uppercase tracking-wider text-concrete">
-                          Specs: {activePlan.inputs.bhk}BHK · {activePlan.inputs.areaSqft} sqft · {activePlan.inputs.style} · {activePlan.inputs.facing} Facing
-                        </p>
-                      </div>
-
-                      {activePlan.inputs.layout && activePlan.inputs.layout.rooms && (
-                        <div className="w-full border-t border-ink/10 pt-3 text-left shrink-0">
-                          <h4 className="font-display font-semibold text-[0.7rem] text-ink mb-2 uppercase tracking-[0.08em] flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal" />
-                            Room Legend · Names &amp; Sizes (L × B)
-                          </h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[130px] overflow-y-auto pr-1">
-                            {activePlan.inputs.layout.rooms.map((room: any, i: number) => (
-                              <div key={room.id} className="bg-bone-dark/40 border border-ink/5 p-2 rounded flex items-start gap-2">
-                                <span className="shrink-0 mt-0.5 h-4 w-4 flex items-center justify-center rounded-full bg-teal text-bone font-mono font-semibold text-[0.58rem]">
-                                  {i + 1}
-                                </span>
-                                <div className="min-w-0 flex-1">
-                                  <span className="font-display font-medium text-[0.68rem] text-ink block line-clamp-1">{room.label}</span>
-                                  <div className="flex items-center justify-between mt-1 text-[0.6rem] text-concrete font-mono">
-                                    <span>{room.width.toFixed(1)} × {room.height.toFixed(1)} ft</span>
-                                    {room.zone && (
-                                      <span className="bg-teal/10 text-teal px-1 rounded uppercase font-semibold text-[0.55rem]">{room.zone}</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    /* Fallback / CTA */
-                    <div className="blueprint absolute inset-0 flex items-center justify-center p-6 text-center">
-                      <div className="max-w-xs bg-bone p-6 border border-ink/10 shadow-sm">
-                        <Home className="h-8 w-8 text-concrete mx-auto mb-3" />
-                        <h3 className="font-display text-sm font-semibold text-ink">No Visualization Yet</h3>
-                        <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
-                          Hit "Generate 3D Visualization" on the left to render a photorealistic AI concept of this layout. This uses one of your daily generations.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Plans History List */}
-              <div className="border border-ink/10 bg-bone p-4">
-                <div className="flex items-center justify-between border-b border-ink/10 pb-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <History className="h-4 w-4 text-concrete" />
-                    <span className="font-display font-medium text-ink text-sm sm:text-base">Visualization History</span>
-                  </div>
-                  <span className="font-mono text-[0.68rem] text-concrete">
-                    {plans.length} Renders Saved
-                  </span>
-                </div>
-
-                {loadingHistory ? (
-                  <div className="flex py-8 justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-concrete" />
-                  </div>
-                ) : plans.length === 0 ? (
-                  <p className="text-center py-6 text-xs text-concrete">
-                    No AI visualizations generated yet. Use the button on the form above.
-                  </p>
-                ) : (
-                  <div className="grid gap-2 max-h-[220px] overflow-y-auto pr-1">
-                    {plans.map((p) => {
-                      const isActive = activePlan?.id === p.id
-                      return (
-                        <div
-                          key={p.id}
-                          onClick={() => {
-                            setActivePlan(p)
-                            setActiveTab('3d')
-                          }}
-                          className={`flex items-center gap-3 border p-2 cursor-pointer transition-colors duration-150 ${
-                            isActive
-                              ? 'border-teal bg-teal/5'
-                              : 'border-ink/10 hover:border-ink/20 bg-bone'
-                          }`}
+                  <AnimatePresence mode="wait">
+                    {activeTab === '2d' ? (
+                      isGenerating2D ? (
+                        <motion.div
+                          key="2d-loading"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
                         >
-                          <img
-                            src={p.imageUrl}
-                            alt={`${p.inputs.bhk}BHK ${p.inputs.style} layout visualization`}
-                            className="h-10 w-10 shrink-0 object-cover border border-ink/10"
+                          <BlueprintLoader durationMs={BLUEPRINT_DELAY_MS} />
+                        </motion.div>
+                      ) : ready2D ? (
+                        <motion.div
+                          key="2d-ready"
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                          className="w-full h-full relative"
+                        >
+                          <FloorPlan2D
+                            bhk={bhk}
+                            areaSqft={areaSqft}
+                            style={style}
+                            facing={facing}
+                            floor={floor}
+                            extras={extras}
                           />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-ink truncate">
-                              {p.inputs.bhk}BHK Visualization
-                            </p>
-                            <p className="text-[0.62rem] text-concrete mt-0.5 truncate">
-                              {p.inputs.areaSqft} sqft · {p.inputs.style} · {new Date(p.createdAt).toLocaleDateString()}
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="2d-cta"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center justify-center p-6 text-center"
+                        >
+                          <div className="max-w-xs bg-bone p-6 border border-ink/10 shadow-sm">
+                            <PencilRuler className="h-8 w-8 text-concrete mx-auto mb-3" />
+                            <h3 className="font-display text-sm font-semibold text-ink">No Blueprint Yet</h3>
+                            <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
+                              Hit "Generate 2D Visualization" on the left to draft a to-scale blueprint of this layout.
                             </p>
                           </div>
-                          
-                          <button
-                            disabled={isDeleting !== null}
-                            onClick={(e) => handleDelete(p.id, e)}
-                            className="p-1 text-concrete hover:text-ochre disabled:text-concrete transition-colors cursor-pointer"
-                            aria-label="Delete plan"
-                          >
-                            {isDeleting === p.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-3.5 w-3.5" />
-                            )}
-                          </button>
-                        </div>
+                        </motion.div>
                       )
-                    })}
+                    ) : isGenerating3D ? (
+                      <motion.div
+                        key="3d-loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <ModelLoader durationMs={MODEL_DELAY_MS} />
+                      </motion.div>
+                    ) : ready3D ? (
+                      <motion.div
+                        key="3d-ready"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                        className="w-full h-full relative"
+                      >
+                        <Suspense
+                          fallback={
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Loader2 className="h-8 w-8 animate-spin text-teal" />
+                            </div>
+                          }
+                        >
+                          <FloorPlan3D layout={activeLayout} facing={facing} />
+                        </Suspense>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="3d-cta"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center justify-center p-6 text-center"
+                      >
+                        <div className="max-w-xs bg-bone p-6 border border-ink/10 shadow-sm">
+                          {used3D >= MODEL_GENERATION_LIMIT ? (
+                            <>
+                              <Lock className="h-8 w-8 text-concrete mx-auto mb-3" />
+                              <h3 className="font-display text-sm font-semibold text-ink">3D Limit Reached</h3>
+                              <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
+                                You've used all {MODEL_GENERATION_LIMIT} of your 3D model generations.
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <Home className="h-8 w-8 text-concrete mx-auto mb-3" />
+                              <h3 className="font-display text-sm font-semibold text-ink">No Model Yet</h3>
+                              <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
+                                Hit "Generate 3D Visualization" on the left to build an interactive model of this layout.
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Vastu audit — shown once a preview for this layout exists. */}
+                {style === 'vastu' && (ready2D || ready3D) && vastuFindings.length > 0 && (
+                  <div className="mt-3 border border-ink/10 bg-bone-dark/30 p-3">
+                    <h4 className="font-display font-semibold text-[0.7rem] text-ink mb-2 uppercase tracking-[0.08em] flex items-center gap-1.5">
+                      <Compass className="h-3 w-3 text-teal" />
+                      Vastu Review · {vastuFindings.filter((f) => f.severity === 'violation').length} violation
+                      {vastuFindings.filter((f) => f.severity === 'violation').length === 1 ? '' : 's'},{' '}
+                      {vastuFindings.filter((f) => f.severity === 'advisory').length} advisory
+                    </h4>
+                    <ul className="space-y-1.5 max-h-[150px] overflow-y-auto pr-1">
+                      {vastuFindings.map((f) => (
+                        <li key={f.code} className="flex items-start gap-2 text-[0.65rem] leading-relaxed">
+                          <span
+                            className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${
+                              f.severity === 'violation' ? 'bg-red-600' : 'bg-ochre'
+                            }`}
+                          />
+                          <span className="text-concrete">{f.message}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>

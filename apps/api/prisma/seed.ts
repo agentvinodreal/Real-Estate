@@ -89,7 +89,30 @@ const equipmentRentals = [
   { name: 'Mobile Escort Crane 15T', category: 'Lifting', rentPerDay: 12000, specs: ['Lifting Capacity: 15 Ton', 'Boom Length: 15 meters', 'Drive: 2WD/4WD diesel'], description: 'High stability pick and carry escort crane for lifting heavy beams, column cages, and machinery.', available: true },
 ]
 
+/**
+ * This seed wipes every table before inserting. Run against anything other than
+ * the local dev database and it destroys real listings, agents, and leads —
+ * which is how `neondb` ended up holding nothing but placeholder rows.
+ * Guarded to `carry_dev`; override deliberately with `-- --i-know-what-im-doing`.
+ */
+function assertSafeTarget() {
+  const url = process.env.DATABASE_URL ?? ''
+  const dbName = url.split('/').pop()?.split('?')[0] ?? '(unknown)'
+  if (dbName === 'carry_dev' || process.argv.includes('--i-know-what-im-doing')) return
+
+  console.error(
+    `\n❌ Refusing to seed "${dbName}".\n\n` +
+      `   This script DELETES every row in properties, agents, labour, shops,\n` +
+      `   leads, and more before inserting sample data. It is only safe against\n` +
+      `   the local dev database (carry_dev).\n\n` +
+      `   If you genuinely mean to wipe "${dbName}", re-run with:\n` +
+      `     npm run seed -w apps/api -- --i-know-what-im-doing\n`,
+  )
+  process.exit(1)
+}
+
 async function main() {
+  assertSafeTarget()
   console.log('Seeding…')
 
   // Clean DB with proper order

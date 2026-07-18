@@ -49,7 +49,12 @@ graph TD
 - **Environment Separation:**
   * **Development (`carry_dev`):** Local development uses the `carry_dev` database (configured in `.env`). Database pushes (`npm run prisma:push`) and seeds (`npm run seed`) should only be executed against `carry_dev`.
   * **Production (`neondb`):** The live deployed environment connects to the `neondb` database. A backup of the production configurations is stored locally in `.env.production` (which is git-ignored).
-- **CRITICAL WARNING:** The production database (`neondb`) is **shared** with another external admin panel (`carry-admin-suryansh.web.app`). Under no circumstances should existing shared tables on the production database (`Agent`, `Labour`, `Shop`, `Property`, `ConstructionProject`) be altered, truncated, or dropped, as it will break the other live panel.
+- **The Field Ops panel does NOT share this database.** An earlier version of this
+  guide claimed `neondb` was shared with `carry-admin-suryansh.web.app`. It is not:
+  `neondb` holds only this project's seed data (1 placeholder agent, 0 labour, 0
+  shops), while the Field Ops panel has its own live agents, labour, and shops.
+  The two systems are connected only by the manual export/import described in
+  "Field Ops → Website Publish Flow" below.
 
 ### 2. Marketing Tables Synchronization
 - The following marketing-specific tables were created locally and synced safely using `npx prisma db push` to `carry_dev` (development) and then to `neondb` (production):
@@ -78,6 +83,70 @@ graph TD
   const imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/q_auto,f_auto/${publicId}`;
   ```
 - *Avoid using the API's private cloud name (`pvrehhhs`) for loading listing assets, as that accounts does not contain the production photos.*
+
+---
+
+## 🔁 Field Ops → Website Publish Flow (Webhook)
+
+The Field Ops panel is a wholly separate system: its own frontend
+(`carry-admin-suryansh.web.app`), its own backend (`carry-api-pink.vercel.app`),
+its own database, and its own Clerk instance (`humble-blowfish-97` — ours is
+`sweet-doberman-12`). Because the Clerk instances differ, a Clerk token cannot
+authenticate between the two; the hop uses a **shared secret** instead.
+
+```mermaid
+graph LR
+    FO[Field Ops Panel<br/>Publish button] --> FOAPI[carry-api-pink.vercel.app]
+    FOAPI -->|POST /api/v1/sync<br/>x-sync-secret| API[This API]
+    API --> DB[(Postgres)]
+    DB --> Web[Website]
+    DB --> Admin[apps/admin]
+```
+
+### This side — done
+
+`POST /api/v1/sync` ([routes/sync.ts](apps/api/src/routes/sync.ts)) accepts one or
+many items, upserts them by source `id`, and mirrors the exported `agent` first
+(`Property.agentId` is a required FK that won't exist here on a first sync).
+Existing `slug` values are preserved on update so live URLs never shift. **The
+endpoint never deletes** — an unpublish arrives as `published: false` and simply
+hides the row.
+
+Set `SYNC_SECRET` in `apps/api/.env` locally, and in the API host's environment
+variables for production.
+
+### Field Ops side — still required
+
+Someone with access to the Field Ops repo must fire this on publish/unpublish:
+
+```ts
+await fetch('https://<this-api-host>/api/v1/sync', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-sync-secret': process.env.WEBSITE_SYNC_SECRET,
+  },
+  body: JSON.stringify({ properties: [property] }),  // or { projects: [...] }
+})
+```
+
+The item shape is exactly what the panel already exports to `shared-data.json`,
+including the nested `agent` object. Send the same call on unpublish with
+`published: false`. Responses: `200` all synced, `207` partial (body lists
+`failed` — safe to retry, upserts are idempotent), `401` bad secret, `503`
+`SYNC_SECRET` not configured.
+
+### Catch-up import
+
+If the webhook was down, backfill from a `shared-data.json` export at the repo root:
+
+```bash
+npm run import:published -w apps/api            # → carry_dev
+npm run import:published -w apps/api -- --prod  # → neondb
+```
+
+It shares its mapping with the webhook via
+[syncImport.ts](apps/api/src/lib/syncImport.ts), so the two cannot drift.
 
 ---
 

@@ -20,6 +20,7 @@ import geocodeRoutes from './routes/geocode.js'
 import serviceProvidersRoutes from './routes/serviceProviders.js'
 import equipmentRentalsRoutes from './routes/equipmentRentals.js'
 import homeDesignerRoutes from './routes/homeDesigner.js'
+import syncRoutes from './routes/sync.js'
 
 const PORT = Number(process.env.PORT ?? 4000)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -56,6 +57,7 @@ async function init() {
         { name: 'Blog' },
         { name: 'System' },
         { name: 'Home Designer' },
+        { name: 'Sync' },
       ],
     },
   })
@@ -79,6 +81,7 @@ async function init() {
     await api.register(serviceProvidersRoutes)
     await api.register(equipmentRentalsRoutes)
     await api.register(homeDesignerRoutes)
+    await api.register(syncRoutes)
   }, { prefix: API_PREFIX })
 
   // ── Serve built web app (SPA fallback) ───────────────────────

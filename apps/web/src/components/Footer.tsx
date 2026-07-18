@@ -27,8 +27,8 @@ export default function Footer() {
           <div>
             <h4 className="kicker mb-4 text-ochre">Explore</h4>
             <ul className="space-y-2.5 text-xs text-bone/70">
-              {/* <li><Link to="/properties" className="hover:text-ochre">Buy a home</Link></li> */}
-              {/* <li><Link to="/properties?listingType=Resale" className="hover:text-ochre">Resale &amp; advisory</Link></li> */}
+              <li><Link to="/properties" className="hover:text-ochre">Buy a home</Link></li>
+              <li><Link to="/properties?listingType=Resale" className="hover:text-ochre">Resale &amp; advisory</Link></li>
               <li><Link to="/construction" className="hover:text-ochre">Construction</Link></li>
               <li><Link to="/about" className="hover:text-ochre">About us</Link></li>
               <li><Link to="/blog" className="hover:text-ochre">Blog &amp; Guides</Link></li>

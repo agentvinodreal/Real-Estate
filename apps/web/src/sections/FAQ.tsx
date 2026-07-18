@@ -12,7 +12,7 @@ const FAQS: FaqItem[] = [
   {
     question: 'What areas does Carry Construction serve?',
     answer:
-      'We serve all major cities across Bihar — including Patna, Gaya, Muzaffarpur, Bhagalpur, Darbhanga, Ara, and Hajipur. In Patna, we cover premium localities like Boring Road, Kankarbagh, Rajendra Nagar, Bailey Road, Patliputra Colony, and Danapur. Whether you are buying, selling, or building, our team operates state-wide across Bihar.',
+      'We serve all major cities across Bihar — including Motihari, Patna,  Gaya, Muzaffarpur, Bhagalpur, Darbhanga, Ara, and Hajipur. In Patna, we cover premium localities like Boring Road, Kankarbagh, Rajendra Nagar, Bailey Road, Patliputra Colony, and Danapur. Whether you are buying, selling, or building, our team operates state-wide across Bihar.',
   },
   {
     question: 'Is Bihar a good place to invest in real estate?',

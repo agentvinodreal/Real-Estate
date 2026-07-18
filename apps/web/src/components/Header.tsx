@@ -8,7 +8,7 @@ import { useCart } from '../context/CartContext'
 import { motion, AnimatePresence } from 'motion/react'
 
 const NAV: { label: string; to: string }[] = [
-  // { label: 'Buy', to: '/properties' },
+  { label: 'Buy', to: '/properties' },
   { label: 'Construction', to: '/construction' },
   { label: 'Marketplace', to: '/marketplace' },
   { label: 'Home Designer', to: '/home-designer' },
