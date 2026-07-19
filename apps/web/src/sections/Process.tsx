@@ -91,7 +91,7 @@ export default function Process() {
               <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-soft">
                 We own the entire journey from design to handover. Drag-line crane tracking on the right visualizes the exact construction lifecycle of your home.
               </p>
-              <Photo seed="process-site" label="On-site construction" className="mt-8 aspect-[16/10] w-full border border-ink/5 shadow-sm" />
+              <Photo seed="process-site" src="/process_construction.jpg" label="On-site construction" className="mt-8 aspect-[16/10] w-full border border-ink/5 shadow-sm" />
             </Reveal>
           </div>
 

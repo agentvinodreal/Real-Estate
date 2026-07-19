@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
@@ -143,7 +144,8 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
         </button>
       </div>
 
-      <AnimatePresence>
+      {createPortal(
+        <AnimatePresence>
         {open && (
           <>
             {/* Backdrop */}
@@ -152,7 +154,7 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
               animate={{ opacity: 0.6 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-40 bg-teal-dark/60 backdrop-blur-xs md:hidden"
+              className="fixed inset-0 z-[60] bg-teal-dark/60 backdrop-blur-xs md:hidden"
             />
             {/* Drawer */}
             <motion.nav
@@ -160,7 +162,7 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-              className="fixed inset-y-0 right-0 z-50 w-[290px] bg-teal-dark px-6 py-6 shadow-2xl flex flex-col md:hidden text-bone border-l border-bone/10"
+              className="fixed inset-y-0 right-0 z-[70] flex w-[290px] flex-col border-l border-bone/10 bg-teal-dark px-6 py-6 text-bone shadow-2xl md:hidden"
             >
               {/* Drawer Header with Close Button */}
               <div className="flex items-center justify-between pb-6 border-b border-bone/10 mb-4">
@@ -255,7 +257,9 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
             </motion.nav>
           </>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body,
+      )}
     </header>
   )
 }

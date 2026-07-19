@@ -76,13 +76,13 @@ export default function Hero() {
         {/* Image / 3D */}
         <div className="relative">
           {can3D ? (
-            <Suspense fallback={<Photo seed="hero-project" label="Hero project" className="aspect-[4/5] w-full" />}>
+            <Suspense fallback={<Photo seed="hero-project" src="/hero-mobile.webp" label="Hero project" className="aspect-[4/5] w-full" />}>
               <div className="aspect-[4/5] w-full">
                 <Hero3D />
               </div>
             </Suspense>
           ) : (
-            <Photo seed="hero-project" label="Hero project" className="aspect-[4/5] w-full" />
+            <Photo seed="hero-project" src="/hero-mobile.webp" label="Hero project" className="aspect-[4/5] w-full" />
           )}
           {/* floating spec card */}
           <div className="absolute -bottom-5 -left-5 hidden bg-teal-dark border border-bone/10 px-6 py-5 text-bone sm:block">
