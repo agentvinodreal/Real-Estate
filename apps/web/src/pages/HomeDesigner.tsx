@@ -171,10 +171,9 @@ const EXTRAS = [
 
 const BLUEPRINT_DELAY_MS = 1500
 const MODEL_DELAY_MS = 4000
-const MODEL_GENERATION_LIMIT = 5
 
 export default function HomeDesigner() {
-  const { isLoaded, isSignedIn, userId } = useAuth()
+  const { isLoaded, isSignedIn } = useAuth()
 
   // Form State
   const [bhk, setBhk] = useState<number>(3)
@@ -192,18 +191,6 @@ export default function HomeDesigner() {
   const [ready3D, setReady3D] = useState<boolean>(false)
   const timer2DRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const timer3DRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Caps how many 3D models a signed-in user can build, tracked per Clerk
-  // userId in localStorage — the model is free/local, this just guards
-  // against unbounded repeat clicks rather than metering a paid resource.
-  const [used3D, setUsed3D] = useState<number>(0)
-  const quota3DKey = userId ? `hd_3d_generations_${userId}` : null
-
-  useEffect(() => {
-    if (!quota3DKey) return
-    const stored = Number(localStorage.getItem(quota3DKey) ?? '0')
-    setUsed3D(Number.isFinite(stored) ? stored : 0)
-  }, [quota3DKey])
 
   // The layout both the 2D blueprint and the 3D model are built from.
   const activeLayout = useMemo(
@@ -251,14 +238,9 @@ export default function HomeDesigner() {
   }
 
   const handleGenerate3D = () => {
-    if (isGenerating3D || used3D >= MODEL_GENERATION_LIMIT) return
+    if (isGenerating3D) return
     setReady3D(false)
     setIsGenerating3D(true)
-    if (quota3DKey) {
-      const next = used3D + 1
-      setUsed3D(next)
-      localStorage.setItem(quota3DKey, String(next))
-    }
     timer3DRef.current = setTimeout(() => {
       setIsGenerating3D(false)
       setReady3D(true)
@@ -349,20 +331,6 @@ export default function HomeDesigner() {
               transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
               className="flex flex-col gap-6"
             >
-              {activeTab === '3d' && (
-                <div className="flex items-center justify-between border border-ink/10 bg-sand/20 px-4 py-3 shadow-xs">
-                  <div className="flex items-center gap-2">
-                    <div className={`h-2.5 w-2.5 rounded-full ${used3D < MODEL_GENERATION_LIMIT ? 'bg-teal' : 'bg-ochre'}`} />
-                    <span className="font-mono text-[0.68rem] uppercase tracking-wider text-ink-soft">
-                      3D Model Generations
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs font-bold text-ink">
-                    {Math.max(MODEL_GENERATION_LIMIT - used3D, 0)} of {MODEL_GENERATION_LIMIT} Left
-                  </span>
-                </div>
-              )}
-
               <div className="border border-ink/10 bg-bone p-6 space-y-6 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <h2 className="font-display text-lg font-semibold text-ink border-b border-ink/10 pb-3">
                   Specifications
@@ -515,26 +483,19 @@ export default function HomeDesigner() {
                 </div>
 
                 <p className="text-[0.65rem] text-concrete leading-relaxed">
-                  {activeTab === '3d' && used3D >= MODEL_GENERATION_LIMIT
-                    ? `You've used all ${MODEL_GENERATION_LIMIT} of your 3D model generations.`
-                    : `Edit your specs above any time — switch to the ${activeTab === '2d' ? '2D Blueprint' : '3D Visualize'} tab on the right and hit the button below to draft it.`}
+                  {`Edit your specs above any time — switch to the ${activeTab === '2d' ? '2D Blueprint' : '3D Visualize'} tab on the right and hit the button below to draft it.`}
                 </p>
 
                 <button
                   type="button"
                   onClick={handleGenerate}
-                  disabled={isGenerating || (activeTab === '3d' && used3D >= MODEL_GENERATION_LIMIT)}
+                  disabled={isGenerating}
                   className="w-full flex items-center justify-center gap-2 bg-ochre hover:bg-ochre-dark disabled:bg-sand text-ink disabled:text-concrete py-3 font-mono text-xs uppercase tracking-wider transition-colors duration-200 cursor-pointer font-bold"
                 >
                   {isGenerating ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       {activeTab === '2d' ? 'Drafting Blueprint...' : 'Constructing Model...'}
-                    </>
-                  ) : activeTab === '3d' && used3D >= MODEL_GENERATION_LIMIT ? (
-                    <>
-                      <Lock className="h-4 w-4" />
-                      3D Limit Reached
                     </>
                   ) : activeTab === '2d' ? (
                     <>
@@ -679,23 +640,11 @@ export default function HomeDesigner() {
                         className="flex items-center justify-center p-6 text-center"
                       >
                         <div className="max-w-xs bg-bone p-6 border border-ink/10 shadow-sm">
-                          {used3D >= MODEL_GENERATION_LIMIT ? (
-                            <>
-                              <Lock className="h-8 w-8 text-concrete mx-auto mb-3" />
-                              <h3 className="font-display text-sm font-semibold text-ink">3D Limit Reached</h3>
-                              <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
-                                You've used all {MODEL_GENERATION_LIMIT} of your 3D model generations.
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <Home className="h-8 w-8 text-concrete mx-auto mb-3" />
-                              <h3 className="font-display text-sm font-semibold text-ink">No Model Yet</h3>
-                              <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
-                                Hit "Generate 3D Visualization" on the left to build an interactive model of this layout.
-                              </p>
-                            </>
-                          )}
+                          <Home className="h-8 w-8 text-concrete mx-auto mb-3" />
+                          <h3 className="font-display text-sm font-semibold text-ink">No Model Yet</h3>
+                          <p className="text-[0.68rem] text-concrete mt-1.5 leading-relaxed">
+                            Hit "Generate 3D Visualization" on the left to build an interactive model of this layout.
+                          </p>
                         </div>
                       </motion.div>
                     )}

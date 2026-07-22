@@ -1,26 +1,24 @@
 import { useEffect, useState } from 'react'
 import Seo from '../components/Seo'
 import Photo from '../components/Photo'
-// import ConstructionCard from '../components/ConstructionCard'
+import ConstructionCard from '../components/ConstructionCard'
 import InquiryForm from '../components/InquiryForm'
 import Process from '../sections/Process'
-import { api, type Material } from '@carry/shared'
+import { api, type Material, type ConstructionProject } from '@carry/shared'
 import { PILLARS, PACKAGES } from '../lib/data'
 
 export default function Construction() {
-  // const [projects, setProjects] = useState<ConstructionProject[]>([])
-  // const [loading, setLoading] = useState(true)
+  const [projects, setProjects] = useState<ConstructionProject[]>([])
+  const [loading, setLoading] = useState(true)
   const [materials, setMaterials] = useState<Material[]>([])
   const [loadingMaterials, setLoadingMaterials] = useState(true)
 
   useEffect(() => {
-    /*
     api
       .listConstruction()
       .then((res) => setProjects(res.data))
       .catch(() => setProjects([]))
       .finally(() => setLoading(false))
-    */
 
     api
       .listMaterials()
@@ -133,25 +131,22 @@ export default function Construction() {
         </div>
       </section>
 
-      {/* Projects
-      <section id="projects" className="border-t border-ink/10 bg-bone-dim">
-        <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
-          <span className="kicker">Recent work</span>
-          <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
-            Projects we’ve delivered.
-          </h2>
-          {loading ? (
-            <p className="mt-12 font-mono text-sm text-concrete">Loading projects…</p>
-          ) : (
+      {/* Projects */}
+      {!loading && projects.length > 0 && (
+        <section id="projects" className="border-t border-ink/10 bg-bone-dim">
+          <div className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
+            <span className="kicker">Recent work</span>
+            <h2 className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
+              Projects we’ve delivered.
+            </h2>
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
                 <ConstructionCard key={p.slug} project={p} />
               ))}
             </div>
-          )}
-        </div>
-      </section>
-      */}
+          </div>
+        </section>
+      )}
 
       {/* Materials Showcase */}
       {!loadingMaterials && materials.length > 0 && (

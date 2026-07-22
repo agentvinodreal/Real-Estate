@@ -25,6 +25,8 @@ const empty = {
   amenities: '',
   featured: false,
   published: true,
+  lat: '',
+  lng: '',
 }
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -42,6 +44,7 @@ export default function PropertyForm() {
 
   const [images, setImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
+  const [geocoding, setGeocoding] = useState(false)
 
   useEffect(() => {
     if (!isEdit) return
@@ -66,6 +69,8 @@ export default function PropertyForm() {
         amenities: p.amenities.join(', '),
         featured: p.featured,
         published: p.published,
+        lat: p.lat?.toString() ?? '',
+        lng: p.lng?.toString() ?? '',
       })
       setImages(p.images ?? [])
     })
@@ -113,6 +118,25 @@ export default function PropertyForm() {
     }
   }
 
+  async function locateOnMap() {
+    const query = [form.locality, form.city].filter(Boolean).join(', ')
+    if (!query) {
+      setError('Enter a locality and city first, then locate on map.')
+      return
+    }
+    setGeocoding(true)
+    setError('')
+    try {
+      const result = await api.geocode(query)
+      set('lat', result.lat.toString())
+      set('lng', result.lng.toString())
+    } catch {
+      setError('Could not find that location. Try refining the locality/city, or enter coordinates manually.')
+    } finally {
+      setGeocoding(false)
+    }
+  }
+
   function setHero(index: number) {
     if (index === 0) return
     setImages((prev) => {
@@ -157,6 +181,8 @@ export default function PropertyForm() {
       featured: form.featured,
       published: form.published,
       images,
+      lat: form.lat ? Number(form.lat) : null,
+      lng: form.lng ? Number(form.lng) : null,
     }
     try {
       if (isEdit) await adminApi.updateProperty(form.id, payload)
@@ -198,6 +224,7 @@ export default function PropertyForm() {
           <select className={field} value={form.status} onChange={(e) => set('status', e.target.value)}>
             <option value="ready">Ready to move</option>
             <option value="under_construction">Under construction</option>
+            <option value="available">Available (Plot/Land)</option>
           </select>
         </div>
         <div>
@@ -244,6 +271,55 @@ export default function PropertyForm() {
           <label className={label}>Description</label>
           <textarea className={`${field} min-h-[100px]`} value={form.description} onChange={(e) => set('description', e.target.value)} />
         </div>
+        {/* Location Section */}
+        <div className="col-span-2 border-t border-ink/10 pt-6">
+          <h2 className="font-display text-xl font-semibold text-ink">Location</h2>
+          <div className="mt-3 grid grid-cols-2 gap-4">
+            <div>
+              <label className={label}>Latitude</label>
+              <input
+                className={field}
+                type="number"
+                step="any"
+                value={form.lat}
+                onChange={(e) => set('lat', e.target.value)}
+                placeholder="25.5941"
+              />
+            </div>
+            <div>
+              <label className={label}>Longitude</label>
+              <input
+                className={field}
+                type="number"
+                step="any"
+                value={form.lng}
+                onChange={(e) => set('lng', e.target.value)}
+                placeholder="85.1376"
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={locateOnMap}
+            disabled={geocoding}
+            className="mt-3 bg-ink px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark transition-colors disabled:opacity-60"
+          >
+            {geocoding ? 'Locating…' : 'Locate from locality/city'}
+          </button>
+
+          {form.lat && form.lng && !Number.isNaN(Number(form.lat)) && !Number.isNaN(Number(form.lng)) && (
+            <div className="mt-4 border border-ink/10 overflow-hidden">
+              <iframe
+                key={`${form.lat},${form.lng}`}
+                src={`https://maps.google.com/maps?q=${form.lat},${form.lng}&z=15&output=embed`}
+                className="w-full h-[300px] border-none"
+                loading="lazy"
+                title="Property location preview"
+              />
+            </div>
+          )}
+        </div>
+
         <label className="flex items-center gap-2 text-sm text-ink-soft">
           <input type="checkbox" checked={form.featured} onChange={(e) => set('featured', e.target.checked)} /> Featured
         </label>

@@ -6,7 +6,7 @@ import { verifyAdmin } from '../lib/auth.js'
 
 const propertyBody = {
   type: 'object',
-  required: ['slug', 'title', 'listingType', 'propertyType', 'priceInr', 'priceLabel', 'areaSqft', 'city', 'locality', 'status', 'agentId'],
+  required: ['slug', 'title', 'listingType', 'propertyType', 'priceInr', 'priceLabel', 'areaSqft', 'city', 'locality', 'status'],
   properties: {
     slug: { type: 'string' },
     title: { type: 'string' },
@@ -23,7 +23,7 @@ const propertyBody = {
     address: { type: 'string', nullable: true },
     lat: { type: 'number', nullable: true },
     lng: { type: 'number', nullable: true },
-    status: { type: 'string', enum: ['ready', 'under_construction'] },
+    status: { type: 'string', enum: ['ready', 'under_construction', 'available'] },
     furnishing: { type: 'string', nullable: true },
     reraNumber: { type: 'string', nullable: true },
     description: { type: 'string', nullable: true },
@@ -152,8 +152,12 @@ export default async function propertyRoutes(app: FastifyInstance) {
       try {
         const row = await prisma.property.update({ where: { id }, data })
         return serializeProperty(row)
-      } catch {
-        return reply.code(404).send({ error: 'Property not found' })
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+          return reply.code(404).send({ error: 'Property not found' })
+        }
+        app.log.error(err, 'Failed to update property')
+        return reply.code(400).send({ error: 'Could not update property' })
       }
     },
   )

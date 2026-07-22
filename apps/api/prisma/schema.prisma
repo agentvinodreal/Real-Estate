@@ -40,6 +40,8 @@ model Property {
   priceInr           Int
   priceLabel         String
   areaSqft           Int
+  carpetAreaSqft     Int?
+  builtupAreaSqft    Int?
   locality           String
   city               String
   address            String?
@@ -52,7 +54,7 @@ model Property {
   lat                Float?
   lng                Float?
   reviewStatus       String   @default("pending")
-  agentId            String
+  agentId            String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   availableFrom      String?
@@ -69,7 +71,7 @@ model Property {
   featured           Boolean  @default(false)
   videoUrl           String?
   amenities          String[] @default([])
-  agent              Agent    @relation(fields: [agentId], references: [id])
+  agent              Agent?   @relation(fields: [agentId], references: [id])
 
   @@index([agentId])
   @@index([reviewStatus])
@@ -91,12 +93,12 @@ model ConstructionProject {
   afterImages    String[] @default([])
   stageImages    String[] @default([])
   reviewStatus   String   @default("pending")
-  agentId        String
+  agentId        String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   published      Boolean  @default(false)
-  slug               String?  @unique
-  agent          Agent    @relation(fields: [agentId], references: [id])
+  slug           String?  @unique
+  agent          Agent?   @relation(fields: [agentId], references: [id])
 
   @@index([agentId])
   @@index([reviewStatus])

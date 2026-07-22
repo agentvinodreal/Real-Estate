@@ -1,5 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Share2, Check } from 'lucide-react'
 import Seo from '../components/Seo'
 import Placeholder from '../components/Placeholder'
 import Photo from '../components/Photo'
@@ -27,6 +28,7 @@ export default function PropertyDetail() {
   const [state, setState] = useState<'loading' | 'ready' | 'notfound'>('loading')
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [galleryIndex, setGalleryIndex] = useState(0)
+  const [shareCopied, setShareCopied] = useState(false)
 
   useEffect(() => {
     if (!slug) return
@@ -136,6 +138,30 @@ export default function PropertyDetail() {
     offers: { '@type': 'Offer', price: p.priceInr, priceCurrency: 'INR' },
   }
 
+  async function handleShare() {
+    const shareUrl = `${window.location.origin}/properties/${p.slug}`
+    const shareData = {
+      title: p.title,
+      text: `${p.title} — ${p.locality}, ${p.city}. ${p.priceLabel}`,
+      url: shareUrl,
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // user cancelled share sheet — no-op
+      }
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    } catch {
+      // clipboard unavailable — nothing more we can do
+    }
+  }
+
   return (
     <div className="pb-20 md:pb-0">
       <Seo
@@ -146,10 +172,24 @@ export default function PropertyDetail() {
         jsonLd={jsonLd}
       />
       {/* Breadcrumb */}
-      <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8">
+      <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8 flex items-center justify-between">
         <Link to="/properties" className="font-mono text-xs uppercase tracking-[0.15em] text-concrete hover:text-ochre-dark">
           ← All properties
         </Link>
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.15em] text-concrete hover:text-ochre-dark cursor-pointer"
+        >
+          {shareCopied ? (
+            <>
+              <Check size={14} /> Link copied
+            </>
+          ) : (
+            <>
+              <Share2 size={14} /> Share
+            </>
+          )}
+        </button>
       </div>
 
       {/* Title */}

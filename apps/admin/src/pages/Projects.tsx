@@ -20,6 +20,7 @@ export default function Projects() {
   const [items, setItems] = useState<ConstructionProject[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [beforeImages, setBeforeImages] = useState<string[]>([])
   const [afterImages, setAfterImages] = useState<string[]>([])
@@ -37,6 +38,31 @@ export default function Projects() {
     if (!confirm(`Delete "${p.title}"?`)) return
     await adminApi.deleteProject(p.id)
     setItems((xs) => xs.filter((x) => x.id !== p.id))
+  }
+
+  function startEdit(p: ConstructionProject) {
+    setEditingId(p.id)
+    setForm({
+      title: p.title,
+      category: p.category,
+      location: p.location,
+      areaSqft: p.areaSqft != null ? String(p.areaSqft) : '',
+      durationMonths: p.durationMonths != null ? String(p.durationMonths) : '',
+      packageTier: p.packageTier ?? 'Premium',
+      description: p.description ?? '',
+    })
+    setBeforeImages(p.beforeImages ?? [])
+    setAfterImages(p.afterImages ?? [])
+    setError('')
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setShowForm(false)
+    setEditingId(null)
+    setForm(emptyForm)
+    setBeforeImages([])
+    setAfterImages([])
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>, target: 'before' | 'after') {
@@ -84,27 +110,29 @@ export default function Projects() {
     }
   }
 
-  async function create(e: FormEvent) {
+  async function save(e: FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError('')
+    const payload = {
+      title: form.title,
+      slug: slugify(form.title),
+      category: form.category,
+      location: form.location,
+      areaSqft: form.areaSqft ? Number(form.areaSqft) : null,
+      durationMonths: form.durationMonths ? Number(form.durationMonths) : null,
+      packageTier: form.packageTier,
+      description: form.description || null,
+      beforeImages,
+      afterImages,
+    }
     try {
-      await adminApi.createProject({
-        title: form.title,
-        slug: slugify(form.title),
-        category: form.category,
-        location: form.location,
-        areaSqft: form.areaSqft ? Number(form.areaSqft) : null,
-        durationMonths: form.durationMonths ? Number(form.durationMonths) : null,
-        packageTier: form.packageTier,
-        description: form.description || null,
-        beforeImages,
-        afterImages,
-      })
-      setForm(emptyForm)
-      setBeforeImages([])
-      setAfterImages([])
-      setShowForm(false)
+      if (editingId) {
+        await adminApi.updateProject(editingId, payload)
+      } else {
+        await adminApi.createProject(payload)
+      }
+      closeForm()
       load()
     } catch {
       setError('Could not save case study. Please check the fields and try again.')
@@ -121,7 +149,7 @@ export default function Projects() {
           <p className="mt-1 text-sm text-concrete">{items.length} case studies</p>
         </div>
         <button
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => (showForm ? closeForm() : setShowForm(true))}
           className="bg-ink px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark cursor-pointer"
         >
           {showForm ? 'Close' : '+ New case study'}
@@ -129,7 +157,10 @@ export default function Projects() {
       </div>
 
       {showForm && (
-        <form onSubmit={create} className="mb-8 grid grid-cols-2 gap-4 border border-ink/10 bg-bone-dim/40 p-6 shadow-sm">
+        <form onSubmit={save} className="mb-8 grid grid-cols-2 gap-4 border border-ink/10 bg-bone-dim/40 p-6 shadow-sm">
+          <div className="col-span-2 -mb-2">
+            <span className={label}>{editingId ? 'Editing case study' : 'New case study'}</span>
+          </div>
           <div className="col-span-2">
             <label className={label}>Title</label>
             <input required className={field} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
@@ -196,9 +227,9 @@ export default function Projects() {
 
           <div className="col-span-2 flex gap-3 border-t border-ink/5 pt-4">
             <button type="submit" disabled={busy} className="bg-ink px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark disabled:opacity-60 cursor-pointer">
-              {busy ? 'Saving…' : 'Create case study'}
+              {busy ? 'Saving…' : editingId ? 'Save changes' : 'Create case study'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="border border-ink/25 px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-ink hover:border-ochre cursor-pointer">
+            <button type="button" onClick={closeForm} className="border border-ink/25 px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-ink hover:border-ochre cursor-pointer">
               Cancel
             </button>
           </div>
@@ -255,7 +286,13 @@ export default function Projects() {
                 )}
               </div>
 
-              <div className="mt-6 flex items-center justify-end border-t border-ink/5 pt-3">
+              <div className="mt-6 flex items-center justify-end gap-4 border-t border-ink/5 pt-3">
+                <button
+                  onClick={() => startEdit(p)}
+                  className="font-mono text-xs uppercase tracking-[0.12em] text-ink-soft hover:text-ink transition-colors cursor-pointer"
+                >
+                  Edit
+                </button>
                 <button
                   onClick={() => remove(p)}
                   className="font-mono text-xs uppercase tracking-[0.12em] text-ochre-dark hover:text-ink transition-colors cursor-pointer"

@@ -92,6 +92,7 @@ export default async function constructionRoutes(app: FastifyInstance) {
       const { processStages, beforeImages, afterImages, stageImages, ...rest } = request.body as Record<string, any>
       const row = await prisma.constructionProject.create({
         data: {
+          published: true,   // admin-created projects are live immediately
           ...rest,
           beforeImages: beforeImages ?? [],
           afterImages: afterImages ?? [],

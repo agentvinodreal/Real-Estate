@@ -94,6 +94,11 @@ export const adminApi = {
     return res.json()
   },
 
+  async updateProject(id: string, data: Record<string, unknown>): Promise<ConstructionProject> {
+    const res = await authFetch(`/construction-projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+    return res.json()
+  },
+
   async deleteProject(id: string): Promise<void> {
     await authFetch(`/construction-projects/${id}`, { method: 'DELETE' })
   },

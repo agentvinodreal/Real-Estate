@@ -71,6 +71,10 @@ export const api = {
     return getJson<Property>(`/properties/${slug}`)
   },
 
+  geocode(q: string): Promise<{ lat: number; lng: number; formattedAddress: string; provider: string }> {
+    return getJson(`/geocode?q=${encodeURIComponent(q)}`)
+  },
+
   listConstruction(): Promise<{ data: ConstructionProject[] }> {
     return getJson<{ data: ConstructionProject[] }>('/construction-projects')
   },

@@ -12,5 +12,7 @@ export function pricePerSqft(priceInr: number, areaSqft: number): string {
 }
 
 export function statusLabel(status: string): string {
-  return status === 'under_construction' ? 'Under construction' : 'Ready to move'
+  if (status === 'under_construction') return 'Under construction'
+  if (status === 'available') return 'Available (Plot/Land)'
+  return 'Ready to move'
 }

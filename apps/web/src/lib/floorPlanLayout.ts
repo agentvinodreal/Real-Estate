@@ -578,6 +578,48 @@ function allocateAreas(specs: RoomSpec[], areaSqft: number): AllocatedRoom[] {
 const ROW_ORDER: ZoneRow[] = ['N', 'M', 'S']
 const COL_ORDER: ZoneCol[] = ['W', 'C', 'E']
 
+// Minimum sensible short-side dimension per category. Stacking (see
+// `layoutRooms`) locks a room's width to the full column width and derives
+// its height from a share of the cell's allocated area — without a floor, a
+// low-area room like a bathroom sharing a wide column with a bedroom ends up
+// full-width but a foot or two tall, which is not a buildable room.
+const MIN_SHORT_DIM_FT: Record<RoomCategory, number> = {
+  living: 9,
+  kitchen: 7,
+  bedroom: 8,
+  bathroom: 5,
+  extra: 4,
+  outdoor: 4,
+}
+
+/**
+ * Heights for rooms stacked in a single column cell (full column width,
+ * split along y). Each room gets at least its category's minimum short-side
+ * dimension; the remaining height above that floor is distributed in
+ * proportion to how much allocated area each room has beyond its floor, so
+ * bigger rooms still end up taller. If the floors alone don't fit the cell,
+ * they're scaled down uniformly — still tiles exactly, just tighter.
+ */
+function distributeStackedHeights(cellRooms: AllocatedRoom[], cellH: number): number[] {
+  if (!cellRooms.length) return []
+
+  const floors = cellRooms.map((r) => MIN_SHORT_DIM_FT[r.category])
+  const floorTotal = floors.reduce((a, b) => a + b, 0)
+
+  if (floorTotal >= cellH - 0.01) {
+    const scale = floorTotal > 0 ? cellH / floorTotal : 0
+    return floors.map((f) => f * scale)
+  }
+
+  const surplus = cellH - floorTotal
+  const weight = cellRooms.map((r) => Math.max(0, r.alloc))
+  const totalWeight = weight.reduce((a, b) => a + b, 0)
+  if (totalWeight <= 0) {
+    return floors.map((f) => f + surplus / cellRooms.length)
+  }
+  return floors.map((f, i) => f + surplus * (weight[i] / totalWeight))
+}
+
 /**
  * Places rooms on a true 3×3 Vastu grid.
  *
@@ -751,12 +793,13 @@ function layoutRooms(
       // compass line. Slice across x only when the cell provably sits inside
       // one pada and the wider split gives better proportions.
       const splitAlongX = spansOnePada(x, colW, padaW) && colW >= cellH
+      const stackedHeights = splitAlongX ? null : distributeStackedHeights(cellRooms, cellH)
 
       let cursor = 0
-      for (const room of cellRooms) {
+      cellRooms.forEach((room, roomIdx) => {
         const frac = cellAlloc > 0 ? room.alloc / cellAlloc : 1 / cellRooms.length
         const widthFt = splitAlongX ? colW * frac : colW
-        const heightFt = splitAlongX ? cellH : cellH * frac
+        const heightFt = splitAlongX ? cellH : stackedHeights![roomIdx]
         const rx = x + (splitAlongX ? cursor : 0)
         const ry = y + (splitAlongX ? 0 : cursor)
 
@@ -781,7 +824,7 @@ function layoutRooms(
           zoneLabel: COMPASS_LABEL[zone] ?? zone,
         })
         cursor += splitAlongX ? widthFt : heightFt
-      }
+      })
       y += cellH
     }
     x += colW

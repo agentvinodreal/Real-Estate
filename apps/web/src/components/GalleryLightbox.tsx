@@ -110,7 +110,7 @@ export default function GalleryLightbox({ images, open, startIndex = 0, onClose 
         </div>
 
         {/* Center content with navigation buttons */}
-        <div className="relative flex w-full flex-1 items-center justify-between px-4 sm:px-6">
+        <div className="relative flex w-full min-h-0 flex-1 items-center justify-between px-4 sm:px-6">
           {/* Left Arrow */}
           <button
             onClick={handlePrev}
@@ -121,7 +121,7 @@ export default function GalleryLightbox({ images, open, startIndex = 0, onClose 
           </button>
 
           {/* Active Image */}
-          <div className="relative flex h-full w-full max-w-5xl items-center justify-center overflow-hidden p-2">
+          <div className="relative flex h-full min-h-0 w-full max-w-5xl items-center justify-center overflow-hidden p-2">
             <AnimatePresence mode="wait">
               <motion.div
                 key={index}
@@ -129,7 +129,7 @@ export default function GalleryLightbox({ images, open, startIndex = 0, onClose 
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.25 }}
-                className="h-full w-full"
+                className="h-full min-h-0 w-full"
               >
                 <Photo
                   src={images[index]}

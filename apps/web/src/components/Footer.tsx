@@ -91,7 +91,7 @@ export default function Footer() {
             <span>·</span>
             <Link to="/terms" className="hover:text-bone">Terms of Use</Link>
           </div>
-          <span className="text-bone/30">Designed &amp; built in Patna 🇮🇳</span>
+          <span className="text-bone/30">Designed &amp; built in Delhi by Suryansh Singh 🇮🇳</span>
         </div>
       </div>
     </footer>
