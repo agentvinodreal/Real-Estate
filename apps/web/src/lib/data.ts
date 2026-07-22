@@ -4,8 +4,8 @@ export const CONTACT = {
   phone: '+91 870 036 5768',
   whatsapp: '918700365768', // digits only for wa.me
   email: 'murlimurliktr007@gmail.com',
-  city: 'Patna, Bihar',
-  address: 'Carry Construction HQ, Boring Road Chauraha, Boring Road, Patna 800001',
+  city: 'Katihar, Bihar',
+  address: 'Carry Construction HQ, New Market, Katihar, Bihar, 854105',
   rera: 'P52100012345',
   instagram: 'https://instagram.com/carryconstruction',
   facebook: 'https://facebook.com/carryconstruction',

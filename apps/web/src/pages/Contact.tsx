@@ -95,7 +95,7 @@ export default function Contact() {
               <div>
                 <h3 className="font-mono text-[0.6rem] uppercase tracking-wider text-concrete">Office Address</h3>
                 <p className="mt-1 text-sm text-ink-soft leading-relaxed">
-                  Carry Construction HQ, New Market Katihar ,Bihar ,854105
+                  {CONTACT.address}
                 </p>
               </div>
             </div>
@@ -103,7 +103,7 @@ export default function Contact() {
             {/* Google Map Iframe */}
             <div className="mt-8 relative overflow-hidden border border-ink/10 aspect-[4/3] sm:aspect-[16/8] w-full">
               <iframe
-                src="https://maps.google.com/maps?q=Boring%20Road,%20Patna&z=14&output=embed"
+                src="https://maps.google.com/maps?q=New%20Market,%20Katihar,%20Bihar%20854105&z=14&output=embed"
                 className="w-full h-full border-none"
                 allowFullScreen
                 loading="lazy"
