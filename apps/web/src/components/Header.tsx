@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { Logo } from '@carry/shared'
-import { Sun, Moon, ShoppingCart, X, User } from 'lucide-react'
+// import { Sun, Moon } from 'lucide-react' // theme toggle disabled for now
+import { ShoppingCart, X, User } from 'lucide-react'
 import { CONTACT } from '../lib/data'
 import { useCart } from '../context/CartContext'
 import { motion, AnimatePresence } from 'motion/react'
@@ -32,22 +33,23 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 'light'
-    }
-    return 'light'
-  })
+  // Theme mode (light/dark) toggle disabled for now
+  // const [theme, setTheme] = useState(() => {
+  //   if (typeof window !== 'undefined') {
+  //     return localStorage.getItem('theme') || 'light'
+  //   }
+  //   return 'light'
+  // })
 
-  useEffect(() => {
-    const root = window.document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-    localStorage.setItem('theme', theme)
-  }, [theme])
+  // useEffect(() => {
+  //   const root = window.document.documentElement
+  //   if (theme === 'dark') {
+  //     root.classList.add('dark')
+  //   } else {
+  //     root.classList.remove('dark')
+  //   }
+  //   localStorage.setItem('theme', theme)
+  // }, [theme])
 
   useEffect(() => {
     if (open) {
@@ -60,9 +62,9 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
     }
   }, [open])
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
-  }
+  // const toggleTheme = () => {
+  //   setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
+  // }
 
   return (
     <header
@@ -100,6 +102,7 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
               </span>
             )}
           </button>
+          {/* Theme toggle disabled for now
           <button
             onClick={toggleTheme}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-bone/25 text-bone/80 transition-colors hover:border-ochre hover:text-ochre cursor-pointer"
@@ -107,6 +110,7 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
           >
             {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
+          */}
           <SignedOut>
             <SignInButton mode="modal">
               <button className="font-mono text-xs uppercase tracking-[0.18em] text-bone/80 transition-colors hover:text-ochre">
@@ -211,6 +215,7 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
                   </button>
                 </div>
                 
+                {/* Theme toggle disabled for now
                 <div className="flex items-center justify-between text-bone/85">
                   <span className="font-mono text-xs uppercase tracking-[0.18em]">Theme</span>
                   <button
@@ -221,6 +226,7 @@ export default function Header({ onProfileClick }: { onProfileClick: () => void 
                     {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                   </button>
                 </div>
+                */}
 
                 <div className="flex items-center justify-between border-t border-bone/5 pt-3.5">
                   <SignedOut>

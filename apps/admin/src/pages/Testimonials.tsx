@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+import { AnimatePresence } from 'motion/react'
+import { Star } from 'lucide-react'
 import { adminApi } from '../lib/adminApi'
 import type { Testimonial } from '@carry/shared'
+import { Card, CardGrid, EmptyState, LoadingState, PageHeader } from '../components/ui'
 
 export default function Testimonials() {
   const [items, setItems] = useState<Testimonial[]>([])
@@ -32,77 +35,48 @@ export default function Testimonials() {
 
   return (
     <div>
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-semibold text-ink">Reviews</h1>
-          <p className="mt-1 text-sm text-concrete">{items.length} total customer testimonials</p>
-        </div>
-      </div>
+      <PageHeader title="Reviews" subtitle={`${items.length} total customer testimonials`} />
 
       {loading ? (
-        <div className="flex h-48 items-center justify-center">
-          <p className="font-mono text-sm text-concrete animate-pulse">Loading Reviews…</p>
-        </div>
+        <LoadingState label="Loading reviews…" />
       ) : items.length === 0 ? (
-        <p className="border border-dashed border-ink/20 p-10 text-center text-ink-soft bg-bone-dim/30">
-          No reviews found. Reviews submitted by users on the website will appear here.
-        </p>
+        <EmptyState>No reviews found. Reviews submitted by users on the website will appear here.</EmptyState>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((t) => (
-            <div
-              key={t.id}
-              className="group flex flex-col justify-between border border-ink/10 bg-bone p-5 hover:border-ink/20 shadow-sm transition-all"
-            >
-              <div>
-                {/* Header: Rating & Date */}
-                <div className="flex items-center justify-between gap-3 border-b border-ink/5 pb-3 mb-4">
-                  {/* Star rating */}
-                  <div className="flex gap-0.5 text-xs">
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      <span key={idx} className={idx < t.rating ? 'text-ochre' : 'text-concrete'}>
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  {t.createdAt && (
-                    <span className="font-mono text-[0.65rem] text-concrete">
-                      {new Date(t.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  )}
-                </div>
-
-                {/* Review Text */}
-                <blockquote className="font-sans text-sm leading-relaxed text-ink italic mb-6">
-                  “{t.quote}”
-                </blockquote>
-              </div>
-
-              {/* Footer: User Details & Action */}
-              <div className="border-t border-ink/5 pt-4 flex items-center justify-between gap-4">
+        <CardGrid>
+          <AnimatePresence mode="popLayout">
+            {items.map((t) => (
+              <Card key={t.id}>
                 <div>
-                  <div className="font-semibold text-sm text-ink leading-tight">{t.name}</div>
-                  {t.location && (
-                    <div className="font-mono text-[0.65rem] uppercase tracking-wider text-concrete mt-0.5">
-                      {t.location}
+                  <div className="mb-4 flex items-center justify-between gap-3 border-b border-ink/5 pb-3">
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <Star key={idx} className={`h-3.5 w-3.5 ${idx < t.rating ? 'fill-ochre text-ochre' : 'text-concrete'}`} strokeWidth={1.5} />
+                      ))}
                     </div>
-                  )}
+                    {t.createdAt && (
+                      <span className="font-mono text-[0.65rem] text-concrete">
+                        {new Date(t.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    )}
+                  </div>
+
+                  <blockquote className="mb-6 font-sans text-sm italic leading-relaxed text-ink">“{t.quote}”</blockquote>
                 </div>
 
-                <button
-                  onClick={() => remove(t)}
-                  className="font-mono text-xs uppercase tracking-[0.12em] text-ochre-dark hover:text-ink transition-colors cursor-pointer"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center justify-between gap-4 border-t border-ink/5 pt-4">
+                  <div>
+                    <div className="text-sm font-semibold leading-tight text-ink">{t.name}</div>
+                    {t.location && <div className="mt-0.5 font-mono text-[0.65rem] uppercase tracking-wider text-concrete">{t.location}</div>}
+                  </div>
+
+                  <button onClick={() => remove(t)} className="cursor-pointer font-mono text-xs uppercase tracking-[0.12em] text-ochre-dark transition-colors hover:text-ink">
+                    Delete
+                  </button>
+                </div>
+              </Card>
+            ))}
+          </AnimatePresence>
+        </CardGrid>
       )}
     </div>
   )

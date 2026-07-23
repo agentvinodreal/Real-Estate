@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AnimatePresence } from 'motion/react'
+import { Download, Plus } from 'lucide-react'
 import { adminApi } from '../lib/adminApi'
 import type { Property } from '@carry/shared'
+import { Badge, Button, Card, CardGrid, DetailModal, DetailRow, EmptyState, LoadingState, PageHeader } from '../components/ui'
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? 'piwpzbke'
+const cldThumb = (img: string) =>
+  img.startsWith('http') ? img : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_400,h_225,c_fill,q_auto,f_auto/${img}`
+const cldFull = (img: string) =>
+  img.startsWith('http') ? img : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${img}`
 
 export default function Properties() {
   const [items, setItems] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [viewProperty, setViewProperty] = useState<Property | null>(null)
 
   function load() {
     setLoading(true)
@@ -23,14 +31,8 @@ export default function Properties() {
 
   function exportJSONBackup(list: Property[]) {
     const backupData = list.map((p) => {
-      const fullImages = (p.images ?? []).map((img) =>
-        img.startsWith('http') ? img : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${img}`
-      )
-      return {
-        ...p,
-        backupImages: fullImages,
-        exportedAt: new Date().toISOString(),
-      }
+      const fullImages = (p.images ?? []).map(cldFull)
+      return { ...p, backupImages: fullImages, exportedAt: new Date().toISOString() }
     })
 
     const jsonString = JSON.stringify(backupData, null, 2)
@@ -44,113 +46,119 @@ export default function Properties() {
 
   return (
     <div>
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-semibold text-ink">Properties</h1>
-          <p className="mt-1 text-sm text-concrete">{items.length} active listings</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => exportJSONBackup(items)}
-            className="border border-ink/20 bg-bone px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-ink hover:border-ochre hover:text-ochre transition-colors cursor-pointer"
-          >
-            Backup JSON
-          </button>
-          <Link to="/properties/new" className="bg-ink px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark">
-            + New property
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Properties"
+        subtitle={`${items.length} active listings`}
+        actions={
+          <>
+            <Button variant="outline" icon={<Download className="h-3.5 w-3.5" strokeWidth={1.8} />} onClick={() => exportJSONBackup(items)}>
+              Backup JSON
+            </Button>
+            <Link to="/properties/new">
+              <Button icon={<Plus className="h-3.5 w-3.5" strokeWidth={2} />}>New property</Button>
+            </Link>
+          </>
+        }
+      />
 
       {loading ? (
-        <div className="flex h-48 items-center justify-center">
-          <p className="font-mono text-sm text-concrete animate-pulse">Loading Properties…</p>
-        </div>
+        <LoadingState label="Loading properties…" />
       ) : items.length === 0 ? (
-        <p className="border border-dashed border-ink/20 p-10 text-center text-ink-soft bg-bone-dim/30">
-          No properties found. Click "+ New property" to create one.
-        </p>
+        <EmptyState>No properties found. Click "New property" to create one.</EmptyState>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((p) => (
-            <div
-              key={p.id}
-              className="group flex flex-col justify-between border border-ink/10 bg-bone p-5 hover:border-ink/20 shadow-sm transition-all"
-            >
-              <div>
-                {/* Photo preview */}
-                <div className="relative mb-4 overflow-hidden aspect-[16/9] w-full bg-ink border border-ink/5 flex items-center justify-center">
-                  {p.images && p.images.length > 0 ? (
-                    <img
-                      src={p.images[0].startsWith('http') ? p.images[0] : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_400,h_225,c_fill,q_auto,f_auto/${p.images[0]}`}
-                      alt={p.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="font-mono text-[0.6rem] text-concrete uppercase tracking-wider">No image uploaded</span>
-                  )}
+        <CardGrid>
+          <AnimatePresence mode="popLayout">
+            {items.map((p) => (
+              <Card key={p.id}>
+                <div>
+                  <div className="relative mb-4 flex aspect-[16/9] w-full items-center justify-center overflow-hidden border border-ink/5 bg-ink">
+                    {p.images && p.images.length > 0 ? (
+                      <img src={cldThumb(p.images[0])} alt={p.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="font-mono text-[0.6rem] uppercase tracking-wider text-concrete">No image uploaded</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-sans text-lg font-semibold leading-snug text-ink">{p.title}</h3>
+                    <Badge tone="ink">{p.listingType}</Badge>
+                  </div>
+
+                  <p className="mt-1 font-mono text-xs uppercase tracking-wider text-concrete">
+                    {p.locality}, {p.city}
+                  </p>
+
+                  <div className="my-3 flex items-baseline justify-between border-y border-ink/5 py-2.5">
+                    <span className="font-mono text-[0.65rem] uppercase tracking-wide text-concrete">Price</span>
+                    <span className="font-sans text-base font-semibold text-ochre-dark">{p.priceLabel}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-1.5 font-mono text-[0.65rem] uppercase tracking-wider text-ink-soft">
+                    <div>Type: <span className="text-ink">{p.propertyType}</span></div>
+                    <div>BHK: <span className="text-ink">{p.bhk ?? 'N/A'}</span></div>
+                    <div className="col-span-2">Area: <span className="text-ink">{p.areaSqft.toLocaleString('en-IN')} sq ft</span></div>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    {p.featured && <Badge tone="ochre">Featured</Badge>}
+                    {p.published ? <Badge tone="teal">Published</Badge> : <Badge tone="concrete">Draft</Badge>}
+                  </div>
                 </div>
 
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-sans text-lg font-semibold text-ink leading-snug">
-                    {p.title}
-                  </h3>
-                  <span className="font-mono text-[0.65rem] bg-ink/5 px-2.5 py-0.5 uppercase tracking-wider text-ink-soft whitespace-nowrap">
-                    {p.listingType}
-                  </span>
+                <div className="mt-6 flex items-center justify-end gap-4 border-t border-ink/5 pt-3">
+                  <button onClick={() => setViewProperty(p)} className="cursor-pointer font-mono text-xs uppercase tracking-[0.12em] text-teal transition-colors hover:text-ink">
+                    View
+                  </button>
+                  <Link to={`/properties/${p.slug}`} className="font-mono text-xs uppercase tracking-[0.12em] text-ink transition-colors hover:text-ochre-dark">
+                    Edit
+                  </Link>
+                  <button onClick={() => remove(p)} className="cursor-pointer font-mono text-xs uppercase tracking-[0.12em] text-ochre-dark transition-colors hover:text-ink">
+                    Delete
+                  </button>
                 </div>
-
-                <p className="mt-1 text-xs text-concrete font-mono uppercase tracking-wider">
-                  {p.locality}, {p.city}
-                </p>
-
-                <div className="mt-4 flex items-baseline justify-between border-y border-ink/5 py-2.5 my-3">
-                  <span className="font-mono text-[0.65rem] text-concrete uppercase tracking-wide">Price</span>
-                  <span className="font-sans text-base font-semibold text-ochre-dark">{p.priceLabel}</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-y-1.5 font-mono text-[0.65rem] text-ink-soft uppercase tracking-wider">
-                  <div>Type: <span className="text-ink">{p.propertyType}</span></div>
-                  <div>BHK: <span className="text-ink">{p.bhk ?? 'N/A'}</span></div>
-                  <div className="col-span-2">Area: <span className="text-ink">{p.areaSqft.toLocaleString('en-IN')} sq ft</span></div>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  {p.featured && (
-                    <span className="border border-ochre/30 bg-ochre/5 px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-ochre-dark">
-                      Featured
-                    </span>
-                  )}
-                  {p.published ? (
-                    <span className="border border-green-600/30 bg-green-600/5 px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-green-700">
-                      Published
-                    </span>
-                  ) : (
-                    <span className="border border-ink/20 bg-ink/5 px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-concrete">
-                      Draft
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center justify-end gap-4 border-t border-ink/5 pt-3">
-                <Link
-                  to={`/properties/${p.slug}`}
-                  className="font-mono text-xs uppercase tracking-[0.12em] text-ink hover:text-ochre-dark transition-colors"
-                >
-                  Edit listing
-                </Link>
-                <button
-                  onClick={() => remove(p)}
-                  className="font-mono text-xs uppercase tracking-[0.12em] text-ochre-dark hover:text-ink transition-colors cursor-pointer"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </AnimatePresence>
+        </CardGrid>
       )}
+
+      <AnimatePresence>
+        {viewProperty && (
+          <DetailModal
+            title={viewProperty.title}
+            imageUrl={viewProperty.images?.[0] ? cldFull(viewProperty.images[0]) : null}
+            imageAlt={viewProperty.title}
+            badge={<Badge tone="ink">{viewProperty.listingType}</Badge>}
+            onClose={() => setViewProperty(null)}
+          >
+            <DetailRow label="Property Type" value={viewProperty.propertyType} />
+            <DetailRow label="BHK" value={viewProperty.bhk ?? null} />
+            <DetailRow label="Price" value={viewProperty.priceLabel} />
+            <DetailRow label="Status" value={viewProperty.status} />
+            <DetailRow label="Area" value={`${viewProperty.areaSqft.toLocaleString('en-IN')} sq ft`} />
+            <DetailRow
+              label="Carpet / Built-up"
+              value={
+                viewProperty.carpetAreaSqft || viewProperty.builtupAreaSqft
+                  ? `${viewProperty.carpetAreaSqft ?? '—'} / ${viewProperty.builtupAreaSqft ?? '—'} sq ft`
+                  : null
+              }
+            />
+            <DetailRow label="Location" value={`${viewProperty.locality}, ${viewProperty.city}`} />
+            <DetailRow label="Furnishing" value={viewProperty.furnishing} />
+            <DetailRow label="RERA" value={viewProperty.reraNumber} />
+            <DetailRow label="Visibility" value={viewProperty.published ? 'Published' : 'Draft'} />
+            {viewProperty.amenities.length > 0 && (
+              <div className="col-span-2">
+                <DetailRow label="Amenities" value={viewProperty.amenities.join(', ')} />
+              </div>
+            )}
+            <div className="col-span-2">
+              <DetailRow label="Description" value={viewProperty.description} />
+            </div>
+          </DetailModal>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

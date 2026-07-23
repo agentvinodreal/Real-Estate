@@ -63,6 +63,10 @@ export const adminApi = {
     await authFetch(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })
   },
 
+  async deleteLead(id: string): Promise<void> {
+    await authFetch(`/leads/${id}`, { method: 'DELETE' })
+  },
+
   // Properties (list is public; writes are admin)
   async listProperties(): Promise<Property[]> {
     const res = await fetch(`${BASE}/properties?limit=60`)

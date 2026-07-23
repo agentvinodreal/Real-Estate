@@ -1,7 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { AnimatePresence, motion } from 'motion/react'
+import { Loader2, MapPin } from 'lucide-react'
 import { api, formatInr } from '@carry/shared'
 import { adminApi } from '../lib/adminApi'
+import { Button, Input, Label, Select, Textarea } from '../components/ui'
+import { EASE_OUT_EXPO } from '../lib/motion'
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? 'piwpzbke'
 
@@ -30,9 +34,6 @@ const empty = {
 }
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-
-const field = 'w-full border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink focus:border-ochre focus:outline-none'
-const label = 'font-mono text-[0.6rem] uppercase tracking-[0.15em] text-concrete'
 
 export default function PropertyForm() {
   const { slug } = useParams<{ slug: string }>()
@@ -195,129 +196,118 @@ export default function PropertyForm() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: EASE_OUT_EXPO }} className="max-w-3xl">
       <h1 className="font-display text-3xl font-semibold text-ink">{isEdit ? 'Edit property' : 'New property'}</h1>
 
       <form onSubmit={onSubmit} className="mt-6 grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <label className={label}>Title</label>
-          <input required className={field} value={form.title} onChange={(e) => set('title', e.target.value)} />
+          <Label>Title</Label>
+          <Input required value={form.title} onChange={(e) => set('title', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Slug (auto if blank)</label>
-          <input className={field} value={form.slug} onChange={(e) => set('slug', e.target.value)} placeholder={slugify(form.title)} />
+          <Label>Slug (auto if blank)</Label>
+          <Input value={form.slug} onChange={(e) => set('slug', e.target.value)} placeholder={slugify(form.title)} />
         </div>
         <div>
-          <label className={label}>Listing type</label>
-          <select className={field} value={form.listingType} onChange={(e) => set('listingType', e.target.value)}>
+          <Label>Listing type</Label>
+          <Select value={form.listingType} onChange={(e) => set('listingType', e.target.value)}>
             {['Sale', 'Resale', 'Under Construction'].map((t) => <option key={t}>{t}</option>)}
-          </select>
+          </Select>
         </div>
         <div>
-          <label className={label}>Property type</label>
-          <select className={field} value={form.propertyType} onChange={(e) => set('propertyType', e.target.value)}>
+          <Label>Property type</Label>
+          <Select value={form.propertyType} onChange={(e) => set('propertyType', e.target.value)}>
             {['Apartment', 'Villa', 'Plot', 'Commercial'].map((t) => <option key={t}>{t}</option>)}
-          </select>
+          </Select>
         </div>
         <div>
-          <label className={label}>Status</label>
-          <select className={field} value={form.status} onChange={(e) => set('status', e.target.value)}>
+          <Label>Status</Label>
+          <Select value={form.status} onChange={(e) => set('status', e.target.value)}>
             <option value="ready">Ready to move</option>
             <option value="under_construction">Under construction</option>
             <option value="available">Available (Plot/Land)</option>
-          </select>
+          </Select>
         </div>
         <div>
-          <label className={label}>BHK</label>
-          <input className={field} type="number" value={form.bhk} onChange={(e) => set('bhk', e.target.value)} />
+          <Label>BHK</Label>
+          <Input type="number" value={form.bhk} onChange={(e) => set('bhk', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Price (₹)</label>
-          <input required className={field} type="number" value={form.priceInr} onChange={(e) => set('priceInr', e.target.value)} />
+          <Label>Price (₹)</Label>
+          <Input required type="number" value={form.priceInr} onChange={(e) => set('priceInr', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Total area (sq ft)</label>
-          <input required className={field} type="number" value={form.areaSqft} onChange={(e) => set('areaSqft', e.target.value)} />
+          <Label>Total area (sq ft)</Label>
+          <Input required type="number" value={form.areaSqft} onChange={(e) => set('areaSqft', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Carpet area (sq ft)</label>
-          <input className={field} type="number" value={form.carpetAreaSqft} onChange={(e) => set('carpetAreaSqft', e.target.value)} />
+          <Label>Carpet area (sq ft)</Label>
+          <Input type="number" value={form.carpetAreaSqft} onChange={(e) => set('carpetAreaSqft', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Built-up area (sq ft)</label>
-          <input className={field} type="number" value={form.builtupAreaSqft} onChange={(e) => set('builtupAreaSqft', e.target.value)} />
+          <Label>Built-up area (sq ft)</Label>
+          <Input type="number" value={form.builtupAreaSqft} onChange={(e) => set('builtupAreaSqft', e.target.value)} />
         </div>
         <div>
-          <label className={label}>City</label>
-          <input required className={field} value={form.city} onChange={(e) => set('city', e.target.value)} />
+          <Label>City</Label>
+          <Input required value={form.city} onChange={(e) => set('city', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Locality</label>
-          <input required className={field} value={form.locality} onChange={(e) => set('locality', e.target.value)} />
+          <Label>Locality</Label>
+          <Input required value={form.locality} onChange={(e) => set('locality', e.target.value)} />
         </div>
         <div>
-          <label className={label}>Furnishing</label>
-          <input className={field} value={form.furnishing} onChange={(e) => set('furnishing', e.target.value)} />
+          <Label>Furnishing</Label>
+          <Input value={form.furnishing} onChange={(e) => set('furnishing', e.target.value)} />
         </div>
         <div>
-          <label className={label}>RERA number</label>
-          <input className={field} value={form.reraNumber} onChange={(e) => set('reraNumber', e.target.value)} />
+          <Label>RERA number</Label>
+          <Input value={form.reraNumber} onChange={(e) => set('reraNumber', e.target.value)} />
         </div>
         <div className="col-span-2">
-          <label className={label}>Amenities (comma separated)</label>
-          <input className={field} value={form.amenities} onChange={(e) => set('amenities', e.target.value)} placeholder="Clubhouse, Gym, Parking" />
+          <Label>Amenities (comma separated)</Label>
+          <Input value={form.amenities} onChange={(e) => set('amenities', e.target.value)} placeholder="Clubhouse, Gym, Parking" />
         </div>
         <div className="col-span-2">
-          <label className={label}>Description</label>
-          <textarea className={`${field} min-h-[100px]`} value={form.description} onChange={(e) => set('description', e.target.value)} />
+          <Label>Description</Label>
+          <Textarea className="min-h-[100px]" value={form.description} onChange={(e) => set('description', e.target.value)} />
         </div>
-        {/* Location Section */}
+
         <div className="col-span-2 border-t border-ink/10 pt-6">
           <h2 className="font-display text-xl font-semibold text-ink">Location</h2>
           <div className="mt-3 grid grid-cols-2 gap-4">
             <div>
-              <label className={label}>Latitude</label>
-              <input
-                className={field}
-                type="number"
-                step="any"
-                value={form.lat}
-                onChange={(e) => set('lat', e.target.value)}
-                placeholder="25.5941"
-              />
+              <Label>Latitude</Label>
+              <Input type="number" step="any" value={form.lat} onChange={(e) => set('lat', e.target.value)} placeholder="25.5941" />
             </div>
             <div>
-              <label className={label}>Longitude</label>
-              <input
-                className={field}
-                type="number"
-                step="any"
-                value={form.lng}
-                onChange={(e) => set('lng', e.target.value)}
-                placeholder="85.1376"
-              />
+              <Label>Longitude</Label>
+              <Input type="number" step="any" value={form.lng} onChange={(e) => set('lng', e.target.value)} placeholder="85.1376" />
             </div>
           </div>
-          <button
-            type="button"
-            onClick={locateOnMap}
-            disabled={geocoding}
-            className="mt-3 bg-ink px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark transition-colors disabled:opacity-60"
-          >
-            {geocoding ? 'Locating…' : 'Locate from locality/city'}
-          </button>
+          <Button type="button" onClick={locateOnMap} busy={geocoding} icon={<MapPin className="h-3.5 w-3.5" strokeWidth={1.8} />} className="mt-3">
+            Locate from locality/city
+          </Button>
 
-          {form.lat && form.lng && !Number.isNaN(Number(form.lat)) && !Number.isNaN(Number(form.lng)) && (
-            <div className="mt-4 border border-ink/10 overflow-hidden">
-              <iframe
-                key={`${form.lat},${form.lng}`}
-                src={`https://maps.google.com/maps?q=${form.lat},${form.lng}&z=15&output=embed`}
-                className="w-full h-[300px] border-none"
-                loading="lazy"
-                title="Property location preview"
-              />
-            </div>
-          )}
+          <AnimatePresence>
+            {form.lat && form.lng && !Number.isNaN(Number(form.lat)) && !Number.isNaN(Number(form.lng)) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
+                className="mt-4 overflow-hidden border border-ink/10"
+              >
+                <iframe
+                  key={`${form.lat},${form.lng}`}
+                  src={`https://maps.google.com/maps?q=${form.lat},${form.lng}&z=15&output=embed`}
+                  className="h-[300px] w-full border-none"
+                  loading="lazy"
+                  title="Property location preview"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <label className="flex items-center gap-2 text-sm text-ink-soft">
@@ -327,83 +317,73 @@ export default function PropertyForm() {
           <input type="checkbox" checked={form.published} onChange={(e) => set('published', e.target.checked)} /> Published
         </label>
 
-        {/* Cloudinary Gallery Section */}
         <div className="col-span-2 border-t border-ink/10 pt-6">
           <h2 className="font-display text-xl font-semibold text-ink">Property Gallery</h2>
-          
+
           <div className="mt-3 flex items-center justify-center border border-dashed border-ink/30 bg-bone-dim p-6 text-center">
             <div>
               <p className="text-sm text-ink-soft">
                 {uploading ? 'Uploading to Cloudinary...' : 'Upload multiple photos directly to Cloudinary'}
               </p>
-              <label className="mt-3 inline-block cursor-pointer bg-ink px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark transition-colors">
+              <label className="mt-3 inline-flex cursor-pointer items-center gap-2 bg-ink px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-bone transition-colors hover:bg-ochre-dark">
+                {uploading && <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />}
                 {uploading ? 'Uploading…' : 'Select Files'}
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  disabled={uploading}
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
+                <input type="file" multiple accept="image/*" disabled={uploading} onChange={handleFileUpload} className="hidden" />
               </label>
             </div>
           </div>
 
           {images.length > 0 && (
-            <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
-              {images.map((imgUrl, idx) => {
-                const isHero = idx === 0
-                return (
-                  <div key={imgUrl} className={`group relative aspect-[4/3] border overflow-hidden bg-bone-dim ${isHero ? 'border-ochre shadow-md ring-1 ring-ochre' : 'border-ink/10'}`}>
-                    <img
-                      src={imgUrl.startsWith('http') ? imgUrl : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${imgUrl}`}
-                      alt={`Gallery item ${idx}`}
-                      className="h-full w-full object-cover"
-                    />
-                    
-                    {isHero && (
-                      <span className="absolute left-1.5 top-1.5 bg-ochre px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-bone">
-                        Hero
-                      </span>
-                    )}
+            <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.04 } } }} className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+              <AnimatePresence mode="popLayout">
+                {images.map((imgUrl, idx) => {
+                  const isHero = idx === 0
+                  return (
+                    <motion.div
+                      key={imgUrl}
+                      layout
+                      variants={{ hidden: { opacity: 0, scale: 0.9 }, show: { opacity: 1, scale: 1 } }}
+                      exit={{ opacity: 0, scale: 0.85 }}
+                      transition={{ duration: 0.25, ease: EASE_OUT_EXPO }}
+                      className={`group relative aspect-[4/3] overflow-hidden border bg-bone-dim ${isHero ? 'border-ochre shadow-md ring-1 ring-ochre' : 'border-ink/10'}`}
+                    >
+                      <img
+                        src={imgUrl.startsWith('http') ? imgUrl : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${imgUrl}`}
+                        alt={`Gallery item ${idx}`}
+                        className="h-full w-full object-cover"
+                      />
 
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      {!isHero && (
-                        <button
-                          type="button"
-                          onClick={() => setHero(idx)}
-                          className="bg-bone text-ochre px-2.5 py-1 text-[0.6rem] font-mono uppercase tracking-wider transition-colors hover:bg-ochre hover:text-bone"
-                        >
-                          Make Hero
-                        </button>
+                      {isHero && (
+                        <span className="absolute left-1.5 top-1.5 bg-ochre px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-bone">
+                          Hero
+                        </span>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => deleteImage(idx)}
-                        className="bg-bone text-ink px-2.5 py-1 text-[0.6rem] font-mono uppercase tracking-wider transition-colors hover:bg-red-700 hover:text-white"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink/65 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        {!isHero && (
+                          <button type="button" onClick={() => setHero(idx)} className="cursor-pointer bg-bone px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-ochre transition-colors hover:bg-ochre hover:text-bone">
+                            Make Hero
+                          </button>
+                        )}
+                        <button type="button" onClick={() => deleteImage(idx)} className="cursor-pointer bg-bone px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-ink transition-colors hover:bg-red-700 hover:text-white">
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            </motion.div>
           )}
         </div>
 
         {error && <p className="col-span-2 text-sm text-ochre-dark">{error}</p>}
 
         <div className="col-span-2 flex gap-3">
-          <button type="submit" disabled={busy} className="bg-ink px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-bone hover:bg-ochre-dark disabled:opacity-60">
-            {busy ? 'Saving…' : isEdit ? 'Save changes' : 'Create property'}
-          </button>
-          <button type="button" onClick={() => navigate('/properties')} className="border border-ink/25 px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-ink hover:border-ochre">
-            Cancel
-          </button>
+          <Button type="submit" busy={busy}>{isEdit ? 'Save changes' : 'Create property'}</Button>
+          <Button type="button" variant="outline" onClick={() => navigate('/properties')}>Cancel</Button>
         </div>
       </form>
-    </div>
+    </motion.div>
   )
 }

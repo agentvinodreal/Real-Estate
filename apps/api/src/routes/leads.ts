@@ -118,6 +118,29 @@ export default async function leadRoutes(app: FastifyInstance) {
     },
   )
 
+  // ── Delete a lead (admin) ────────────────────────────────────────
+  app.delete(
+    '/leads/:id',
+    {
+      preHandler: verifyAdmin,
+      schema: {
+        tags: ['Leads'],
+        summary: 'Delete a lead (admin)',
+        security: [{ bearerAuth: [] }],
+        params: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      try {
+        await prisma.lead.delete({ where: { id } })
+        return reply.code(204).send()
+      } catch {
+        return reply.code(404).send({ error: 'Lead not found' })
+      }
+    },
+  )
+
   // ── User's own leads (authenticated) ───────────────────────────────
   app.get(
     '/leads/my',

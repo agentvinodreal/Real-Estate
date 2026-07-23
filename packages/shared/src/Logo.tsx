@@ -65,10 +65,18 @@ export default function Logo({ className = '', showWordmark = true, tone = 'ink'
 
       {showWordmark && (
         <span className="flex flex-col leading-none">
-          <span className="font-display text-[1.35rem] font-semibold tracking-tight text-ink group-hover:text-ochre transition-colors duration-300">
+          <span
+            className={`font-display text-[1.35rem] font-semibold tracking-tight group-hover:text-ochre transition-colors duration-300 ${
+              tone === 'bone' ? 'text-bone' : 'text-ink'
+            }`}
+          >
             Carry
           </span>
-          <span className="font-mono text-[0.6rem] font-medium uppercase tracking-[0.28em] text-concrete">
+          <span
+            className={`font-mono text-[0.6rem] font-medium uppercase tracking-[0.28em] ${
+              tone === 'bone' ? 'text-bone/60' : 'text-concrete'
+            }`}
+          >
             Construction
           </span>
         </span>

@@ -1,13 +1,71 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { X, Trash2, ShoppingBag, Truck, User, MessageSquare, Check } from 'lucide-react'
+import {
+  X,
+  Trash2,
+  ShoppingBag,
+  Truck,
+  User,
+  MessageSquare,
+  Check,
+  Phone,
+  Mail,
+  MapPin,
+  CalendarDays,
+  ClipboardList,
+  CheckCircle2,
+  ArrowRight,
+} from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { api } from '@carry/shared'
 import { CONTACT } from '../lib/data'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
 const inputClass =
-  'w-full border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none'
+  'w-full rounded-lg border border-ink/15 bg-bone py-3 pl-11 pr-3.5 text-sm text-ink placeholder:text-concrete/60 transition-all duration-200 hover:border-ink/25 focus:border-teal focus:outline-none focus:ring-4 focus:ring-teal/10'
+
+const fieldContainerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+}
+
+const fieldItemVariants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT_EXPO } },
+}
+
+function Field({
+  id,
+  label,
+  icon: Icon,
+  optional,
+  multiline,
+  children,
+}: {
+  id: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  optional?: boolean
+  multiline?: boolean
+  children: ReactNode
+}) {
+  return (
+    <motion.div variants={fieldItemVariants}>
+      <label htmlFor={id} className="mb-1.5 flex items-baseline gap-1.5 font-mono text-[0.68rem] uppercase tracking-widest text-concrete">
+        {label}
+        {optional && <span className="lowercase tracking-normal text-concrete/60">(optional)</span>}
+      </label>
+      <div className="group relative">
+        <Icon
+          className={`pointer-events-none absolute left-3.5 h-4 w-4 text-concrete transition-colors duration-200 group-focus-within:text-teal ${
+            multiline ? 'top-3.5' : 'top-1/2 -translate-y-1/2'
+          }`}
+        />
+        {children}
+      </div>
+    </motion.div>
+  )
+}
 
 export default function CartDrawer() {
   const {
@@ -136,40 +194,105 @@ Please confirm availability and final quote.`
               </button>
             </div>
 
+            {/* Progress Stepper */}
+            {(items.length > 0 || status === 'done') && (
+              <div className="flex items-center gap-2 border-b border-ink/10 bg-bone px-6 py-4">
+                {[
+                  { label: 'Cart', icon: ShoppingBag },
+                  { label: 'Details', icon: ClipboardList },
+                  { label: 'Confirm', icon: CheckCircle2 },
+                ].map((s, i) => {
+                  const step = status === 'done' ? 2 : isCheckout ? 1 : 0
+                  const active = i <= step
+                  return (
+                    <div key={s.label} className="flex flex-1 items-center gap-2 last:flex-none">
+                      <div className="flex items-center gap-2">
+                        <motion.div
+                          animate={{
+                            backgroundColor: active ? 'var(--color-teal)' : 'transparent',
+                            borderColor: active ? 'var(--color-teal)' : 'var(--color-ink)',
+                            color: active ? 'var(--color-bone)' : 'var(--color-concrete)',
+                          }}
+                          transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border"
+                          style={{ borderColor: active ? 'var(--color-teal)' : 'color-mix(in srgb, var(--color-ink) 15%, transparent)' }}
+                        >
+                          {i < step ? <Check className="h-3.5 w-3.5" /> : <s.icon className="h-3.5 w-3.5" />}
+                        </motion.div>
+                        <span
+                          className={`hidden font-mono text-[0.62rem] uppercase tracking-widest sm:inline ${
+                            active ? 'text-ink' : 'text-concrete/60'
+                          }`}
+                        >
+                          {s.label}
+                        </span>
+                      </div>
+                      {i < 2 && (
+                        <div className="relative h-px flex-1 overflow-hidden bg-ink/10">
+                          <motion.div
+                            initial={false}
+                            animate={{ width: i < step ? '100%' : '0%' }}
+                            transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+                            className="absolute inset-y-0 left-0 bg-teal"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {status === 'done' ? (
                 /* Success checkout view */
-                <div className="space-y-6 text-center py-8">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/10 text-teal">
+                <motion.div
+                  initial="hidden"
+                  animate="show"
+                  variants={fieldContainerVariants}
+                  className="space-y-6 py-8 text-center"
+                >
+                  <motion.div
+                    variants={fieldItemVariants}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+                    className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal/10 text-teal"
+                  >
                     <Check className="h-8 w-8" />
-                  </div>
-                  <div>
+                  </motion.div>
+                  <motion.div variants={fieldItemVariants}>
                     <h4 className="font-display text-2xl font-bold text-ink">Order Placed</h4>
                     <p className="mt-3 text-sm text-ink-soft leading-relaxed">
                       Your order request has been logged successfully. Click below to instantly send this receipt directly to our WhatsApp helpdesk for dispatch.
                     </p>
-                  </div>
+                  </motion.div>
 
-                  <div className="pt-6 border-t border-ink/10">
-                    <a
+                  <motion.div variants={fieldItemVariants} className="border-t border-ink/10 pt-6">
+                    <motion.a
+                      whileHover={{ scale: 1.015 }}
+                      whileTap={{ scale: 0.98 }}
                       href={generateWhatsAppLink(form.name, form.address, form.startDate, lastOrderDetails)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 bg-[#25D366] py-4 font-mono text-xs uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#20ba59] cursor-pointer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] py-4 font-mono text-xs uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#20ba59] cursor-pointer"
                     >
                       <MessageSquare className="h-4.5 w-4.5" />
                       Complete on WhatsApp
-                    </a>
-                  </div>
-                </div>
+                    </motion.a>
+                  </motion.div>
+                </motion.div>
               ) : isCheckout ? (
                 /* Checkout details form */
-                <form onSubmit={onSubmit} className="space-y-5">
-                  <div>
-                    <label htmlFor="chk-name" className="block font-mono text-[0.68rem] uppercase tracking-widest text-concrete mb-1.5">
-                      Full Name
-                    </label>
+                <motion.form
+                  onSubmit={onSubmit}
+                  variants={fieldContainerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-5"
+                >
+                  <Field id="chk-name" label="Full Name" icon={User}>
                     <input
                       id="chk-name"
                       required
@@ -179,12 +302,9 @@ Please confirm availability and final quote.`
                       value={form.name}
                       onChange={(e) => set('name', e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label htmlFor="chk-phone" className="block font-mono text-[0.68rem] uppercase tracking-widest text-concrete mb-1.5">
-                      Phone Number
-                    </label>
+                  <Field id="chk-phone" label="Phone Number" icon={Phone}>
                     <input
                       id="chk-phone"
                       required
@@ -194,12 +314,9 @@ Please confirm availability and final quote.`
                       value={form.phone}
                       onChange={(e) => set('phone', e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label htmlFor="chk-email" className="block font-mono text-[0.68rem] uppercase tracking-widest text-concrete mb-1.5">
-                      Email Address (Optional)
-                    </label>
+                  <Field id="chk-email" label="Email Address" icon={Mail} optional>
                     <input
                       id="chk-email"
                       type="email"
@@ -208,26 +325,20 @@ Please confirm availability and final quote.`
                       value={form.email}
                       onChange={(e) => set('email', e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label htmlFor="chk-address" className="block font-mono text-[0.68rem] uppercase tracking-widest text-concrete mb-1.5">
-                      Delivery / Project Site Address
-                    </label>
+                  <Field id="chk-address" label="Delivery / Project Site Address" icon={MapPin} multiline>
                     <textarea
                       id="chk-address"
                       required
-                      className={`${inputClass} min-h-[70px]`}
+                      className={`${inputClass} min-h-[76px] resize-none`}
                       placeholder="Enter the full location address where materials are to be shipped or services deployed..."
                       value={form.address}
                       onChange={(e) => set('address', e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label htmlFor="chk-date" className="block font-mono text-[0.68rem] uppercase tracking-widest text-concrete mb-1.5">
-                      Tentative Start Date
-                    </label>
+                  <Field id="chk-date" label="Tentative Start Date" icon={CalendarDays}>
                     <input
                       id="chk-date"
                       required
@@ -236,44 +347,64 @@ Please confirm availability and final quote.`
                       value={form.startDate}
                       onChange={(e) => set('startDate', e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label htmlFor="chk-msg" className="block font-mono text-[0.68rem] uppercase tracking-widest text-concrete mb-1.5">
-                      Special Notes / Message (Optional)
-                    </label>
+                  <Field id="chk-msg" label="Special Notes / Message" icon={MessageSquare} optional multiline>
                     <textarea
                       id="chk-msg"
-                      className={`${inputClass} min-h-[70px]`}
+                      className={`${inputClass} min-h-[76px] resize-none`}
                       placeholder="Specify material grades, worker experience needs, site timing limits, etc."
                       value={form.message}
                       onChange={(e) => set('message', e.target.value)}
                     />
-                  </div>
+                  </Field>
 
-                  {status === 'error' && (
-                    <p className="text-xs font-mono text-ochre-dark">
-                      An error occurred while confirming order. Please try again.
-                    </p>
-                  )}
+                  <AnimatePresence>
+                    {status === 'error' && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="rounded-lg bg-ochre-dark/10 px-3 py-2 text-xs font-mono text-ochre-dark"
+                      >
+                        An error occurred while confirming order. Please try again.
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
 
-                  <div className="pt-4 flex gap-4">
+                  <motion.div variants={fieldItemVariants} className="flex gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setIsCheckout(false)}
-                      className="flex-1 border border-ink/20 py-3.5 font-mono text-xs uppercase tracking-wider text-ink transition-colors hover:bg-ink/5 cursor-pointer"
+                      className="flex-1 rounded-lg border border-ink/20 py-3.5 font-mono text-xs uppercase tracking-wider text-ink transition-colors hover:bg-ink/5 cursor-pointer"
                     >
                       Back to Cart
                     </button>
-                    <button
+                    <motion.button
                       type="submit"
                       disabled={status === 'sending'}
-                      className="flex-1 bg-teal py-3.5 font-mono text-xs uppercase tracking-wider text-bone transition-colors hover:bg-teal-dark disabled:opacity-60 cursor-pointer"
+                      whileHover={{ scale: status === 'sending' ? 1 : 1.015 }}
+                      whileTap={{ scale: status === 'sending' ? 1 : 0.98 }}
+                      className="group flex flex-1 items-center justify-center gap-2 rounded-lg bg-teal py-3.5 font-mono text-xs uppercase tracking-wider text-bone transition-colors hover:bg-teal-dark disabled:opacity-60 cursor-pointer"
                     >
-                      {status === 'sending' ? 'Processing…' : 'Place Order'}
-                    </button>
-                  </div>
-                </form>
+                      {status === 'sending' ? (
+                        <>
+                          <motion.span
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                            className="h-3.5 w-3.5 rounded-full border-2 border-bone/40 border-t-bone"
+                          />
+                          Processing…
+                        </>
+                      ) : (
+                        <>
+                          Place Order
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                        </>
+                      )}
+                    </motion.button>
+                  </motion.div>
+                </motion.form>
               ) : items.length === 0 ? (
                 /* Empty state */
                 <div className="flex h-64 flex-col items-center justify-center text-center">
@@ -431,12 +562,15 @@ Please confirm availability and final quote.`
                 <p className="font-mono text-[0.58rem] tracking-wider text-concrete uppercase">
                   * Final pricing including taxes and transportation will be confirmed on call.
                 </p>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.015 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setIsCheckout(true)}
-                  className="w-full bg-teal py-3.5 font-mono text-xs uppercase tracking-[0.18em] text-bone transition-colors hover:bg-teal-dark cursor-pointer"
+                  className="group flex w-full items-center justify-center gap-2 rounded-lg bg-teal py-3.5 font-mono text-xs uppercase tracking-[0.18em] text-bone transition-colors hover:bg-teal-dark cursor-pointer"
                 >
                   Proceed to Checkout
-                </button>
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </motion.button>
               </div>
             )}
           </motion.div>
