@@ -31,7 +31,10 @@ const API_PREFIX = '/api/v1'
 const app = Fastify({ logger: true })
 
 async function init() {
-  await app.register(cors, { origin: true })
+  await app.register(cors, {
+    origin: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
 
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' })
 
