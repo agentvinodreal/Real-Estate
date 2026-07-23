@@ -37,7 +37,9 @@ async function authFetch(path: string, init: RequestInit = {}) {
 }
 
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`)
+  // Always hit the network so admin additions/deletions surface immediately —
+  // never serve a stale cached list.
+  const res = await fetch(`${BASE}${path}`, { cache: 'no-store' })
   if (!res.ok) throw new Error(`Request failed: ${res.status}`)
   return res.json() as Promise<T>
 }

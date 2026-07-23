@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo, type FormEvent } from 'react'
+import { useEffect, useState, useMemo, type FormEvent, type ReactNode } from 'react'
 import { adminApi } from '../lib/adminApi'
+import { cldAuto } from '../lib/cloudinary'
 import type { Material, EquipmentRental, ServiceProvider } from '@carry/shared'
 
 type SectionTab = 'materials' | 'equipment' | 'providers'
@@ -11,6 +12,69 @@ const labelClass = 'font-mono text-[0.6rem] uppercase tracking-[0.15em] text-con
 function formatCurrency(val: number | null) {
   if (val === null) return 'N/A'
   return `₹${val.toLocaleString('en-IN')}`
+}
+
+// Read-only "View" row inside a DetailModal.
+function DetailRow({ label, value }: { label: string; value: ReactNode }) {
+  if (value === null || value === undefined || value === '') return null
+  return (
+    <div>
+      <span className={labelClass}>{label}</span>
+      <span className="text-sm text-ink">{value}</span>
+    </div>
+  )
+}
+
+// Read-only detail overlay used by the "View" button on materials, equipment,
+// and service providers — shows the record as it will appear to customers
+// without leaving the admin panel.
+function DetailModal({
+  title,
+  imageUrl,
+  imageAlt,
+  badge,
+  onClose,
+  children,
+}: {
+  title: string
+  imageUrl?: string | null
+  imageAlt: string
+  badge?: ReactNode
+  onClose: () => void
+  children: ReactNode
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-ink/15 bg-bone shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {imageUrl ? (
+          <img src={cldAuto(imageUrl)} alt={imageAlt} className="h-56 w-full object-cover border-b border-ink/10" />
+        ) : (
+          <div className="flex h-40 w-full items-center justify-center border-b border-ink/10 bg-bone-dim">
+            <span className="font-mono text-xs uppercase tracking-wider text-concrete">No Image Provided</span>
+          </div>
+        )}
+        <div className="p-6">
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <h2 className="font-display text-xl font-bold text-ink">{title}</h2>
+            {badge}
+          </div>
+          <div className="grid grid-cols-2 gap-4">{children}</div>
+          <button
+            onClick={onClose}
+            className="mt-6 w-full border border-ink/20 py-2.5 font-mono text-xs uppercase tracking-wider text-ink hover:bg-ink hover:text-bone transition-colors cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function Marketplace() {
@@ -63,6 +127,11 @@ export default function Marketplace() {
 
   // Search filter
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Read-only detail view (opened by the "View" button on each card)
+  const [viewMaterial, setViewMaterial] = useState<Material | null>(null)
+  const [viewEquipment, setViewEquipment] = useState<EquipmentRental | null>(null)
+  const [viewProvider, setViewProvider] = useState<ServiceProvider | null>(null)
 
   function loadData() {
     setLoading(true)
@@ -154,7 +223,9 @@ export default function Marketplace() {
       }
 
       const data = await res.json()
-      setImageUrl(data.secure_url)
+      // Store the delivery URL with f_auto,q_auto baked in so browsers always
+      // get a renderable format (iPhone HEIC uploads otherwise won't render).
+      setImageUrl(cldAuto(data.secure_url))
       setSuccess('Image uploaded successfully!')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
@@ -590,7 +661,7 @@ export default function Marketplace() {
 
                 {imageUrl ? (
                   <div className="flex items-center gap-3">
-                    <img src={imageUrl} alt="Uploaded preview" className="h-14 w-20 border border-ink/15 object-cover" />
+                    <img src={cldAuto(imageUrl)} alt="Uploaded preview" className="h-14 w-20 border border-ink/15 object-cover" />
                     <button
                       type="button"
                       onClick={() => setImageUrl('')}
@@ -695,7 +766,7 @@ export default function Marketplace() {
                       </div>
 
                       {mat.imageUrl ? (
-                        <img src={mat.imageUrl} alt={mat.name} className="w-full h-32 object-cover border border-ink/5 mb-3" />
+                        <img src={cldAuto(mat.imageUrl)} alt={mat.name} className="w-full h-32 object-cover border border-ink/5 mb-3" />
                       ) : (
                         <div className="w-full h-32 bg-bone-dim border border-ink/5 flex items-center justify-center text-concrete text-xs font-mono mb-3">
                           No Image Provided
@@ -720,6 +791,12 @@ export default function Marketplace() {
                       </div>
 
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => setViewMaterial(mat)}
+                          className="font-mono text-xs uppercase tracking-wider text-teal hover:text-ink transition-colors cursor-pointer"
+                        >
+                          View
+                        </button>
                         <button
                           onClick={() => triggerEdit(mat)}
                           className="font-mono text-xs uppercase tracking-wider text-ink hover:text-ochre transition-colors cursor-pointer"
@@ -768,7 +845,7 @@ export default function Marketplace() {
                       </div>
 
                       {eq.imageUrl ? (
-                        <img src={eq.imageUrl} alt={eq.name} className="w-full h-32 object-cover border border-ink/5 mb-3" />
+                        <img src={cldAuto(eq.imageUrl)} alt={eq.name} className="w-full h-32 object-cover border border-ink/5 mb-3" />
                       ) : (
                         <div className="w-full h-32 bg-bone-dim border border-ink/5 flex items-center justify-center text-concrete text-xs font-mono mb-3">
                           No Image Provided
@@ -802,6 +879,12 @@ export default function Marketplace() {
                       </div>
 
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => setViewEquipment(eq)}
+                          className="font-mono text-xs uppercase tracking-wider text-teal hover:text-ink transition-colors cursor-pointer"
+                        >
+                          View
+                        </button>
                         <button
                           onClick={() => triggerEdit(eq)}
                           className="font-mono text-xs uppercase tracking-wider text-ink hover:text-ochre transition-colors cursor-pointer"
@@ -851,7 +934,7 @@ export default function Marketplace() {
 
                       <div className="flex gap-3 mb-3">
                         {sp.profilePhotoUrl ? (
-                          <img src={sp.profilePhotoUrl} alt={sp.name} className="w-12 h-12 rounded-full object-cover border border-ink/15" />
+                          <img src={cldAuto(sp.profilePhotoUrl)} alt={sp.name} className="w-12 h-12 rounded-full object-cover border border-ink/15" />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-bone-dim border border-ink/15 flex items-center justify-center text-[0.6rem] font-mono text-concrete">
                             No Photo
@@ -895,6 +978,12 @@ export default function Marketplace() {
 
                       <div className="flex gap-2">
                         <button
+                          onClick={() => setViewProvider(sp)}
+                          className="font-mono text-xs uppercase tracking-wider text-teal hover:text-ink transition-colors cursor-pointer"
+                        >
+                          View
+                        </button>
+                        <button
                           onClick={() => triggerEdit(sp)}
                           className="font-mono text-xs uppercase tracking-wider text-ink hover:text-ochre transition-colors cursor-pointer"
                         >
@@ -914,6 +1003,106 @@ export default function Marketplace() {
             )
           )}
         </>
+      )}
+
+      {viewMaterial && (
+        <DetailModal
+          title={viewMaterial.name}
+          imageUrl={viewMaterial.imageUrl}
+          imageAlt={viewMaterial.name}
+          badge={
+            <span
+              className={`shrink-0 font-mono text-[0.62rem] uppercase tracking-wider px-2 py-0.5 border ${
+                viewMaterial.available ? 'border-teal/30 text-teal' : 'border-ink/15 text-concrete'
+              }`}
+            >
+              {viewMaterial.available ? 'Available' : 'Unavailable'}
+            </span>
+          }
+          onClose={() => setViewMaterial(null)}
+        >
+          <DetailRow label="Category" value={viewMaterial.category} />
+          <DetailRow label="Brand" value={viewMaterial.brand} />
+          <DetailRow
+            label="Price"
+            value={
+              <>
+                {formatCurrency(viewMaterial.price)}
+                {viewMaterial.unit && <span className="text-concrete"> / {viewMaterial.unit}</span>}
+              </>
+            }
+          />
+          <div className="col-span-2">
+            <DetailRow label="Description" value={viewMaterial.description} />
+          </div>
+        </DetailModal>
+      )}
+
+      {viewEquipment && (
+        <DetailModal
+          title={viewEquipment.name}
+          imageUrl={viewEquipment.imageUrl}
+          imageAlt={viewEquipment.name}
+          badge={
+            <span
+              className={`shrink-0 font-mono text-[0.62rem] uppercase tracking-wider px-2 py-0.5 border ${
+                viewEquipment.available ? 'border-teal/30 text-teal' : 'border-ink/15 text-concrete'
+              }`}
+            >
+              {viewEquipment.available ? 'Available' : 'Unavailable'}
+            </span>
+          }
+          onClose={() => setViewEquipment(null)}
+        >
+          <DetailRow label="Category" value={viewEquipment.category} />
+          <DetailRow label="Rent" value={`${formatCurrency(viewEquipment.rentPerDay)} / day`} />
+          {viewEquipment.specs.length > 0 && (
+            <div className="col-span-2">
+              <DetailRow label="Specs" value={viewEquipment.specs.join(', ')} />
+            </div>
+          )}
+          <div className="col-span-2">
+            <DetailRow label="Description" value={viewEquipment.description} />
+          </div>
+        </DetailModal>
+      )}
+
+      {viewProvider && (
+        <DetailModal
+          title={viewProvider.name}
+          imageUrl={viewProvider.profilePhotoUrl}
+          imageAlt={viewProvider.name}
+          badge={
+            <span className="shrink-0 font-mono text-[0.62rem] uppercase tracking-wider px-2 py-0.5 border border-ochre/30 text-ochre-dark">
+              {viewProvider.role}
+            </span>
+          }
+          onClose={() => setViewProvider(null)}
+        >
+          <DetailRow label="Phone" value={viewProvider.phone} />
+          <DetailRow label="Email" value={viewProvider.email} />
+          <DetailRow label="City" value={viewProvider.city} />
+          <DetailRow label="Locality" value={viewProvider.locality} />
+          <DetailRow label="Experience" value={viewProvider.experienceYears ? `${viewProvider.experienceYears} yrs` : null} />
+          <DetailRow label="Rating" value={viewProvider.rating ? viewProvider.rating.toFixed(1) : null} />
+          <DetailRow
+            label="Rate"
+            value={
+              viewProvider.minimumRate
+                ? `${formatCurrency(viewProvider.minimumRate)}${viewProvider.rateUnit ? ` / ${viewProvider.rateUnit}` : ''}`
+                : null
+            }
+          />
+          <DetailRow label="Status" value={viewProvider.reviewStatus} />
+          {viewProvider.specialties.length > 0 && (
+            <div className="col-span-2">
+              <DetailRow label="Specialties" value={viewProvider.specialties.join(', ')} />
+            </div>
+          )}
+          <div className="col-span-2">
+            <DetailRow label="Description" value={viewProvider.description} />
+          </div>
+        </DetailModal>
       )}
     </div>
   )

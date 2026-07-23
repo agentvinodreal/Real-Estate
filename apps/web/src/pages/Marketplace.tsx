@@ -3,6 +3,7 @@ import Seo from '../components/Seo'
 import { api, type Material, type ServiceProvider, type EquipmentRental } from '@carry/shared'
 import { Star, Check } from 'lucide-react'
 import { useCart } from '../context/CartContext'
+import { cldAuto } from '../lib/cloudinary'
 
 type TabType = 'providers' | 'materials' | 'equipment'
 
@@ -43,7 +44,12 @@ const getServicemanImage = (role: string) => {
 }
 
 export default function Marketplace() {
-  const [activeTab, setActiveTab] = useState<TabType>('providers')
+  // Honor a `?tab=` param so admin "View" links land on the right section.
+  const initialTab = ((): TabType => {
+    const t = new URLSearchParams(window.location.search).get('tab')
+    return t === 'materials' || t === 'equipment' || t === 'providers' ? t : 'providers'
+  })()
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [providers, setProviders] = useState<ServiceProvider[]>([])
   const [materials, setMaterials] = useState<Material[]>([])
   const [equipment, setEquipment] = useState<EquipmentRental[]>([])
@@ -68,13 +74,33 @@ export default function Marketplace() {
   const [equipmentCategory, setEquipmentCategory] = useState<string>('')
 
   useEffect(() => {
-    setLoading(true)
-    const promises = [
-      api.listServiceProviders().then((res) => setProviders(res.data)).catch(() => []),
-      api.listMaterials().then((res) => setMaterials(res.data)).catch(() => []),
-      api.listEquipmentRentals().then((res) => setEquipment(res.data)).catch(() => []),
-    ]
-    Promise.all(promises).finally(() => setLoading(false))
+    let cancelled = false
+
+    function loadData(showSpinner = false) {
+      if (showSpinner) setLoading(true)
+      const promises = [
+        api.listServiceProviders().then((res) => !cancelled && setProviders(res.data)).catch(() => []),
+        api.listMaterials().then((res) => !cancelled && setMaterials(res.data)).catch(() => []),
+        api.listEquipmentRentals().then((res) => !cancelled && setEquipment(res.data)).catch(() => []),
+      ]
+      Promise.all(promises).finally(() => !cancelled && showSpinner && setLoading(false))
+    }
+
+    loadData(true)
+
+    // Refetch when the user returns to the tab so admin add/edit/delete
+    // changes surface without a manual refresh.
+    function onVisible() {
+      if (document.visibilityState === 'visible') loadData(false)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+    }
   }, [])
 
   // Filter handlers
@@ -324,7 +350,7 @@ export default function Marketplace() {
                           <div>
                             <div className="overflow-hidden border border-ink/10 -mx-6 -mt-6 mb-4 aspect-video">
                               <img
-                                src={getServicemanImage(sp.role)}
+                                src={sp.profilePhotoUrl ? cldAuto(sp.profilePhotoUrl) : getServicemanImage(sp.role)}
                                 alt={sp.name}
                                 className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
@@ -475,7 +501,7 @@ export default function Marketplace() {
                           <div>
                             <div className="overflow-hidden border border-ink/10 -mx-6 -mt-6 mb-4 aspect-video">
                               <img
-                                src={getMaterialImage(mat.category)}
+                                src={mat.imageUrl ? cldAuto(mat.imageUrl) : getMaterialImage(mat.category)}
                                 alt={mat.name}
                                 className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
                               />
@@ -598,7 +624,7 @@ export default function Marketplace() {
                           <div>
                             <div className="overflow-hidden border border-ink/10 -mx-6 -mt-6 mb-4 aspect-video">
                               <img
-                                src={getEquipmentImage(eq.name)}
+                                src={eq.imageUrl ? cldAuto(eq.imageUrl) : getEquipmentImage(eq.name)}
                                 alt={eq.name}
                                 className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
                               />
