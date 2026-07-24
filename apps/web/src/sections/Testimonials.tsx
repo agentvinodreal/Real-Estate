@@ -101,7 +101,7 @@ export default function Testimonials() {
       <Reveal className="max-w-2xl">
         <span className="kicker">In their words</span>
         <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
-          Trusted by 600+ families.
+          Trusted by families across Bihar.
         </h2>
       </Reveal>
 

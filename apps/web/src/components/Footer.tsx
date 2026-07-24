@@ -15,10 +15,7 @@ export default function Footer() {
             <p className="mt-5 max-w-xs text-xs leading-relaxed text-bone/60">
               Property sale, resale, and end-to-end turnkey construction services. Built on trust, structural precision, and architectural layouting.
             </p>
-            <div className="mt-4 font-mono text-[0.62rem] uppercase tracking-wider text-ochre">
-              RERA Reg: {CONTACT.rera}
-            </div>
-            <p className="mt-2 font-mono text-[0.65rem] text-bone/45 leading-relaxed">
+            <p className="mt-4 font-mono text-[0.65rem] text-bone/45 leading-relaxed">
               {CONTACT.address}
             </p>
           </div>
@@ -67,16 +64,6 @@ export default function Footer() {
               <li>
                 <a href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-ochre">
                   Instagram
-                </a>
-              </li>
-              <li>
-                <a href={CONTACT.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-ochre">
-                  Facebook
-                </a>
-              </li>
-              <li>
-                <a href={CONTACT.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-ochre">
-                  YouTube
                 </a>
               </li>
             </ul>

@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 // import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import Photo from '../components/Photo'
+import VillaReveal from '../components/hero/VillaReveal'
 import { CONTACT } from '../lib/data'
 import useCanRender3D from '../hooks/useCanRender3D'
 import { EASE_OUT_EXPO } from '../lib/motion'
@@ -56,40 +56,19 @@ export default function Hero() {
               Talk on WhatsApp
             </a>
           </motion.div>
-
-          <motion.div variants={item} className="mt-10 flex items-center gap-8 border-t border-bone/15 pt-6">
-            <div>
-              <div className="font-display text-2xl font-semibold text-bone">12+</div>
-              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-bone/60">Years</div>
-            </div>
-            <div>
-              <div className="font-display text-2xl font-semibold text-bone">40</div>
-              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-bone/60">Projects</div>
-            </div>
-            <div>
-              <div className="font-display text-2xl font-semibold text-bone">2.5M</div>
-              <div className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-bone/60">Sq ft built</div>
-            </div>
-          </motion.div>
         </motion.div>
 
         {/* Image / 3D */}
         <div className="relative">
           {can3D ? (
-            <Suspense fallback={<Photo seed="hero-project" src="/hero-mobile.webp" label="Hero project" className="aspect-[4/5] w-full" />}>
+            <Suspense fallback={<VillaReveal className="aspect-[4/5] w-full" />}>
               <div className="aspect-[4/5] w-full">
                 <Hero3D />
               </div>
             </Suspense>
           ) : (
-            <Photo seed="hero-project" src="/hero-mobile.webp" label="Hero project" className="aspect-[4/5] w-full" />
+            <VillaReveal className="aspect-[4/5] w-full" />
           )}
-          {/* floating spec card */}
-          <div className="absolute -bottom-5 -left-5 hidden bg-teal-dark border border-bone/10 px-6 py-5 text-bone sm:block">
-            <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ochre">Now building</div>
-            <div className="mt-1 font-display text-xl font-semibold text-bone">Skyline Heights, Boring Road</div>
-            <div className="mt-1 font-mono text-xs text-bone/60">3 BHK · 1,450 sq ft · RERA verified</div>
-          </div>
         </div>
       </div>
     </section>

@@ -6,10 +6,7 @@ export const CONTACT = {
   email: 'murlimurliktr007@gmail.com',
   city: 'Katihar, Bihar',
   address: 'Carry Construction HQ, New Market, Katihar, Bihar, 854105',
-  rera: 'P52100012345',
   instagram: 'https://instagram.com/carryconstruction',
-  facebook: 'https://facebook.com/carryconstruction',
-  youtube: 'https://youtube.com/@carryconstruction',
 }
 
 export type Listing = {
@@ -119,13 +116,6 @@ export const SERVICES = [
     body: 'Turnkey design-to-execution — architecture, structure, interiors, and project management under one accountable team.',
     tag: 'Build',
   },
-]
-
-export const STATS = [
-  { value: '12+', label: 'Years building' },
-  { value: '40', label: 'Projects delivered' },
-  { value: '2.5M', label: 'Sq ft constructed' },
-  { value: '600+', label: 'Happy families' },
 ]
 
 export const PROCESS = [

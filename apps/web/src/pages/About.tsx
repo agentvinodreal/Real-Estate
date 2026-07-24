@@ -1,6 +1,5 @@
 import Seo from '../components/Seo'
 import Photo from '../components/Photo'
-import Stats from '../sections/Stats'
 import CTA from '../sections/CTA'
 import Reveal from '../components/motion/Reveal'
 import { CONTACT } from '../lib/data'
@@ -10,7 +9,6 @@ const MILESTONES = [
   { year: '2015', title: 'First 100 Homes', body: 'Expanded to end-to-end turnkey residential builds across Patna.' },
   { year: '2018', title: 'RERA Registration & Compliance', body: 'Enforced full RERA alignment on all managed properties for absolute client safety.' },
   { year: '2021', title: 'Commercial & Layouts Expansion', body: 'Launched commercial design services and custom layout plotting divisions.' },
-  { year: '2024', title: '600+ Families Served', body: 'Crossed the milestone of 600+ families trusted us with their buy, resale, or construction needs.' },
 ]
 
 const VALUES = [
@@ -32,7 +30,7 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About Us — 12+ Years Building Homes Across Bihar"
+        title="About Us — Building Homes Across Bihar"
         description="Learn about Carry Construction — Bihar's trusted turnkey residential builders, structural design experts, and RERA-registered property consultants serving Patna, Gaya, Muzaffarpur and all of Bihar."
         path="/about"
         jsonLd={{
@@ -131,9 +129,6 @@ export default function About() {
           ))}
         </div>
       </section>
-
-      {/* Stats component */}
-      <Stats />
 
       {/* CTA component */}
       <CTA />
