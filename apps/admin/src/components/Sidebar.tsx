@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
+import { PropertiesIcon, ServicemenIcon, ShopsIcon, AgentsIcon } from './icons/NavIcons'
 
 const navItems = [
-  { to: '/properties', icon: '🏠', label: 'Properties' },
+  { to: '/properties', Icon: PropertiesIcon, label: 'Properties' },
   // { to: '/projects',   icon: '🏗',  label: 'Projects' },
-  { to: '/labour',     icon: '👷', label: 'Labour' },
-  { to: '/shops',      icon: '🏪', label: 'Shops' },
-  { to: '/agents',     icon: '👥', label: 'Agents' },
+  { to: '/labour',     Icon: ServicemenIcon, label: 'Servicemen' },
+  { to: '/shops',      Icon: ShopsIcon, label: 'Shops' },
+  { to: '/agents',     Icon: AgentsIcon, label: 'Agents' },
 ]
 
 interface SidebarProps {
@@ -32,7 +33,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
             onClick={onClose}
           >
-            <span>{item.icon}</span>
+            <span className="sidebar-icon" aria-hidden>
+              <item.Icon />
+            </span>
             <span>{item.label}</span>
           </NavLink>
         ))}
