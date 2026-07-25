@@ -1,0 +1,23 @@
+import Seo from '../../../shared/components/Seo'
+import Hero from '../sections/Hero'
+import Services from '../sections/Services'
+import FeaturedListings from '../sections/FeaturedListings'
+import Process from '../sections/Process'
+import Testimonials from '../sections/Testimonials'
+import CTA from '../sections/CTA'
+import FAQ from '../sections/FAQ'
+
+export default function Home() {
+  return (
+    <>
+      <Seo path="/" />
+      <Hero />
+      <Services />
+      <FeaturedListings />
+      <Process />
+      <Testimonials />
+      <FAQ />
+      <CTA />
+    </>
+  )
+}

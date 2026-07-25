@@ -25,6 +25,26 @@ const updates = [
     name: 'Living Room Furniture & Curtain Set',
     imageUrl: '/furniture_curtains.jpg',
   },
+  {
+    name: 'Ultratech Cement',
+    imageUrl: '/cement.png',
+  },
+  {
+    name: 'Tata Tiscon TMT Steel Rebar',
+    imageUrl: '/steel.png',
+  },
+  {
+    name: 'Red Clay Bricks',
+    imageUrl: '/bricks.png',
+  },
+  {
+    name: 'River Sand (Fine Quality)',
+    imageUrl: '/sand.png',
+  },
+  {
+    name: 'Crushed Stone Aggregate (20mm)',
+    imageUrl: '/aggregate.png',
+  },
 ]
 
 async function main() {
