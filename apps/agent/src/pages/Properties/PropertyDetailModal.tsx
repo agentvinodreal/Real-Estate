@@ -38,7 +38,7 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
     listingType:  property.listingType  as string,
     bhk:          property.bhk          ?? 2,
     priceInr:     String(property.priceInr),
-    areaSqft:     String(property.areaSqft),
+    areaSqft:     property.areaSqft != null ? String(property.areaSqft) : '',
     locality:     property.locality,
     city:         property.city,
     address:      property.address      ?? '',
@@ -103,7 +103,7 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
         bhk:          form.propertyType === 'Plot' || form.propertyType === 'Commercial' ? null : form.bhk,
         priceInr:     priceVal,
         priceLabel:   formatPriceLabel(priceVal),
-        areaSqft:     parseInt(form.areaSqft) || 0,
+        areaSqft:     form.areaSqft ? parseInt(form.areaSqft) : null,
         locality:     form.locality,
         city:         form.city,
         address:      form.address     || null,
@@ -218,7 +218,7 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
             <DetailRow label="Status"      value={property.status} />
             {property.furnishing && <DetailRow label="Furnishing"  value={property.furnishing} />}
             {property.description && <DetailRow label="Description" value={property.description} />}
-            {property.areaSqft > 0 && <DetailRow label="Area (sq ft)" value={String(property.areaSqft)} />}
+            {!!property.areaSqft && <DetailRow label="Area (sq ft)" value={String(property.areaSqft)} />}
             {(property.lat || property.lng) && (
               <DetailRow label="GPS" value={`${property.lat?.toFixed(5)}, ${property.lng?.toFixed(5)}`} />
             )}
@@ -308,6 +308,12 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
                   Auto-label: {formatPriceLabel(parseInt(form.priceInr) || 0)}
                 </div>
               )}
+            </div>
+
+            <div className="form-field">
+              <label className="label">Area (Sqft)</label>
+              <input type="number" className="form-input" value={form.areaSqft}
+                onChange={e => update({ areaSqft: e.target.value })} />
             </div>
 
             <div className="form-field">

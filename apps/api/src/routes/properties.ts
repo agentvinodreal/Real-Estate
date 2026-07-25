@@ -10,7 +10,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
   // POST /properties — agent submits a property
   app.post('/properties', { preHandler: requireAgent,
     schema: { tags: ['Properties'], summary: 'Submit a property (agent)', security: [{ bearerAuth: [] }],
-      body: { type: 'object', required: ['title','propertyType','listingType','priceInr','priceLabel','areaSqft','locality','city','status'],
+      body: { type: 'object', required: ['title','propertyType','listingType','priceInr','priceLabel','locality','city','status'],
         properties: {
           title: {type:'string'}, propertyType: {type:'string'}, listingType: {type:'string'},
           bhk: {type:'integer'}, priceInr: {type:'integer'}, priceLabel: {type:'string'},

@@ -77,12 +77,13 @@ export function validatePropertyForm(form: PropertyFormState): string | null {
   if (!form.priceInr.trim())   return 'Price is required.'
   if (!form.locality.trim())   return 'Locality is required.'
   if (!form.city.trim())       return 'City is required.'
-  if (!form.areaSqft.trim())   return 'Area is required.'
   if (!form.ownerName.trim())  return "Owner's name is required."
   if (!form.ownerPhone.trim()) return "Owner's phone number is required."
   const price = parseInt(form.priceInr)
   if (isNaN(price) || price <= 0) return 'Enter a valid price.'
-  const area = parseInt(form.areaSqft)
-  if (isNaN(area) || area <= 0)   return 'Enter a valid area.'
+  if (form.areaSqft.trim()) {
+    const area = parseInt(form.areaSqft)
+    if (isNaN(area) || area <= 0) return 'Enter a valid area.'
+  }
   return null
 }

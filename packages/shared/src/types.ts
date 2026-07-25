@@ -32,7 +32,7 @@ export interface Property {
   bhk?:         number
   priceInr:     number
   priceLabel:   string          // pre-formatted "₹1.35 Cr"
-  areaSqft:     number
+  areaSqft?:    number
   locality:     string
   city:         string
   address?:     string

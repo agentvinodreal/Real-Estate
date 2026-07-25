@@ -24,7 +24,7 @@ export function serializeProperty(row: any): Property {
     bhk: row.bhk ?? undefined,
     priceInr: row.priceInr,
     priceLabel: row.priceLabel,
-    areaSqft: row.areaSqft,
+    areaSqft: row.areaSqft ?? undefined,
     locality: row.locality,
     city: row.city,
     address: row.address ?? undefined,

@@ -74,7 +74,7 @@ export function Properties() {
     setEditBhk(p.bhk !== undefined && p.bhk !== null ? String(p.bhk) : '')
     setEditPriceInr(String(p.priceInr))
     setEditPriceLabel(p.priceLabel)
-    setEditAreaSqft(String(p.areaSqft))
+    setEditAreaSqft(p.areaSqft !== undefined && p.areaSqft !== null ? String(p.areaSqft) : '')
     setEditLocality(p.locality)
     setEditCity(p.city)
     setEditAddress(p.address || '')
@@ -118,7 +118,7 @@ export function Properties() {
         bhk:                editBhk ? parseInt(editBhk, 10) : null,
         priceInr:           editPriceInr ? parseInt(editPriceInr, 10) : undefined,
         priceLabel:         editPriceLabel.trim() || undefined,
-        areaSqft:           editAreaSqft ? parseInt(editAreaSqft, 10) : undefined,
+        areaSqft:           editAreaSqft ? parseInt(editAreaSqft, 10) : null,
         locality:           editLocality.trim() || undefined,
         city:               editCity.trim() || undefined,
         address:            editAddress.trim() || null,
@@ -480,8 +480,8 @@ export function Properties() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Area (Sqft) *</label>
-                  <input type="number" required value={editAreaSqft} onChange={e => setEditAreaSqft(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
+                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Area (Sqft)</label>
+                  <input type="number" value={editAreaSqft} onChange={e => setEditAreaSqft(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
                 </div>
                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Locality *</label>
@@ -645,7 +645,7 @@ export function Properties() {
               </div>
               <div className="detail-item">
                 <span className="detail-label">Area</span>
-                <span className="detail-value">{selected.areaSqft} sq ft</span>
+                <span className="detail-value">{selected.areaSqft ? `${selected.areaSqft} sq ft` : '—'}</span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">City</span>

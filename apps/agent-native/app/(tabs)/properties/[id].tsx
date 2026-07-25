@@ -29,7 +29,7 @@ function toFormState(property: Property): PropertyFormState {
     listingType:        property.listingType,
     bhk:                property.bhk ?? 2,
     priceInr:           String(property.priceInr),
-    areaSqft:           String(property.areaSqft),
+    areaSqft:           property.areaSqft != null ? String(property.areaSqft) : '',
     locality:           property.locality,
     city:               property.city,
     address:            property.address ?? '',
@@ -79,7 +79,7 @@ export default function PropertyEditScreen() {
 
     try {
       const priceVal = parseInt(form.priceInr)
-      const areaVal  = parseInt(form.areaSqft)
+      const areaVal  = form.areaSqft.trim() ? parseInt(form.areaSqft) : undefined
 
       const payload: Record<string, unknown> = {
         title:        form.title.trim(),
@@ -228,7 +228,7 @@ export default function PropertyEditScreen() {
         </FormField>
 
         {/* Area */}
-        <FormField label="Area (sq ft) *">
+        <FormField label="Area (sq ft)">
           <TextInput
             value={form.areaSqft}
             onChangeText={v => update({ areaSqft: v })}

@@ -45,7 +45,7 @@ export default function PropertyFormScreen() {
 
     try {
       const priceVal = parseInt(form.priceInr)
-      const areaVal  = parseInt(form.areaSqft)
+      const areaVal  = form.areaSqft.trim() ? parseInt(form.areaSqft) : undefined
 
       const payload: Record<string, unknown> = {
         id:           recordId,
@@ -223,7 +223,7 @@ export default function PropertyFormScreen() {
         </FormField>
 
         {/* Area */}
-        <FormField label="Area (sq ft) *">
+        <FormField label="Area (sq ft)">
           <TextInput
             value={form.areaSqft}
             onChangeText={v => update({ areaSqft: v })}

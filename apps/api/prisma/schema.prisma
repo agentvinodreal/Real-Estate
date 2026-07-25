@@ -47,7 +47,7 @@ model Property {
   bhk          Int?
   priceInr     Int
   priceLabel   String // pre-formatted "₹1.35 Cr"
-  areaSqft     Int
+  areaSqft     Int?
   locality     String
   city         String
   address      String?
