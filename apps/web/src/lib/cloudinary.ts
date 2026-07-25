@@ -18,6 +18,11 @@ export function cldAuto(src: string | null | undefined, extra = ''): string {
     return src.replace('/upload/', `/upload/${transform}/`)
   }
 
+  // Local public-folder assets (e.g. "/cement.png") — serve directly, not via Cloudinary
+  if (src.startsWith('/')) {
+    return src
+  }
+
   if (!src.startsWith('http')) {
     return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transform}/${src}`
   }

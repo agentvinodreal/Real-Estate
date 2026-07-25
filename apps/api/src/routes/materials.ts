@@ -16,12 +16,13 @@ export default async function materialsRoutes(app: FastifyInstance) {
             page: { type: 'integer', minimum: 1 },
             limit: { type: 'integer', minimum: 1, maximum: 100 },
             category: { type: 'string' },
+            phase: { type: 'string' },
           },
         },
       },
     },
     async (request) => {
-      const q = request.query as { page?: number; limit?: number; category?: string }
+      const q = request.query as { page?: number; limit?: number; category?: string; phase?: string }
       const page = q.page ? Number(q.page) : undefined
       const limit = q.limit ? Number(q.limit) : undefined
       const category = q.category
@@ -29,6 +30,9 @@ export default async function materialsRoutes(app: FastifyInstance) {
       const whereClause: any = {}
       if (category) {
         whereClause.category = category
+      }
+      if (q.phase) {
+        whereClause.phase = q.phase
       }
 
       if (page && limit) {
@@ -67,6 +71,7 @@ export default async function materialsRoutes(app: FastifyInstance) {
           properties: {
             name: { type: 'string' },
             category: { type: 'string' },
+            phase: { type: 'string' },
             brand: { type: 'string' },
             description: { type: 'string', nullable: true },
             imageUrl: { type: 'string', nullable: true },
@@ -133,6 +138,7 @@ export default async function materialsRoutes(app: FastifyInstance) {
           properties: {
             name: { type: 'string' },
             category: { type: 'string' },
+            phase: { type: 'string' },
             brand: { type: 'string' },
             description: { type: 'string', nullable: true },
             imageUrl: { type: 'string', nullable: true },

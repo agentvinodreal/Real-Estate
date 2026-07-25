@@ -4,8 +4,12 @@ import { Loader2, Plus, X } from 'lucide-react'
 import { adminApi } from '../lib/adminApi'
 import { cldAuto } from '../lib/cloudinary'
 import type { Material, EquipmentRental, ServiceProvider } from '@carry/shared'
+import { MATERIAL_CATEGORIES, PHASES, PHASE_LABELS, SERVICE_PROVIDER_ROLES, type Phase } from '@carry/shared'
 import { EASE_OUT_EXPO } from '../lib/motion'
-import { Badge, Button, Card, CardGrid, DetailModal, DetailRow, EmptyState, FormPanel, Input, Label, LoadingState, PageHeader, Select, StatusToggle, Textarea } from '../components/ui'
+import { Badge, Button, Card, CardGrid, Combobox, DetailModal, DetailRow, EmptyState, FormPanel, Input, Label, LoadingState, PageHeader, Select, StatusToggle, Textarea } from '../components/ui'
+
+type MaterialPhase = Exclude<Phase, 'event'>
+const MATERIAL_PHASES = Object.keys(MATERIAL_CATEGORIES) as MaterialPhase[]
 
 type SectionTab = 'materials' | 'equipment' | 'providers'
 
@@ -33,7 +37,8 @@ export default function Marketplace() {
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
 
-  const [matCategory, setMatCategory] = useState('Cement')
+  const [matPhase, setMatPhase] = useState<MaterialPhase>('construction')
+  const [matCategory, setMatCategory] = useState('')
   const [matBrand, setMatBrand] = useState('')
   const [matPrice, setMatPrice] = useState('')
   const [matUnit, setMatUnit] = useState('per bag')
@@ -44,7 +49,8 @@ export default function Marketplace() {
   const [eqSpecs, setEqSpecs] = useState('')
   const [eqAvailable, setEqAvailable] = useState(true)
 
-  const [spRole, setSpRole] = useState('Labour')
+  const [spPhase, setSpPhase] = useState<Phase>('construction')
+  const [spRole, setSpRole] = useState('')
   const [spPhone, setSpPhone] = useState('')
   const [spEmail, setSpEmail] = useState('')
   const [spCity, setSpCity] = useState('Patna')
@@ -82,7 +88,8 @@ export default function Marketplace() {
     setDescription('')
     setImageUrl('')
 
-    setMatCategory('Cement')
+    setMatPhase('construction')
+    setMatCategory('')
     setMatBrand('')
     setMatPrice('')
     setMatUnit('per bag')
@@ -93,7 +100,8 @@ export default function Marketplace() {
     setEqSpecs('')
     setEqAvailable(true)
 
-    setSpRole('Labour')
+    setSpPhase('construction')
+    setSpRole('')
     setSpPhone('')
     setSpEmail('')
     setSpCity('Patna')
@@ -216,6 +224,7 @@ export default function Marketplace() {
 
     if (activeTab === 'materials') {
       const mat = item as Material
+      setMatPhase(mat.phase ?? 'construction')
       setMatCategory(mat.category)
       setMatBrand(mat.brand)
       setMatPrice(mat.price?.toString() ?? '')
@@ -231,6 +240,7 @@ export default function Marketplace() {
       setImageUrl(eq.imageUrl || '')
     } else {
       const sp = item as ServiceProvider
+      setSpPhase(sp.phase ?? 'construction')
       setSpRole(sp.role)
       setSpPhone(sp.phone)
       setSpEmail(sp.email || '')
@@ -259,6 +269,7 @@ export default function Marketplace() {
         const payload = {
           name,
           category: matCategory,
+          phase: matPhase,
           brand: matBrand,
           description: description || null,
           imageUrl: imageUrl || null,
@@ -300,6 +311,7 @@ export default function Marketplace() {
         const payload = {
           name,
           role: spRole,
+          phase: spPhase,
           phone: spPhone,
           email: spEmail || null,
           city: spCity,
@@ -425,12 +437,29 @@ export default function Marketplace() {
               {activeTab === 'materials' && (
                 <>
                   <div>
-                    <Label>Category</Label>
-                    <Select value={matCategory} onChange={(e) => setMatCategory(e.target.value)}>
-                      {['Cement', 'Steel', 'Bricks', 'Sand', 'Aggregate', 'Flooring', 'Glass', 'Other'].map((c) => (
-                        <option key={c} value={c}>{c}</option>
+                    <Label>Phase</Label>
+                    <Select
+                      value={matPhase}
+                      onChange={(e) => {
+                        const phase = e.target.value as MaterialPhase
+                        setMatPhase(phase)
+                        setMatCategory('')
+                      }}
+                    >
+                      {MATERIAL_PHASES.map((p) => (
+                        <option key={p} value={p}>{PHASE_LABELS[p]}</option>
                       ))}
                     </Select>
+                  </div>
+                  <div>
+                    <Label>Category</Label>
+                    <Combobox
+                      required
+                      value={matCategory}
+                      onChange={setMatCategory}
+                      options={MATERIAL_CATEGORIES[matPhase]}
+                      placeholder="Start typing e.g. Tile, Cement…"
+                    />
                   </div>
                   <div>
                     <Label>Brand</Label>
@@ -487,12 +516,29 @@ export default function Marketplace() {
               {activeTab === 'providers' && (
                 <>
                   <div>
-                    <Label>Role</Label>
-                    <Select value={spRole} onChange={(e) => setSpRole(e.target.value)}>
-                      {['Labour', 'Contractor', 'Civil Engineer', 'Architect', 'Electrician', 'Plumber', 'Painter', 'Mason', 'Carpenter'].map((r) => (
-                        <option key={r} value={r}>{r}</option>
+                    <Label>Phase</Label>
+                    <Select
+                      value={spPhase}
+                      onChange={(e) => {
+                        const phase = e.target.value as Phase
+                        setSpPhase(phase)
+                        setSpRole('')
+                      }}
+                    >
+                      {PHASES.map((p) => (
+                        <option key={p} value={p}>{PHASE_LABELS[p]}</option>
                       ))}
                     </Select>
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Combobox
+                      required
+                      value={spRole}
+                      onChange={setSpRole}
+                      options={SERVICE_PROVIDER_ROLES[spPhase]}
+                      placeholder="Start typing e.g. Plumber, Pandit…"
+                    />
                   </div>
                   <div>
                     <Label>Phone</Label>
@@ -636,7 +682,10 @@ export default function Marketplace() {
                       <Card key={mat.id}>
                         <div>
                           <div className="mb-3 flex items-start justify-between gap-3">
-                            <Badge tone="ink">{mat.category}</Badge>
+                            <div className="flex flex-wrap gap-1.5">
+                              <Badge tone="ink">{mat.category}</Badge>
+                              <Badge tone="concrete">{PHASE_LABELS[mat.phase ?? 'construction']}</Badge>
+                            </div>
                             <StatusToggle
                               active={mat.available}
                               onClick={() => toggleAvailability(mat.id, mat.available, 'material')}
@@ -750,7 +799,10 @@ export default function Marketplace() {
                       <Card key={sp.id}>
                         <div>
                           <div className="mb-3 flex items-start justify-between gap-3">
-                            <Badge tone="ink">{sp.role}</Badge>
+                            <div className="flex flex-wrap gap-1.5">
+                              <Badge tone="ink">{sp.role}</Badge>
+                              <Badge tone="concrete">{PHASE_LABELS[sp.phase ?? 'construction']}</Badge>
+                            </div>
                             <StatusToggle
                               active={sp.reviewStatus === 'approved'}
                               onClick={() => toggleProviderStatus(sp.id, sp.reviewStatus)}
@@ -822,6 +874,7 @@ export default function Marketplace() {
             onClose={() => setViewMaterial(null)}
           >
             <DetailRow label="Category" value={viewMaterial.category} />
+            <DetailRow label="Phase" value={PHASE_LABELS[viewMaterial.phase ?? 'construction']} />
             <DetailRow label="Brand" value={viewMaterial.brand} />
             <DetailRow
               label="Price"
@@ -868,6 +921,7 @@ export default function Marketplace() {
             onClose={() => setViewProvider(null)}
           >
             <DetailRow label="Phone" value={viewProvider.phone} />
+            <DetailRow label="Phase" value={PHASE_LABELS[viewProvider.phase ?? 'construction']} />
             <DetailRow label="Email" value={viewProvider.email} />
             <DetailRow label="City" value={viewProvider.city} />
             <DetailRow label="Locality" value={viewProvider.locality} />

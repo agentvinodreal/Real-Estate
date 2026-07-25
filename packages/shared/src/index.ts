@@ -1,5 +1,6 @@
 export * from './types'
 export * from './format'
 export * from './api'
+export * from './serviceCategories'
 export { default as Logo } from './Logo'
 export { clerkAppearance } from './clerkAppearance'

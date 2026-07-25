@@ -197,7 +197,8 @@ model Testimonial {
 model Material {
   id          String   @id @default(cuid())
   name        String
-  category    String   // e.g. "Steel", "Cement", "Flooring", "Glass"
+  category    String   // see MATERIAL_CATEGORIES in @suru/shared for canonical values
+  phase       String   @default("construction") // "construction" | "finishing" | "post_construction"
   brand       String   // e.g. "Tata Tiscon", "Ultratech"
   description String?
   imageUrl    String?
@@ -207,6 +208,7 @@ model Material {
   createdAt   DateTime @default(now())
 
   @@index([createdAt])
+  @@index([phase])
   @@map("materials")
 }
 
@@ -232,7 +234,8 @@ model BlogPost {
 model ServiceProvider {
   id              String   @id @default(cuid())
   name            String
-  role            String   // "Contractor" | "Civil Engineer" | "Architect" | "Labour"
+  role            String   // see SERVICE_PROVIDER_ROLES in @suru/shared for canonical values
+  phase           String   @default("construction") // "construction" | "finishing" | "post_construction" | "event"
   phone           String
   email           String?
   city            String
@@ -250,6 +253,7 @@ model ServiceProvider {
 
   @@index([role])
   @@index([city])
+  @@index([phase])
   @@map("service_providers")
 }
 

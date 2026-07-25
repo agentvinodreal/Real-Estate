@@ -14,6 +14,7 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
           type: 'object',
           properties: {
             role: { type: 'string' },
+            phase: { type: 'string' },
             city: { type: 'string' },
             q: { type: 'string' },
             includeAll: { type: 'boolean' },
@@ -22,7 +23,7 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
       },
     },
     async (request) => {
-      const query = request.query as { role?: string; city?: string; q?: string; includeAll?: boolean }
+      const query = request.query as { role?: string; phase?: string; city?: string; q?: string; includeAll?: boolean }
       const whereClause: any = {}
 
       const includeAll = query.includeAll === true || (query.includeAll as any) === 'true'
@@ -32,6 +33,9 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
 
       if (query.role) {
         whereClause.role = query.role
+      }
+      if (query.phase) {
+        whereClause.phase = query.phase
       }
       if (query.city) {
         whereClause.city = { contains: query.city, mode: 'insensitive' }
@@ -63,6 +67,7 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
           properties: {
             name: { type: 'string' },
             role: { type: 'string' },
+            phase: { type: 'string' },
             phone: { type: 'string' },
             email: { type: 'string', nullable: true },
             city: { type: 'string' },
@@ -107,6 +112,7 @@ export default async function serviceProvidersRoutes(app: FastifyInstance) {
           properties: {
             name: { type: 'string' },
             role: { type: 'string' },
+            phase: { type: 'string' },
             phone: { type: 'string' },
             email: { type: 'string', nullable: true },
             city: { type: 'string' },

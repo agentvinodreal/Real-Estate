@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { InputHTMLAttributes, LabelHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { motion, type HTMLMotionProps } from 'motion/react'
 import { Loader2 } from 'lucide-react'
@@ -181,6 +182,76 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return <select {...props} className={`${fieldClass} ${props.className ?? ''}`} />
+}
+
+/**
+ * Free-text input with a typeahead suggestion list. Suggestions only appear once the
+ * user has typed something and are limited to options whose label starts with that text —
+ * the full option list is never dumped into view at once.
+ */
+export function Combobox({
+  value,
+  onChange,
+  options,
+  placeholder,
+  required,
+}: {
+  value: string
+  onChange: (value: string) => void
+  options: string[]
+  placeholder?: string
+  required?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  const matches = useMemo(() => {
+    const q = value.trim().toLowerCase()
+    if (!q) return []
+    return options.filter((o) => o.toLowerCase().startsWith(q)).slice(0, 8)
+  }, [value, options])
+
+  useEffect(() => {
+    function onOutsideClick(e: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onOutsideClick)
+    return () => document.removeEventListener('mousedown', onOutsideClick)
+  }, [])
+
+  return (
+    <div ref={rootRef} className="relative">
+      <input
+        value={value}
+        required={required}
+        autoComplete="off"
+        onChange={(e) => {
+          onChange(e.target.value)
+          setOpen(true)
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder={placeholder}
+        className={fieldClass}
+      />
+      {open && matches.length > 0 && (
+        <ul className="absolute z-20 mt-1 max-h-52 w-full overflow-auto border border-ink/15 bg-bone shadow-lg">
+          {matches.map((opt) => (
+            <li
+              key={opt}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                onChange(opt)
+                setOpen(false)
+              }}
+              className="cursor-pointer px-3 py-2 text-sm text-ink hover:bg-ochre/10"
+            >
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 export function FormPanel({ children, className = '', ...rest }: Omit<HTMLMotionProps<'form'>, 'children'> & { children?: ReactNode }) {

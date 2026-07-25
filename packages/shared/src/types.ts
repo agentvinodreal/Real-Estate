@@ -91,6 +91,7 @@ export type Material = {
   id: string
   name: string
   category: string
+  phase: 'construction' | 'finishing' | 'post_construction'
   brand: string
   description: string | null
   imageUrl: string | null
@@ -103,7 +104,8 @@ export type Material = {
 export type ServiceProvider = {
   id: string
   name: string
-  role: 'Contractor' | 'Civil Engineer' | 'Architect' | 'Labour'
+  role: string
+  phase: 'construction' | 'finishing' | 'post_construction' | 'event'
   phone: string
   email: string | null
   city: string

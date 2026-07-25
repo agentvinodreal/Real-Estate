@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <!-- Background Construction Sky & Ground Gradient -->
+    <linearGradient id="bgSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="60%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+
+    <!-- Concrete Wet Mix Gradient -->
+    <linearGradient id="wetConcrete" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8" />
+      <stop offset="30%" stop-color="#64748B" />
+      <stop offset="70%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+
+    <!-- Chute Metallic Gradient -->
+    <linearGradient id="metalChute" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="20%" stop-color="#E2E8F0" />
+      <stop offset="60%" stop-color="#94A3B8" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+
+    <!-- Transit Mixer Drum Orange Gradient -->
+    <linearGradient id="mixerDrum" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F97316" />
+      <stop offset="50%" stop-color="#EA580C" />
+      <stop offset="100%" stop-color="#C2410C" />
+    </linearGradient>
+
+    <!-- Concrete Texture Pattern -->
+    <pattern id="aggregatePattern" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="2.5" fill="#334155" opacity="0.6" />
+      <circle cx="14" cy="6" r="3" fill="#1E293B" opacity="0.7" />
+      <circle cx="8" cy="14" r="2" fill="#64748B" opacity="0.5" />
+      <circle cx="16" cy="15" r="3.5" fill="#0F172A" opacity="0.6" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgSky)" />
+
+  <!-- Construction Foundation Grid Rebar Steel Mesh (Bottom) -->
+  <g stroke="#D97706" stroke-width="3" opacity="0.7">
+    <!-- Horizontal Rebar Bars -->
+    <line x1="0" y1="420" x2="800" y2="420" />
+    <line x1="0" y1="460" x2="800" y2="460" />
+    <line x1="0" y1="500" x2="800" y2="500" />
+    <line x1="0" y1="540" x2="800" y2="540" />
+
+    <!-- Vertical Rebar Bars -->
+    <line x1="100" y1="360" x2="100" y2="600" />
+    <line x1="220" y1="360" x2="220" y2="600" />
+    <line x1="340" y1="360" x2="340" y2="600" />
+    <line x1="460" y1="360" x2="460" y2="600" />
+    <line x1="580" y1="360" x2="580" y2="600" />
+    <line x1="700" y1="360" x2="700" y2="600" />
+  </g>
+
+  <!-- Poured Wet M25 Concrete Layer over Mesh -->
+  <path d="M 0 450 Q 200 430 400 440 T 800 420 L 800 600 L 0 600 Z" fill="url(#wetConcrete)" />
+  <path d="M 0 450 Q 200 430 400 440 T 800 420 L 800 600 L 0 600 Z" fill="url(#aggregatePattern)" />
+
+  <!-- Transit Mixer Drum (Top Right Chute Source) -->
+  <g transform="translate(480, -20)">
+    <!-- Rotating Mixer Drum Body -->
+    <path d="M 120 40 Q 280 80 320 220 L 180 260 Z" fill="url(#mixerDrum)" stroke="#9A3412" stroke-width="3" />
+    <!-- White Spiral Stripes on Drum -->
+    <path d="M 160 50 Q 240 100 280 200" fill="none" stroke="#FFFFFF" stroke-width="14" opacity="0.85" />
+    <path d="M 210 60 Q 270 130 300 230" fill="none" stroke="#FFFFFF" stroke-width="12" opacity="0.85" />
+  </g>
+
+  <!-- Metallic Concrete Chute Mechanism -->
+  <g transform="translate(240, 150)">
+    <!-- Main Chute Trough -->
+    <polygon points="340,60 100,240 60,240 320,40" fill="url(#metalChute)" stroke="#334155" stroke-width="2" />
+    <polygon points="340,60 320,40 280,70 300,90" fill="#64748B" />
+
+    <!-- Fresh Concrete Flowing Down Chute -->
+    <polygon points="330,58 90,238 75,238 315,48" fill="url(#wetConcrete)" />
+    <polygon points="330,58 90,238 75,238 315,48" fill="url(#aggregatePattern)" />
+
+    <!-- Wet Concrete Pouring Stream Falling to Foundation -->
+    <path d="M 75 238 Q 60 300 120 380 Q 180 390 220 370 Q 120 320 100 238 Z" fill="url(#wetConcrete)" />
+    <path d="M 75 238 Q 60 300 120 380 Q 180 390 220 370 Q 120 320 100 238 Z" fill="url(#aggregatePattern)" />
+  </g>
+
+  <!-- Product Badge Label -->
+  <g transform="translate(60, 60)">
+    <rect x="0" y="0" width="350" height="44" rx="6" fill="#F97316" opacity="0.95" />
+    <text x="16" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF" letter-spacing="0.5">
+      M25 GRADE READY-MIX CONCRETE (RMC)
+    </text>
+  </g>
+</svg>

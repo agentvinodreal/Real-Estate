@@ -1,11 +1,24 @@
 import { useEffect, useState, useMemo } from 'react'
 import Seo from '../components/Seo'
-import { api, type Material, type ServiceProvider, type EquipmentRental } from '@carry/shared'
+import {
+  api,
+  type Material,
+  type ServiceProvider,
+  type EquipmentRental,
+  SERVICE_PROVIDER_ROLES,
+  MATERIAL_CATEGORIES,
+  EQUIPMENT_CATEGORIES,
+} from '@carry/shared'
 import { Star, Check } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { cldAuto } from '../lib/cloudinary'
+import MarketplaceSearch from '../components/MarketplaceSearch'
 
 type TabType = 'providers' | 'materials' | 'equipment'
+
+const ALL_PROVIDER_ROLES = Array.from(new Set(Object.values(SERVICE_PROVIDER_ROLES).flat()))
+const ALL_MATERIAL_CATEGORIES = Array.from(new Set(Object.values(MATERIAL_CATEGORIES).flat()))
+const ALL_EQUIPMENT_CATEGORIES = Array.from(new Set(EQUIPMENT_CATEGORIES))
 
 const tabClass = (active: boolean) =>
   `flex-1 shrink-0 py-3 sm:py-4 text-center font-mono text-[0.62rem] sm:text-xs uppercase tracking-wider sm:tracking-[0.18em] transition-all border-b-2 cursor-pointer ${
@@ -17,30 +30,167 @@ const tabClass = (active: boolean) =>
 const inputNumberClass =
   'w-16 border border-ink/20 bg-bone px-2 py-1 font-mono text-xs text-ink text-center focus:border-teal focus:outline-none'
 
-const getMaterialImage = (category: string) => {
-  if (category === 'Cement') return '/cement.png'
-  if (category === 'Steel') return '/steel.png'
-  if (category === 'Bricks') return '/bricks.png'
-  if (category === 'Sand') return '/sand.png'
-  if (category === 'Aggregate') return '/aggregate.png'
-  return '/materials_banner.png'
+const cleanProviderName = (name: string, role: string) => {
+  if (!name) return role
+  let cleaned = name
+    .replace(/\bpatna\b/gi, '')
+    .replace(/\bkumar\b/gi, '')
+    .replace(/\bverma\b/gi, '')
+    .replace(/\bsingh\b/gi, '')
+    .replace(/\bshree\b/gi, '')
+    .replace(/\bganga\b/gi, '')
+    .replace(/\bsuraksha\b/gi, '')
+    .replace(/\bdampshield\b/gi, '')
+    .replace(/\bclearview\b/gi, '')
+    .replace(/\bsunpower\b/gi, '')
+    .replace(/\baquapure\b/gi, '')
+    .replace(/\bcleanflow\b/gi, '')
+    .replace(/\braincatch\b/gi, '')
+    .replace(/\bgreenscape\b/gi, '')
+    .replace(/\bsecurehome\b/gi, '')
+    .replace(/\bconnectfast\b/gi, '')
+    .replace(/\bsafehome\b/gi, '')
+    .replace(/\bsparklepro\b/gi, '')
+    .replace(/\bcivicworks\b/gi, '')
+    .replace(/\bsecurelife\b/gi, '')
+    .replace(/\bsafemove\b/gi, '')
+    .trim()
+    .replace(/^\s*-\s*/, '')
+    .replace(/\s{2,}/g, ' ')
+
+  if (!cleaned || cleaned.length < 3) {
+    if (role === 'Water Tanker Supplier') return 'Water Tanker Delivery Service'
+    return `${role} Services`
+  }
+
+  if (role === 'Water Tanker Supplier' || cleaned.toLowerCase().includes('water tanker')) {
+    return 'Water Tanker Delivery Service'
+  }
+
+  return cleaned
 }
 
-const getEquipmentImage = (name: string) => {
-  if (name.includes('Excavator')) return '/excavator.png'
-  if (name.includes('Mixer')) return '/mixer.png'
-  if (name.includes('Scaffolding')) return '/scaffolding.png'
-  if (name.includes('Crane')) return '/crane.png'
-  return '/equipment_banner.png'
+const SERVICEMAN_IMAGES: Record<string, string> = {
+  Plumber: '/plumber.png',
+  Electrician: '/electrician.png',
+  Painter: '/painter.png',
+  Carpenter: '/carpenter.png',
+  Mason: '/mason.png',
+  Contractor: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?auto=format&fit=crop&w=800&q=80',
+  'Civil Engineer': 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
+  Architect: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+  Labour: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+  'Earthwork / JCB Contractor': '/excavator.png',
+  'Bar Bending / Steel Fixing Team': '/steel.png',
+  'Shuttering (Centering) Contractor': '/scaffolding.png',
+  'Borewell / Tubewell Contractor': 'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=800&q=80',
+  'Water Tanker Supplier': '/water_tanker.png',
+  'Anti-Termite Treatment Service': '/termite_treatment.jpg',
+  'Waterproofing Contractor': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80',
+  'Site Security / Chowkidar': '/site_security.jpg',
+  'Electricity Board Liaison': '/power_liaison.jpg',
+  'Modular Kitchen Company': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80',
+  'Flooring Mason': 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=800&q=80',
+  Fabricator: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+  'UPVC / Aluminium Window Vendor': '/upvc_window.jpg',
+  'POP / False Ceiling Contractor': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+  'Solar Installer': '/solar_panel.jpg',
+  'Inverter / Genset Vendor': 'https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?auto=format&fit=crop&w=800&q=80',
+  'RO / Water Purifier Installer': '/ro_purifier.jpg',
+  'Septic Tank / Soak Pit Contractor': '/septic_tank.jpg',
+  'Rainwater Harvesting Installer': '/rainwater_harvesting.jpg',
+  'Landscaping / Gardener': 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80',
+  'CCTV & Security System Installer': '/cctv_security.jpg',
+  'Broadband / DTH Installer': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80',
+  'Pest Control Service': '/pest_control.jpg',
+  'Deep-Cleaning Service': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80',
+  'Completion Certificate Liaison': '/building_permit.jpg',
+  'Property Tax Assessment': 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
+  'Home Insurance Agent': '/home_insurance.jpg',
+  'Packers & Movers': '/packers_movers.jpg',
+  'Pandit / Purohit': 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&w=800&q=80',
+  'Tent House': 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80',
+  'Caterer / Halwai': 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80',
+  Decorator: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+  'Photographer / Videographer': 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=800&q=80',
+  'Invitation Cards / Digital Invites': 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80',
+  'Sound System / DJ': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80',
 }
 
-const getServicemanImage = (role: string) => {
-  if (role === 'Plumber') return '/plumber.png'
-  if (role === 'Electrician') return '/electrician.png'
-  if (role === 'Painter') return '/painter.png'
-  if (role === 'Carpenter') return '/carpenter.png'
-  if (role === 'Mason') return '/mason.png'
-  return '/servicemen_banner.png'
+const MATERIAL_IMAGES: Record<string, string> = {
+  Cement: '/cement.png',
+  Steel: '/steel.png',
+  Bricks: '/bricks.png',
+  Sand: '/sand.png',
+  Aggregate: '/aggregate.png',
+  'RMC (Ready-Mix Concrete)': '/ready_mix_concrete_v2.jpg',
+  'Tile / Marble / Granite': '/rajasthan_white_marble.jpg',
+  'Glass & Hardware': '/toughened_glass_hardware_v2.jpg',
+  'Sanitaryware & CP Fittings': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80',
+  Flooring: 'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=800&q=80',
+  'Furniture & Furnishing': '/furniture_curtains.jpg',
+}
+
+const getServicemanImage = (role: string, name?: string) => {
+  if (SERVICEMAN_IMAGES[role]) return SERVICEMAN_IMAGES[role]
+  const lowerRole = role.toLowerCase()
+  const lowerName = (name || '').toLowerCase()
+
+  if (lowerRole.includes('plumb') || lowerName.includes('plumb')) return '/plumber.png'
+  if (lowerRole.includes('electr') || lowerName.includes('electr')) return '/electrician.png'
+  if (lowerRole.includes('paint') || lowerName.includes('paint')) return '/painter.png'
+  if (lowerRole.includes('carpent') || lowerName.includes('wood')) return '/carpenter.png'
+  if (lowerRole.includes('mason') || lowerRole.includes('tile')) return '/mason.png'
+  if (lowerRole.includes('engineer') || lowerRole.includes('structur')) return SERVICEMAN_IMAGES['Civil Engineer']
+  if (lowerRole.includes('architect') || lowerRole.includes('design')) return SERVICEMAN_IMAGES['Architect']
+  if (lowerRole.includes('jcb') || lowerRole.includes('earth')) return '/excavator.png'
+  if (lowerRole.includes('steel') || lowerRole.includes('rebar')) return '/steel.png'
+  if (lowerRole.includes('shutter') || lowerRole.includes('centering')) return '/scaffolding.png'
+  if (lowerRole.includes('solar')) return SERVICEMAN_IMAGES['Solar Installer']
+  if (lowerRole.includes('clean')) return SERVICEMAN_IMAGES['Deep-Cleaning Service']
+  if (lowerRole.includes('pest')) return SERVICEMAN_IMAGES['Pest Control Service']
+  if (lowerRole.includes('cctv') || lowerRole.includes('secur')) return SERVICEMAN_IMAGES['CCTV & Security System Installer']
+  if (lowerRole.includes('water') || lowerRole.includes('tanker') || lowerName.includes('water')) return SERVICEMAN_IMAGES['Water Tanker Supplier']
+  if (lowerRole.includes('kitchen')) return SERVICEMAN_IMAGES['Modular Kitchen Company']
+  if (lowerRole.includes('pack') || lowerRole.includes('move')) return SERVICEMAN_IMAGES['Packers & Movers']
+
+  return 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80'
+}
+
+const getMaterialImage = (category: string, name?: string) => {
+  const lowerCat = category.toLowerCase()
+  const lowerName = (name || '').toLowerCase()
+
+  if (lowerName.includes('toughened glass') || lowerName.includes('glass & door') || lowerName.includes('door hardware')) return '/toughened_glass_hardware_v2.jpg'
+  if (lowerName.includes('rajasthan white marble') || lowerName.includes('white marble') || lowerName.includes('makrana')) return '/rajasthan_white_marble.jpg'
+  if (lowerName.includes('m25') || lowerName.includes('ready-mix concrete') || lowerName.includes('rmc')) return '/ready_mix_concrete_v2.jpg'
+  if (lowerName.includes('living room furniture') || lowerName.includes('curtain set') || lowerName.includes('furniture & curtain')) return '/furniture_curtains.jpg'
+
+  if (MATERIAL_IMAGES[category]) return MATERIAL_IMAGES[category]
+
+  if (lowerCat.includes('cement') || lowerName.includes('cement')) return '/cement.png'
+  if (lowerCat.includes('steel') || lowerName.includes('steel') || lowerName.includes('tmt')) return '/steel.png'
+  if (lowerCat.includes('brick') || lowerName.includes('brick')) return '/bricks.png'
+  if (lowerCat.includes('sand') || lowerName.includes('sand')) return '/sand.png'
+  if (lowerCat.includes('aggregate') || lowerName.includes('stone') || lowerName.includes('metal')) return '/aggregate.png'
+  if (lowerCat.includes('concrete') || lowerCat.includes('rmc')) return '/ready_mix_concrete_v2.jpg'
+  if (lowerCat.includes('tile') || lowerCat.includes('marble') || lowerCat.includes('granite')) return '/rajasthan_white_marble.jpg'
+  if (lowerCat.includes('glass') || lowerCat.includes('hardware')) return '/toughened_glass_hardware_v2.jpg'
+  if (lowerCat.includes('sanitary') || lowerCat.includes('cp') || lowerName.includes('wc') || lowerName.includes('basin')) return MATERIAL_IMAGES['Sanitaryware & CP Fittings']
+  if (lowerCat.includes('floor')) return MATERIAL_IMAGES['Flooring']
+  if (lowerCat.includes('furniture') || lowerCat.includes('furnish')) return '/furniture_curtains.jpg'
+
+  return 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80'
+}
+
+const getEquipmentImage = (name: string, category?: string) => {
+  const n = (name + ' ' + (category || '')).toLowerCase()
+  if (n.includes('excavator') || n.includes('jcb') || n.includes('earthmoving')) return '/excavator.png'
+  if (n.includes('mixer') || n.includes('concrete')) return '/mixer.png'
+  if (n.includes('scaffold') || n.includes('shuttering')) return '/scaffolding.png'
+  if (n.includes('crane') || n.includes('lifting')) return '/crane.png'
+  if (n.includes('drill') || n.includes('tool') || n.includes('power')) return 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80'
+  return 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80'
 }
 
 export default function Marketplace() {
@@ -67,11 +217,10 @@ export default function Marketplace() {
   // Feedback notifications
   const [addedItemFeedback, setAddedItemFeedback] = useState<string | null>(null)
 
-  // Filters state
-  const [providerRole, setProviderRole] = useState<string>('')
-  const [providerSearch, setProviderSearch] = useState<string>('')
-  const [materialCategory, setMaterialCategory] = useState<string>('')
-  const [equipmentCategory, setEquipmentCategory] = useState<string>('')
+  // Search state — one free-text query per tab, matched against every relevant field
+  const [providerQuery, setProviderQuery] = useState<string>('')
+  const [materialQuery, setMaterialQuery] = useState<string>('')
+  const [equipmentQuery, setEquipmentQuery] = useState<string>('')
 
   useEffect(() => {
     let cancelled = false
@@ -103,29 +252,35 @@ export default function Marketplace() {
     }
   }, [])
 
-  // Filter handlers
+  // Filter handlers — a single query matched against every relevant field
   const filteredProviders = useMemo(() => {
-    return providers.filter((p) => {
-      const matchRole = !providerRole || p.role === providerRole
-      const matchText =
-        !providerSearch ||
-        p.name.toLowerCase().includes(providerSearch.toLowerCase()) ||
-        (p.locality && p.locality.toLowerCase().includes(providerSearch.toLowerCase()))
-      return matchRole && matchText
-    })
-  }, [providers, providerRole, providerSearch])
+    const q = providerQuery.trim().toLowerCase()
+    if (!q) return providers
+    return providers.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.role.toLowerCase().includes(q) ||
+        p.city.toLowerCase().includes(q) ||
+        (p.locality && p.locality.toLowerCase().includes(q)) ||
+        p.specialties.some((s) => s.toLowerCase().includes(q))
+    )
+  }, [providers, providerQuery])
 
   const filteredMaterials = useMemo(() => {
-    return materials.filter((m) => {
-      return !materialCategory || m.category === materialCategory
-    })
-  }, [materials, materialCategory])
+    const q = materialQuery.trim().toLowerCase()
+    if (!q) return materials
+    return materials.filter(
+      (m) => m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q) || m.brand.toLowerCase().includes(q)
+    )
+  }, [materials, materialQuery])
 
   const filteredEquipment = useMemo(() => {
-    return equipment.filter((e) => {
-      return !equipmentCategory || e.category === equipmentCategory
-    })
-  }, [equipment, equipmentCategory])
+    const q = equipmentQuery.trim().toLowerCase()
+    if (!q) return equipment
+    return equipment.filter(
+      (e) => e.name.toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || e.specs.some((s) => s.toLowerCase().includes(q))
+    )
+  }, [equipment, equipmentQuery])
 
   // Cart operations
   function handleAddMaterial(mat: Material) {
@@ -287,52 +442,14 @@ export default function Marketplace() {
             {/* SERVICEMEN TAB */}
             {activeTab === 'providers' && (
               <div>
-                {/* Visual Banner */}
-                <div className="mb-10 overflow-hidden border border-ink/10 bg-bone-dim">
-                  <div className="grid md:grid-cols-[1.2fr_0.8fr]">
-                    <div className="flex flex-col justify-center p-8 sm:p-12">
-                      <span className="kicker">Carry Servicemen Fleet</span>
-                      <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-ink">
-                        Hire Experienced Professionals
-                      </h2>
-                      <p className="mt-4 text-sm text-ink-soft leading-relaxed font-sans">
-                        Accredited electricians, plumbers, carpenters, painters, and masons managed and backed directly by Carry Construction's strict quality assurance standards. Equipped with premium materials and standard tooling.
-                      </p>
-                    </div>
-                    <div className="aspect-[4/3] md:aspect-auto">
-                      <img
-                        src="/servicemen_banner.png"
-                        alt="Carry Construction Servicemen"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Filters */}
-                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <input
-                    type="text"
-                    placeholder="Search servicemen (e.g. Plumber, Kankarbagh)..."
-                    value={providerSearch}
-                    onChange={(e) => setProviderSearch(e.target.value)}
-                    className="flex-1 border border-ink/20 bg-bone px-3 py-2.5 text-sm text-ink placeholder:text-concrete focus:border-teal focus:outline-none"
+                {/* Search */}
+                <div className="mb-8">
+                  <MarketplaceSearch
+                    value={providerQuery}
+                    onChange={setProviderQuery}
+                    suggestions={ALL_PROVIDER_ROLES}
+                    placeholder="Search servicemen — role, name, or locality…"
                   />
-                  <div className="flex flex-wrap gap-1.5">
-                    {['', 'Plumber', 'Electrician', 'Painter', 'Carpenter', 'Mason', 'Labour'].map((role) => (
-                      <button
-                        key={role}
-                        onClick={() => setProviderRole(role)}
-                        className={`border px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-wider transition cursor-pointer ${
-                          providerRole === role
-                            ? 'border-teal bg-teal text-bone'
-                            : 'border-ink/15 hover:border-ink/30 text-ink'
-                        }`}
-                      >
-                        {role || 'All Workers'}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 {filteredProviders.length === 0 ? (
@@ -350,7 +467,7 @@ export default function Marketplace() {
                           <div>
                             <div className="overflow-hidden border border-ink/10 -mx-6 -mt-6 mb-4 aspect-video">
                               <img
-                                src={sp.profilePhotoUrl ? cldAuto(sp.profilePhotoUrl) : getServicemanImage(sp.role)}
+                                src={sp.profilePhotoUrl ? cldAuto(sp.profilePhotoUrl) : getServicemanImage(sp.role, sp.name)}
                                 alt={sp.name}
                                 className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
@@ -368,7 +485,7 @@ export default function Marketplace() {
                             </div>
 
                             <h3 className="mt-4 font-display text-xl font-bold text-ink">
-                              {sp.name}
+                              {cleanProviderName(sp.name, sp.role)}
                             </h3>
 
                             <p className="mt-2 text-sm text-ink-soft leading-relaxed">
@@ -447,43 +564,14 @@ export default function Marketplace() {
             {/* RAW MATERIALS TAB */}
             {activeTab === 'materials' && (
               <div>
-                {/* Visual Banner */}
-                <div className="mb-10 overflow-hidden border border-ink/10 bg-bone-dim">
-                  <div className="grid md:grid-cols-[1.2fr_0.8fr]">
-                    <div className="flex flex-col justify-center p-8 sm:p-12">
-                      <span className="kicker">Carry Sourced Materials</span>
-                      <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-ink">
-                        Premium Raw Materials
-                      </h2>
-                      <p className="mt-4 text-sm text-ink-soft leading-relaxed font-sans">
-                        We source directly from certified grade-A manufacturers like Ultratech and Tata Tiscon, ensuring anti-corrosive reinforcement and structural longevity for every batch. Complete logistics and dispatch managed by our fleet.
-                      </p>
-                    </div>
-                    <div className="aspect-[4/3] md:aspect-auto">
-                      <img
-                        src="/materials_banner.png"
-                        alt="Carry Construction Materials Warehouse"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category Filters */}
-                <div className="mb-8 flex flex-wrap gap-2">
-                  {['', 'Cement', 'Steel', 'Bricks', 'Sand', 'Aggregate'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setMaterialCategory(cat)}
-                      className={`border px-4 py-2 font-mono text-[0.68rem] uppercase tracking-wider transition cursor-pointer ${
-                        materialCategory === cat
-                          ? 'border-teal bg-teal text-bone'
-                          : 'border-ink/15 hover:border-ink/30 text-ink'
-                      }`}
-                    >
-                      {cat || 'All Materials'}
-                    </button>
-                  ))}
+                {/* Search */}
+                <div className="mb-8">
+                  <MarketplaceSearch
+                    value={materialQuery}
+                    onChange={setMaterialQuery}
+                    suggestions={ALL_MATERIAL_CATEGORIES}
+                    placeholder="Search materials — category, name, or brand…"
+                  />
                 </div>
 
                 {filteredMaterials.length === 0 ? (
@@ -501,7 +589,7 @@ export default function Marketplace() {
                           <div>
                             <div className="overflow-hidden border border-ink/10 -mx-6 -mt-6 mb-4 aspect-video">
                               <img
-                                src={mat.imageUrl ? cldAuto(mat.imageUrl) : getMaterialImage(mat.category)}
+                                src={mat.imageUrl ? cldAuto(mat.imageUrl) : getMaterialImage(mat.category, mat.name)}
                                 alt={mat.name}
                                 className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
                               />
@@ -570,43 +658,14 @@ export default function Marketplace() {
             {/* EQUIPMENT RENTALS TAB */}
             {activeTab === 'equipment' && (
               <div>
-                {/* Visual Banner */}
-                <div className="mb-10 overflow-hidden border border-ink/10 bg-bone-dim">
-                  <div className="grid md:grid-cols-[1.2fr_0.8fr]">
-                    <div className="flex flex-col justify-center p-8 sm:p-12">
-                      <span className="kicker">Carry Rental Fleet</span>
-                      <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-ink">
-                        Heavy Duty Construction Machinery
-                      </h2>
-                      <p className="mt-4 text-sm text-ink-soft leading-relaxed font-sans">
-                        Rent excavators, concrete mixers, lift cranes, and heavy scaffolding units directly from our yard. Fully certified, safety-audited, and deployed with experienced operators and diesel setups for on-site convenience.
-                      </p>
-                    </div>
-                    <div className="aspect-[4/3] md:aspect-auto">
-                      <img
-                        src="/equipment_banner.png"
-                        alt="Carry Construction Machinery"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category Filters */}
-                <div className="mb-8 flex flex-wrap gap-2">
-                  {['', 'Earthmoving', 'Concrete', 'Scaffolding', 'Lifting'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setEquipmentCategory(cat)}
-                      className={`border px-4 py-2 font-mono text-[0.68rem] uppercase tracking-wider transition cursor-pointer ${
-                        equipmentCategory === cat
-                          ? 'border-teal bg-teal text-bone'
-                          : 'border-ink/15 hover:border-ink/30 text-ink'
-                      }`}
-                    >
-                      {cat || 'All Equipment'}
-                    </button>
-                  ))}
+                {/* Search */}
+                <div className="mb-8">
+                  <MarketplaceSearch
+                    value={equipmentQuery}
+                    onChange={setEquipmentQuery}
+                    suggestions={ALL_EQUIPMENT_CATEGORIES}
+                    placeholder="Search equipment — category or name…"
+                  />
                 </div>
 
                 {filteredEquipment.length === 0 ? (
@@ -624,7 +683,7 @@ export default function Marketplace() {
                           <div>
                             <div className="overflow-hidden border border-ink/10 -mx-6 -mt-6 mb-4 aspect-video">
                               <img
-                                src={eq.imageUrl ? cldAuto(eq.imageUrl) : getEquipmentImage(eq.name)}
+                                src={eq.imageUrl ? cldAuto(eq.imageUrl) : getEquipmentImage(eq.name, eq.category)}
                                 alt={eq.name}
                                 className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
                               />
