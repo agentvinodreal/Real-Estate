@@ -22,6 +22,9 @@ export interface PropertyFormState {
   status:             PropertyStatus
   furnishing:         FurnishingType
   description:        string
+  // Owner contact — internal use only, never sent to the public website
+  ownerName:          string
+  ownerPhone:         string
   lat:                number | undefined
   lng:                number | undefined
   // Rent-specific
@@ -52,6 +55,8 @@ export const initialPropertyForm: PropertyFormState = {
   status:             'Ready',
   furnishing:         'Unfurnished',
   description:        '',
+  ownerName:          '',
+  ownerPhone:         '',
   lat:                undefined,
   lng:                undefined,
   securityDeposit:    '',
@@ -68,11 +73,13 @@ export const initialPropertyForm: PropertyFormState = {
 }
 
 export function validatePropertyForm(form: PropertyFormState): string | null {
-  if (!form.title.trim())    return 'Property title is required.'
-  if (!form.priceInr.trim()) return 'Price is required.'
-  if (!form.locality.trim()) return 'Locality is required.'
-  if (!form.city.trim())     return 'City is required.'
-  if (!form.areaSqft.trim()) return 'Area is required.'
+  if (!form.title.trim())      return 'Property title is required.'
+  if (!form.priceInr.trim())   return 'Price is required.'
+  if (!form.locality.trim())   return 'Locality is required.'
+  if (!form.city.trim())       return 'City is required.'
+  if (!form.areaSqft.trim())   return 'Area is required.'
+  if (!form.ownerName.trim())  return "Owner's name is required."
+  if (!form.ownerPhone.trim()) return "Owner's phone number is required."
   const price = parseInt(form.priceInr)
   if (isNaN(price) || price <= 0) return 'Enter a valid price.'
   const area = parseInt(form.areaSqft)

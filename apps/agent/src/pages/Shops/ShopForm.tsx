@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser, useAuth } from '@clerk/clerk-react'
 import { api, SHOP_TYPES } from '@carry/shared'
 import { useFormPersist } from '../../hooks/useFormPersist'
+import { Combobox } from '../../components/Combobox'
 import { LocationPicker } from '../../components/LocationPicker'
 import { PhotoUploader } from '../../components/PhotoUploader/PhotoUploader'
 import { uploadManager } from '../../lib/UploadManager'
@@ -44,9 +45,6 @@ export function ShopForm() {
   useEffect(() => {
     uploadManager.clear('shopImages')
   }, [])
-
-  // datalist id for shop type suggestions
-  const datalistId = 'shop-type-suggestions'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -171,20 +169,13 @@ export function ShopForm() {
 
         <div className="form-field">
           <label className="label">Shop Type *</label>
-          <input
-            type="text"
-            list={datalistId}
-            className="form-input"
+          <Combobox
             required
             value={form.shopType}
-            onChange={(e) => update({ shopType: e.target.value })}
-            placeholder="e.g. Cement, Bricks, Hardware…"
+            onChange={(v) => update({ shopType: v })}
+            options={SHOP_TYPES}
+            placeholder="Start typing e.g. Cement, Tile…"
           />
-          <datalist id={datalistId}>
-            {SHOP_TYPES.map((t) => (
-              <option key={t} value={t} />
-            ))}
-          </datalist>
         </div>
 
         {/* ── Shopkeeper Details ───────────────────────────────────── */}

@@ -55,6 +55,10 @@ model Property {
   status       String // "Ready" | "Under Construction"
   furnishing   String? // "Unfurnished" | "Semi-Furnished" | "Furnished"
   description  String?
+
+  // Owner contact — internal use only, never sent to the public website
+  ownerName    String?
+  ownerPhone   String?
   images       String[] @default([]) // Cloudinary public IDs (Postgres native array)
   floorPlanUrl String? // single Cloudinary public ID
   videoUrl     String?

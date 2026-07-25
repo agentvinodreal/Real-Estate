@@ -60,6 +60,8 @@ export default function PropertyFormScreen() {
         city:         form.city.trim(),
         address:      form.address.trim() || undefined,
         reraNumber:   form.reraNumber.trim() || undefined,
+        ownerName:    form.ownerName.trim(),
+        ownerPhone:   form.ownerPhone.trim(),
         status:       form.status,
         furnishing:   form.furnishing,
         description:  form.description.trim() || undefined,
@@ -264,6 +266,31 @@ export default function PropertyFormScreen() {
             style={[styles.input, { height: 70 }]}
             multiline
           />
+        </FormField>
+
+        {/* Owner Contact — internal only, never shown on the public website */}
+        <FormField label="Owner Name *">
+          <TextInput
+            value={form.ownerName}
+            onChangeText={v => update({ ownerName: v })}
+            placeholder="e.g. Ramesh Kumar"
+            placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
+        <FormField label="Owner Phone *">
+          <TextInput
+            value={form.ownerPhone}
+            onChangeText={v => update({ ownerPhone: v })}
+            keyboardType="phone-pad"
+            placeholder="e.g. 9876543210"
+            placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+          <Text style={{ fontSize: 11, color: colors.concrete, marginTop: 4 }}>
+            For internal use only — never shown on the public website.
+          </Text>
         </FormField>
 
         {/* Status */}

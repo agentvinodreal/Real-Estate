@@ -40,6 +40,9 @@ export interface Property {
   status:       PropertyStatus
   furnishing?:  FurnishingType
   description?: string
+  // Owner contact — internal use only, never sent to the public website
+  ownerName?:   string
+  ownerPhone?:  string
   images:       string[]        // Cloudinary public IDs
   floorPlanUrl?: string         // single Cloudinary public ID
   lat?:         number

@@ -7,6 +7,7 @@ import {
   SKILL_TYPES
 } from '@carry/shared'
 import { useFormPersist } from '../../hooks/useFormPersist'
+import { Combobox } from '../../components/Combobox'
 import { PhotoUploader } from '../../components/PhotoUploader/PhotoUploader'
 import { uploadManager } from '../../lib/UploadManager'
 import { enqueuePendingRecord, updateRecordId } from '../../lib/uploadQueue'
@@ -33,7 +34,7 @@ const initialForm: FormState = {
   age: '',
   gender: 'Male',
   skillLevel: 'Non-Skilled',
-  skillType: 'Mason / Bricklayer',
+  skillType: 'Mason',
   otherSkillType: '',
   phone: '',
   minimumWage: '',
@@ -252,17 +253,13 @@ export function LabourForm() {
         {form.skillLevel === 'Skilled' && (
           <div className="form-field">
             <label className="label">Skill Type *</label>
-            <select
-              className="form-select"
+            <Combobox
+              required
               value={form.skillType}
-              onChange={(e) => update({ skillType: e.target.value })}
-            >
-              {SKILL_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => update({ skillType: v })}
+              options={SKILL_TYPES}
+              placeholder="Start typing e.g. Plumber, Contractor…"
+            />
             {/* Free-text input revealed only when 'Other' is selected */}
             {form.skillType === 'Other' && (
               <input

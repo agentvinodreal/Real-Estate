@@ -109,6 +109,51 @@ label, .label {
 
 .form-textarea { min-height: 100px; resize: vertical; }
 
+/* ── Combobox (typeahead) ────────────────────────────────────────── */
+.combobox { position: relative; }
+
+.combobox-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  max-height: 15rem;
+  overflow-y: auto;
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 20px rgba(28, 27, 24, 0.12);
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  animation: combobox-in 0.15s ease-out;
+}
+
+@keyframes combobox-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.combobox-option {
+  padding: 0.65rem 0.75rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.combobox-option:hover,
+.combobox-option:active {
+  background: var(--ochre);
+  color: var(--white);
+}
+
 /* ── Chip Selectors ──────────────────────────────────────────────── */
 .chip-group {
   display: flex;

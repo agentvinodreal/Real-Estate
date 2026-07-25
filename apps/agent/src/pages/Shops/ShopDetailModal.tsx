@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@clerk/clerk-react'
 import { api, img, type Shop, SHOP_TYPES } from '@carry/shared'
+import { Combobox } from '../../components/Combobox'
 import { LocationPicker } from '../../components/LocationPicker'
 import { PhotoUploader } from '../../components/PhotoUploader/PhotoUploader'
 import { uploadManager } from '../../lib/UploadManager'
@@ -33,7 +34,6 @@ export function ShopDetailModal({ shop, onClose, onSaved }: Props) {
   })
 
   const submittingRef = useRef(false)
-  const datalistId = 'shop-type-suggestions'
 
   useEffect(() => {
     if (mode === 'edit') {
@@ -212,13 +212,13 @@ export function ShopDetailModal({ shop, onClose, onSaved }: Props) {
 
             <div className="form-field">
               <label className="label">Shop Type *</label>
-              <input type="text" list={datalistId} className="form-input" required value={form.shopType}
-                onChange={e => update({ shopType: e.target.value })} />
-              <datalist id={datalistId}>
-                {SHOP_TYPES.map(t => (
-                  <option key={t} value={t} />
-                ))}
-              </datalist>
+              <Combobox
+                required
+                value={form.shopType}
+                onChange={(v) => update({ shopType: v })}
+                options={SHOP_TYPES}
+                placeholder="Start typing e.g. Cement, Tile…"
+              />
             </div>
 
             <h3 style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--concrete)' }}>

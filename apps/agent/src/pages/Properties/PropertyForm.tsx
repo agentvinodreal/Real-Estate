@@ -29,6 +29,8 @@ interface FormState {
   city: string
   address: string
   reraNumber: string
+  ownerName: string
+  ownerPhone: string
   status: string
   furnishing: string
   description: string
@@ -58,6 +60,8 @@ const initialForm: FormState = {
   city: '',
   address: '',
   reraNumber: '',
+  ownerName: '',
+  ownerPhone: '',
   status: 'Ready',
   furnishing: 'Unfurnished',
   description: '',
@@ -96,7 +100,7 @@ export function PropertyForm() {
     if (submittingRef.current) return
     setError(null)
 
-    if (!form.title || !form.priceInr || !form.locality || !form.city) {
+    if (!form.title || !form.priceInr || !form.locality || !form.city || !form.ownerName || !form.ownerPhone) {
       setError('Please fill in all required fields.')
       return
     }
@@ -171,6 +175,8 @@ export function PropertyForm() {
             city: form.city,
             address: form.address || null,
             reraNumber: form.reraNumber || null,
+            ownerName: form.ownerName,
+            ownerPhone: form.ownerPhone,
             status: form.status,
             furnishing: form.furnishing || null,
             description: form.description || null,
@@ -212,6 +218,8 @@ export function PropertyForm() {
         city: form.city,
         address: form.address || null,
         reraNumber: form.reraNumber || null,
+        ownerName: form.ownerName,
+        ownerPhone: form.ownerPhone,
         status: form.status,
         furnishing: form.furnishing || null,
         description: form.description || null,
@@ -537,6 +545,33 @@ export function PropertyForm() {
             onChange={(e) => update({ reraNumber: e.target.value })}
             placeholder="PRM/KA/RERA/... (optional)"
           />
+        </div>
+
+        <div className="form-field">
+          <label className="label">Owner Name *</label>
+          <input
+            type="text"
+            className="form-input"
+            required
+            value={form.ownerName}
+            onChange={(e) => update({ ownerName: e.target.value })}
+            placeholder="e.g. Ramesh Kumar"
+          />
+        </div>
+
+        <div className="form-field">
+          <label className="label">Owner Phone *</label>
+          <input
+            type="tel"
+            className="form-input"
+            required
+            value={form.ownerPhone}
+            onChange={(e) => update({ ownerPhone: e.target.value })}
+            placeholder="e.g. 9876543210"
+          />
+          <div style={{ fontSize: '0.8rem', color: 'var(--concrete)' }}>
+            For internal use only — never shown on the public website.
+          </div>
         </div>
 
         <div className="form-field">

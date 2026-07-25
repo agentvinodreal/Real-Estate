@@ -7,6 +7,7 @@ import {
   GENDERS,
   SKILL_TYPES,
 } from '@carry/shared'
+import { Combobox } from '../../components/Combobox'
 import { PhotoUploader } from '../../components/PhotoUploader/PhotoUploader'
 import { uploadManager } from '../../lib/UploadManager'
 import { usePhotoUpload } from '../../hooks/usePhotoUpload'
@@ -37,7 +38,7 @@ export function LabourDetailModal({ labour, onClose, onSaved }: Props) {
     age:             String(labour.age),
     gender:          labour.gender as string,
     skillLevel:      labour.skillLevel as string,
-    skillType:       initialSkillTypeIsOther ? 'Other' : (labour.skillType ?? 'Mason / Bricklayer'),
+    skillType:       initialSkillTypeIsOther ? 'Other' : (labour.skillType ?? 'Mason'),
     otherSkillType:  initialOtherSkillType,
     phone:           labour.phone,
     minimumWage:     labour.minimumWage ? String(labour.minimumWage) : '',
@@ -269,12 +270,13 @@ export function LabourDetailModal({ labour, onClose, onSaved }: Props) {
             {form.skillLevel === 'Skilled' && (
               <div className="form-field">
                 <label className="label">Skill Type *</label>
-                <select className="form-select" value={form.skillType}
-                  onChange={e => update({ skillType: e.target.value })}>
-                  {SKILL_TYPES.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
+                <Combobox
+                  required
+                  value={form.skillType}
+                  onChange={(v) => update({ skillType: v })}
+                  options={SKILL_TYPES}
+                  placeholder="Start typing e.g. Plumber, Contractor…"
+                />
                 {form.skillType === 'Other' && (
                   <input type="text" className="form-input" style={{ marginTop: '0.5rem' }} required
                     value={form.otherSkillType} onChange={e => update({ otherSkillType: e.target.value })}

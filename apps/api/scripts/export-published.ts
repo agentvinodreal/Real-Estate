@@ -18,7 +18,10 @@ async function main() {
     include: { agent: { select: { id: true, name: true, email: true } } }
   })
   
-  const data = { properties, projects }
+  // Owner contact is internal-only — never hand it to the public website's import.
+  const publicProperties = properties.map(({ ownerName, ownerPhone, ...rest }) => rest)
+
+  const data = { properties: publicProperties, projects }
   // Save into the Real-Estate root directory
   const destPath = path.join(__dirname, '../../../../Real-Estate/shared-data.json')
   fs.writeFileSync(destPath, JSON.stringify(data, null, 2))

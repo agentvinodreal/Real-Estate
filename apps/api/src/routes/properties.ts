@@ -17,6 +17,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
           areaSqft: {type:'integer'}, locality: {type:'string'}, city: {type:'string'},
           address: {type:'string'}, reraNumber: {type:'string'}, status: {type:'string'},
           furnishing: {type:'string'}, description: {type:'string'},
+          ownerName: {type:'string'}, ownerPhone: {type:'string'},
           images: {type:'array', items:{type:'string'}},
           floorPlanUrl: {type:'string'}, lat: {type:'number'}, lng: {type:'number'},
           id: {type:'string'},
@@ -40,7 +41,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
     // Destructure only schema-allowed fields (never let client set agentId, reviewStatus, or pick their own id)
     const { id: clientId, title, propertyType, listingType, bhk, priceInr, priceLabel,
             areaSqft, locality, city, address, reraNumber, status, furnishing,
-            description, images, floorPlanUrl, lat, lng,
+            description, ownerName, ownerPhone, images, floorPlanUrl, lat, lng,
             securityDeposit, availableFrom, preferredTenant, petFriendly, maintenanceCharges,
             leaseDuration, lockInPeriod, camCharges, plotAllowedUse } = body
 
@@ -53,6 +54,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
       slug,
       title, propertyType, listingType, bhk, priceInr, priceLabel, areaSqft,
       locality, city, address, reraNumber, status, furnishing, description,
+      ownerName, ownerPhone,
       images: images ?? [], floorPlanUrl, lat, lng, agentId, reviewStatus: 'pending',
       securityDeposit, availableFrom, preferredTenant, petFriendly, maintenanceCharges,
       leaseDuration, lockInPeriod, camCharges, plotAllowedUse,
@@ -134,6 +136,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
         areaSqft: {type:'integer'}, locality: {type:'string'}, city: {type:'string'},
         address: {type:'string'}, reraNumber: {type:'string'}, status: {type:'string'},
         furnishing: {type:'string'}, description: {type:'string'},
+        ownerName: {type:'string'}, ownerPhone: {type:'string'},
         images: {type:'array', items:{type:'string'}},
         floorPlanUrl: {type:'string'}, lat: {type:'number'}, lng: {type:'number'},
         securityDeposit: {type:'integer'}, availableFrom: {type:'string'},
@@ -157,7 +160,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
     // Strip immutable fields — only update what the agent sent
     const { title, propertyType, listingType, bhk, priceInr, priceLabel,
             areaSqft, locality, city, address, reraNumber, status, furnishing,
-            description, images, floorPlanUrl, lat, lng,
+            description, ownerName, ownerPhone, images, floorPlanUrl, lat, lng,
             securityDeposit, availableFrom, preferredTenant, petFriendly, maintenanceCharges,
             leaseDuration, lockInPeriod, camCharges, plotAllowedUse } = body
     const data: any = { reviewStatus: 'pending' }
@@ -175,6 +178,8 @@ export default async function propertyRoutes(app: FastifyInstance) {
     if (status        !== undefined) data.status        = status
     if (furnishing    !== undefined) data.furnishing    = furnishing
     if (description   !== undefined) data.description   = description
+    if (ownerName     !== undefined) data.ownerName     = ownerName
+    if (ownerPhone    !== undefined) data.ownerPhone    = ownerPhone
     if (images        !== undefined) data.images        = images
     if (floorPlanUrl  !== undefined) data.floorPlanUrl  = floorPlanUrl
     if (lat           !== undefined) data.lat           = lat
@@ -207,6 +212,7 @@ export default async function propertyRoutes(app: FastifyInstance) {
         areaSqft: {type:'integer'}, locality: {type:'string'}, city: {type:'string'},
         address: {type:'string'}, reraNumber: {type:'string'}, status: {type:'string'},
         furnishing: {type:'string'}, description: {type:'string'},
+        ownerName: {type:'string'}, ownerPhone: {type:'string'},
         images: {type:'array', items:{type:'string'}}, floorPlanUrl: {type:'string'},
         lat: {type:'number'}, lng: {type:'number'},
         securityDeposit: {type:'integer'}, availableFrom: {type:'string'},
@@ -221,10 +227,10 @@ export default async function propertyRoutes(app: FastifyInstance) {
     const body = request.body as any
     const { reviewStatus, published, title, propertyType, listingType, bhk, priceInr, priceLabel,
             areaSqft, locality, city, address, reraNumber, status, furnishing,
-            description, images, floorPlanUrl, lat, lng,
+            description, ownerName, ownerPhone, images, floorPlanUrl, lat, lng,
             securityDeposit, availableFrom, preferredTenant, petFriendly, maintenanceCharges,
             leaseDuration, lockInPeriod, camCharges, plotAllowedUse } = body
-    
+
     const data: any = {}
     if (reviewStatus !== undefined) data.reviewStatus = reviewStatus
     if (published !== undefined) data.published = published
@@ -245,6 +251,8 @@ export default async function propertyRoutes(app: FastifyInstance) {
     if (status !== undefined) data.status = status
     if (furnishing !== undefined) data.furnishing = furnishing
     if (description !== undefined) data.description = description
+    if (ownerName !== undefined) data.ownerName = ownerName
+    if (ownerPhone !== undefined) data.ownerPhone = ownerPhone
     if (images !== undefined) data.images = images
     if (floorPlanUrl !== undefined) data.floorPlanUrl = floorPlanUrl
     if (lat !== undefined) data.lat = lat
@@ -268,7 +276,9 @@ export default async function propertyRoutes(app: FastifyInstance) {
       // request just unpublished it (so the site hides it too). Runs in the
       // background — a website outage must not fail the publish here.
       if (serialized.published || published !== undefined) {
-        syncToWebsiteInBackground({ properties: [serialized] }, request.log)
+        // Owner contact is internal-only — strip it before it ever leaves this API.
+        const { ownerName: _ownerName, ownerPhone: _ownerPhone, ...publicProperty } = serialized
+        syncToWebsiteInBackground({ properties: [publicProperty] }, request.log)
       }
 
       return serialized

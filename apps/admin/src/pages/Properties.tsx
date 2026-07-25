@@ -44,6 +44,8 @@ export function Properties() {
   const [editCity, setEditCity] = useState('')
   const [editAddress, setEditAddress] = useState('')
   const [editReraNumber, setEditReraNumber] = useState('')
+  const [editOwnerName, setEditOwnerName] = useState('')
+  const [editOwnerPhone, setEditOwnerPhone] = useState('')
   const [editStatus, setEditStatus] = useState('')
   const [editFurnishing, setEditFurnishing] = useState('')
   const [editDescription, setEditDescription] = useState('')
@@ -77,6 +79,8 @@ export function Properties() {
     setEditCity(p.city)
     setEditAddress(p.address || '')
     setEditReraNumber(p.reraNumber || '')
+    setEditOwnerName(p.ownerName || '')
+    setEditOwnerPhone(p.ownerPhone || '')
     setEditStatus(p.status)
     setEditFurnishing(p.furnishing || '')
     setEditDescription(p.description || '')
@@ -119,6 +123,8 @@ export function Properties() {
         city:               editCity.trim() || undefined,
         address:            editAddress.trim() || null,
         reraNumber:         editReraNumber.trim() || null,
+        ownerName:          editOwnerName.trim() || null,
+        ownerPhone:         editOwnerPhone.trim() || null,
         status:             editStatus || undefined,
         furnishing:         editFurnishing || null,
         description:        editDescription.trim() || null,
@@ -519,6 +525,20 @@ export function Properties() {
                   <input type="number" step="any" value={editLng} onChange={e => setEditLng(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
                 </div>
               </div>
+
+              <h3 style={{ fontSize: '1rem', marginTop: '0.5rem', borderBottom: '1px solid var(--sand)', paddingBottom: '0.25rem' }}>
+                Owner Contact <span style={{ fontWeight: 400, color: 'var(--concrete)', fontSize: '0.8rem' }}>(internal only — never shown on the public website)</span>
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Owner Name</label>
+                  <input type="text" value={editOwnerName} onChange={e => setEditOwnerName(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
+                </div>
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Owner Phone</label>
+                  <input type="text" value={editOwnerPhone} onChange={e => setEditOwnerPhone(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
+                </div>
+              </div>
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Description</label>
                 <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)', minHeight: 80 }} />
@@ -665,6 +685,14 @@ export function Properties() {
                 <span className="detail-label">Submitted by</span>
                 <span className="detail-value">{selected.agent?.name ?? '—'} ({selected.agent?.email})</span>
               </div>
+              {(selected.ownerName || selected.ownerPhone) && (
+                <div className="detail-item">
+                  <span className="detail-label">Owner Contact <span style={{ fontWeight: 400, color: 'var(--concrete)' }}>(internal only)</span></span>
+                  <span className="detail-value">
+                    {selected.ownerName || '—'}{selected.ownerPhone ? ` · ${selected.ownerPhone}` : ''}
+                  </span>
+                </div>
+              )}
               <div className="detail-item">
                 <span className="detail-label">Review Status</span>
                 <span className={`status-pill ${selected.reviewStatus}`}>{selected.reviewStatus}</span>

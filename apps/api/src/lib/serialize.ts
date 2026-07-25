@@ -32,6 +32,8 @@ export function serializeProperty(row: any): Property {
     status: row.status,
     furnishing: row.furnishing ?? undefined,
     description: row.description ?? undefined,
+    ownerName: row.ownerName ?? undefined,
+    ownerPhone: row.ownerPhone ?? undefined,
     images: Array.isArray(row.images) ? row.images : [],
     floorPlanUrl: row.floorPlanUrl ?? undefined,
     lat: row.lat ?? undefined,
