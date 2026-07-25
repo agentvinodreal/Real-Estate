@@ -89,6 +89,7 @@ model ConstructionProject {
   durationMonths Int?
   packageTier    String?
   description    String?
+  heroImage      String?
   beforeImages   String[] @default([])
   afterImages    String[] @default([])
   stageImages    String[] @default([])

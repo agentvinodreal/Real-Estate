@@ -42,6 +42,7 @@ export type ConstructionProject = {
   durationMonths: number | null
   packageTier: string | null
   description: string | null
+  heroImage: string | null
   processStages: ProcessStage[]
   beforeImages: string[]
   afterImages: string[]

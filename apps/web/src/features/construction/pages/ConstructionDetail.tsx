@@ -116,7 +116,7 @@ export default function ConstructionDetail() {
         title={`${p.title} — ${p.category}`}
         description={p.description ?? `${p.category} in ${p.location} by Carry Construction.`}
         path={`/construction/${p.slug}`}
-        image={p.afterImages && p.afterImages.length > 0 ? p.afterImages[0] : undefined}
+        image={p.heroImage ?? (p.afterImages && p.afterImages.length > 0 ? p.afterImages[0] : undefined)}
       />
       {/* Breadcrumb + title */}
       <div className="mx-auto max-w-7xl px-5 pb-8 pt-6 sm:px-8">
@@ -132,8 +132,8 @@ export default function ConstructionDetail() {
 
       {/* Hero image */}
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        {p.afterImages && p.afterImages.length > 0 ? (
-          <Photo src={p.afterImages[0]} seed={p.slug} label={`${p.title} - completed`} className="aspect-[16/9] w-full" />
+        {p.heroImage || (p.afterImages && p.afterImages.length > 0) ? (
+          <Photo src={p.heroImage ?? p.afterImages[0]} seed={p.slug} label={`${p.title} - completed`} className="aspect-[16/9] w-full" />
         ) : (
           <Placeholder label={`${p.title} — completed`} className="aspect-[16/9] w-full" />
         )}

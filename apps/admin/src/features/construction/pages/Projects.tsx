@@ -26,7 +26,9 @@ export default function Projects() {
   const [form, setForm] = useState(emptyForm)
   const [beforeImages, setBeforeImages] = useState<string[]>([])
   const [afterImages, setAfterImages] = useState<string[]>([])
-  const [uploading, setUploading] = useState<'before' | 'after' | null>(null)
+  const [stageImages, setStageImages] = useState<string[]>([])
+  const [heroImage, setHeroImage] = useState<string | null>(null)
+  const [uploading, setUploading] = useState<'before' | 'after' | 'hero' | 'stage' | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -55,6 +57,8 @@ export default function Projects() {
     })
     setBeforeImages(p.beforeImages ?? [])
     setAfterImages(p.afterImages ?? [])
+    setStageImages(p.stageImages ?? [])
+    setHeroImage(p.heroImage ?? null)
     setError('')
     setShowForm(true)
   }
@@ -65,9 +69,11 @@ export default function Projects() {
     setForm(emptyForm)
     setBeforeImages([])
     setAfterImages([])
+    setStageImages([])
+    setHeroImage(null)
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>, target: 'before' | 'after') {
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>, target: 'before' | 'after' | 'hero' | 'stage') {
     const files = e.target.files
     if (!files || files.length === 0) return
 
@@ -99,8 +105,12 @@ export default function Projects() {
         const data = await res.json()
         if (target === 'before') {
           setBeforeImages((prev) => [...prev, data.secure_url])
-        } else {
+        } else if (target === 'after') {
           setAfterImages((prev) => [...prev, data.secure_url])
+        } else if (target === 'stage') {
+          setStageImages((prev) => [...prev, data.secure_url])
+        } else {
+          setHeroImage(data.secure_url)
         }
       }
     } catch (err: any) {
@@ -125,8 +135,10 @@ export default function Projects() {
       durationMonths: form.durationMonths ? Number(form.durationMonths) : null,
       packageTier: form.packageTier,
       description: form.description || null,
+      heroImage,
       beforeImages,
       afterImages,
+      stageImages,
     }
     try {
       if (editingId) {
@@ -193,6 +205,48 @@ export default function Projects() {
                 <Textarea className="min-h-[80px]" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
               </div>
 
+              <div className="col-span-2 my-2 border-t border-ink/5 pt-4">
+                <Label>Hero Image</Label>
+                <p className="mt-0.5 font-mono text-[0.6rem] text-concrete">Shown on the project card and detail page banner. Upload one, or pick from photos already uploaded below.</p>
+                <div className="mt-2 flex items-center gap-3">
+                  {heroImage && (
+                    <div className="relative">
+                      <img src={heroImage} alt="Hero" className="h-16 w-20 border-2 border-ochre object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setHeroImage(null)}
+                        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-ink text-bone"
+                        aria-label="Clear hero image"
+                      >
+                        <X className="h-2.5 w-2.5" strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  )}
+                  <label className="cursor-pointer border border-ink/20 bg-ink/5 px-3 py-1.5 font-mono text-[0.65rem] uppercase tracking-wider text-ink-soft hover:border-ink hover:text-ink">
+                    {uploading === 'hero' ? 'Uploading…' : 'Upload New'}
+                    <input type="file" accept="image/*" disabled={!!uploading} onChange={(e) => handleFileUpload(e, 'hero')} className="hidden" />
+                  </label>
+                </div>
+
+                {(beforeImages.length > 0 || afterImages.length > 0) && (
+                  <div className="mt-3">
+                    <span className="block font-mono text-[0.55rem] uppercase tracking-wide text-concrete">Or choose from uploaded photos</span>
+                    <div className="mt-1.5 flex flex-wrap gap-2">
+                      {[...beforeImages, ...afterImages].map((url, idx) => (
+                        <button
+                          type="button"
+                          key={`${url}-${idx}`}
+                          onClick={() => setHeroImage(url)}
+                          className={`relative h-10 w-12 shrink-0 overflow-hidden border ${heroImage === url ? 'border-2 border-ochre' : 'border-ink/10 hover:border-ink/30'}`}
+                        >
+                          <img src={url} alt="" className="h-full w-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="col-span-2 my-2 grid grid-cols-2 gap-4 border-t border-ink/5 pt-4">
                 <div>
                   <Label>Before Construction Photos</Label>
@@ -223,6 +277,24 @@ export default function Projects() {
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       {afterImages.map((url, idx) => (
                         <img key={idx} src={url} alt="After" className="h-10 w-12 border border-ochre/30 object-cover" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="col-span-2">
+                  <Label>On-site Progress Photos</Label>
+                  <p className="mt-0.5 font-mono text-[0.6rem] text-concrete">Shown in the "On-site progress" gallery on the project detail page (e.g. foundation, structure, finishing).</p>
+                  <div className="mt-1 flex items-center gap-3">
+                    <label className="cursor-pointer border border-ink/20 bg-ink/5 px-3 py-1.5 font-mono text-[0.65rem] uppercase tracking-wider text-ink-soft hover:border-ink hover:text-ink">
+                      {uploading === 'stage' ? 'Uploading…' : 'Select Files'}
+                      <input type="file" multiple accept="image/*" disabled={!!uploading} onChange={(e) => handleFileUpload(e, 'stage')} className="hidden" />
+                    </label>
+                  </div>
+                  {stageImages.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {stageImages.map((url, idx) => (
+                        <img key={idx} src={url} alt="On-site progress" className="h-10 w-12 border border-teal/40 object-cover" />
                       ))}
                     </div>
                   )}
@@ -265,7 +337,7 @@ export default function Projects() {
                     <div>Tier: <span className="text-ink">{p.packageTier ?? 'N/A'}</span></div>
                   </div>
 
-                  {((p.beforeImages && p.beforeImages.length > 0) || (p.afterImages && p.afterImages.length > 0)) && (
+                  {((p.beforeImages && p.beforeImages.length > 0) || (p.afterImages && p.afterImages.length > 0) || (p.stageImages && p.stageImages.length > 0)) && (
                     <div className="mt-4 border-t border-ink/5 pt-3">
                       <span className="mb-1.5 block font-mono text-[0.55rem] uppercase tracking-wide text-concrete">Showcase Photos</span>
                       <div className="flex flex-wrap gap-1.5">
@@ -275,7 +347,18 @@ export default function Projects() {
                         {p.afterImages?.map((url, idx) => (
                           <img key={`after-${idx}`} src={url} alt="After" className="h-8 w-10 border border-ochre/40 object-cover" />
                         ))}
+                        {p.stageImages?.map((url, idx) => (
+                          <img key={`stage-${idx}`} src={url} alt="On-site progress" className="h-8 w-10 border border-teal/40 object-cover" />
+                        ))}
                       </div>
+                      {(!p.beforeImages?.length || !p.afterImages?.length) && (
+                        <p className="mt-1.5 font-mono text-[0.55rem] text-ochre-dark">
+                          {!p.beforeImages?.length && !p.afterImages?.length ? 'No before/after pair — slider will show placeholders' : !p.afterImages?.length ? 'Missing "after" photo — before/after slider will show placeholders' : 'Missing "before" photo — before/after slider will show placeholders'}
+                        </p>
+                      )}
+                      {!p.stageImages?.length && (
+                        <p className="font-mono text-[0.55rem] text-ochre-dark">No on-site progress photos — that gallery will show placeholders</p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -301,7 +384,7 @@ export default function Projects() {
         {viewProject && (
           <DetailModal
             title={viewProject.title}
-            imageUrl={viewProject.afterImages?.[0] ?? viewProject.beforeImages?.[0] ?? null}
+            imageUrl={viewProject.heroImage ?? viewProject.afterImages?.[0] ?? viewProject.beforeImages?.[0] ?? null}
             imageAlt={viewProject.title}
             badge={<Badge tone="ink">{viewProject.category}</Badge>}
             onClose={() => setViewProject(null)}
@@ -313,7 +396,7 @@ export default function Projects() {
             <div className="col-span-2">
               <DetailRow label="Description" value={viewProject.description} />
             </div>
-            {((viewProject.beforeImages?.length ?? 0) > 0 || (viewProject.afterImages?.length ?? 0) > 0) && (
+            {((viewProject.beforeImages?.length ?? 0) > 0 || (viewProject.afterImages?.length ?? 0) > 0 || (viewProject.stageImages?.length ?? 0) > 0) && (
               <div className="col-span-2">
                 <Label className="mb-1.5">Showcase Photos</Label>
                 <div className="flex flex-wrap gap-1.5">
@@ -323,7 +406,18 @@ export default function Projects() {
                   {viewProject.afterImages?.map((url, idx) => (
                     <img key={`after-${idx}`} src={url} alt="After" className="h-14 w-18 border border-ochre/40 object-cover" />
                   ))}
+                  {viewProject.stageImages?.map((url, idx) => (
+                    <img key={`stage-${idx}`} src={url} alt="On-site progress" className="h-14 w-18 border border-teal/40 object-cover" />
+                  ))}
                 </div>
+                {(!viewProject.beforeImages?.length || !viewProject.afterImages?.length) && (
+                  <p className="mt-1.5 font-mono text-[0.6rem] text-ochre-dark">
+                    {!viewProject.beforeImages?.length && !viewProject.afterImages?.length ? 'No before/after pair — slider will show placeholders' : !viewProject.afterImages?.length ? 'Missing "after" photo — before/after slider will show placeholders' : 'Missing "before" photo — before/after slider will show placeholders'}
+                  </p>
+                )}
+                {!viewProject.stageImages?.length && (
+                  <p className="font-mono text-[0.6rem] text-ochre-dark">No on-site progress photos — that gallery will show placeholders</p>
+                )}
               </div>
             )}
           </DetailModal>

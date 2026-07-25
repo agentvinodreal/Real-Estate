@@ -7,6 +7,7 @@ export default function ConstructionCard({ project }: { project: ConstructionPro
     <Link to={`/construction/${project.slug}`} className="group flex flex-col">
       <div className="relative overflow-hidden">
         <Photo
+          src={project.heroImage ?? project.afterImages?.[0]}
           seed={project.slug}
           label={project.title}
           className="aspect-[4/3] w-full transition-transform duration-500 ease-out group-hover:scale-105"
