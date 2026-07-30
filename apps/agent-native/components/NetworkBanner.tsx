@@ -43,7 +43,10 @@ export function NetworkBanner() {
       const remaining = getPendingCount()
       setStatus(remaining === 0 ? 'synced' : 'partial')
       setPendingCount(remaining)
-      setTimeout(hide, 3000)
+      // Only dismiss on a clean sweep. Auto-hiding the "still pending" warning
+      // after 3s is what made a stalled queue invisible — the agent saw a flash
+      // of orange and assumed it had gone through.
+      if (remaining === 0) setTimeout(hide, 3000)
     } catch {
       setStatus('partial')
     } finally {
@@ -74,6 +77,10 @@ export function NetworkBanner() {
       } else {
         if (wasOffline.current) {
           wasOffline.current = false
+          // Regaining the network is exactly when an upload that exhausted its
+          // attempts on the old, bad connection deserves a fresh budget —
+          // otherwise it stays retired and only a manual tap can revive it.
+          resetStuckUploads()
           sync()
         } else {
           hide()

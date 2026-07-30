@@ -8,6 +8,26 @@ import { uploadFileToCloudinary } from './cloudinaryUpload'
 const MAX_ATTEMPTS = 5
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE ?? 'http://localhost:4001/api/v1'
 
+/**
+ * True when a failure means "we never got through" rather than "the server
+ * looked at this and refused it".
+ *
+ * The attempt budget exists to stop retrying something genuinely broken — a
+ * malformed payload, a revoked token. Spending it on a weak signal instead
+ * retires a perfectly good photo: five failed cycles on 2G and every automatic
+ * sync skips it forever, including after the agent reaches wifi. So only a real
+ * server rejection counts against the budget.
+ *
+ * No status  → fetch threw, the request never landed.
+ * 408        → our own AbortController fired.
+ * 5xx        → the server could not answer; not the payload's fault.
+ */
+function isTransportFailure(err: unknown): boolean {
+  const status = (err as { status?: number } | undefined)?.status
+  if (typeof status !== 'number') return true
+  return status === 408 || status >= 500
+}
+
 // ── Flush photo uploads ───────────────────────────────────────────────────────
 
 export async function flushPendingUploads(token: string): Promise<void> {
@@ -35,8 +55,9 @@ export async function flushPendingUploads(token: string): Promise<void> {
         token
       )
       markUploadComplete(upload.localId, publicId)
-    } catch {
-      incrementUploadAttempts(upload.id)
+    } catch (err) {
+      // Only a genuine server rejection costs an attempt — see isTransportFailure.
+      if (!isTransportFailure(err)) incrementUploadAttempts(upload.id)
     }
   }
 }
@@ -59,8 +80,9 @@ export async function flushPendingRecords(token: string): Promise<void> {
         upload.fileUri, upload.fileName, upload.folder, token
       )
       markUploadComplete(upload.localId, publicId)
-    } catch {
-      incrementUploadAttempts(upload.id)
+    } catch (err) {
+      // Only a genuine server rejection costs an attempt — see isTransportFailure.
+      if (!isTransportFailure(err)) incrementUploadAttempts(upload.id)
     }
   }
 

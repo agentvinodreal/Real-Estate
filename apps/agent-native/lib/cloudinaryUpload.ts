@@ -1,4 +1,4 @@
-import { api } from '@carry/shared'
+import { api, WRITE_TIMEOUT_MS } from '@carry/shared'
 import type { CloudinarySignature } from '@carry/shared'
 
 /**
@@ -11,10 +11,14 @@ export async function uploadFileToCloudinary(
   folder:    string,
   token:     string,
 ): Promise<string> {
-  // 1. Get a signed upload URL from our API
+  // 1. Get a signed upload URL from our API.
+  // Uses the write ceiling, not the default read one: on a weak link a 15s abort
+  // here killed the upload before step 3 was ever reached, making the untimed
+  // Cloudinary POST below unreachable on exactly the networks it exists for.
   const sig = await api.get<CloudinarySignature>(
     `/uploads/sign?folder=${encodeURIComponent(folder)}`,
-    token
+    token,
+    { timeout: WRITE_TIMEOUT_MS }
   )
 
   // 2. Build multipart form — React Native FormData handles file:// URIs natively
