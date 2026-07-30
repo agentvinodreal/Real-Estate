@@ -5,7 +5,9 @@ export {
   LISTING_TYPES,
   PROPERTY_STATUSES,
   FURNISHING_TYPES,
-  BHK_OPTIONS
+  BHK_OPTIONS,
+  PREFERRED_TENANT_TYPES,
+  PLOT_ALLOWED_USE_TYPES
 } from '@carry/shared'
 
 export interface PropertyFormState {

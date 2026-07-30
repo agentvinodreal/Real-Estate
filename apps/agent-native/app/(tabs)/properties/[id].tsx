@@ -5,11 +5,13 @@ import {
 } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useAuth, useUser } from '@clerk/clerk-expo'
+import * as Location from 'expo-location'
 import { api, formatPriceLabel } from '@carry/shared'
 import type { Property } from '@carry/shared'
 import {
   validatePropertyForm,
   PROPERTY_TYPES, LISTING_TYPES, PROPERTY_STATUSES, FURNISHING_TYPES, BHK_OPTIONS,
+  PREFERRED_TENANT_TYPES, PLOT_ALLOWED_USE_TYPES,
 } from '@carry/logic'
 import type { PropertyFormState } from '@carry/logic'
 import { useFormPersist } from '../../../hooks/useFormPersist'
@@ -63,10 +65,28 @@ export default function PropertyEditScreen() {
   const property = useRef<Property>(JSON.parse(record)).current
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [locating, setLocating] = useState(false)
   const submittingRef = useRef(false)
 
   const storageKey = `carry:form:property:edit:${id}:${user?.id ?? 'guest'}`
   const { form, update, clear } = useFormPersist(storageKey, toFormState(property))
+
+  const captureLocation = async () => {
+    setLocating(true)
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to add GPS coordinates.')
+        return
+      }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
+      update({ lat: loc.coords.latitude, lng: loc.coords.longitude })
+    } catch {
+      Alert.alert('Location Error', 'Could not get your location. Please try again.')
+    } finally {
+      setLocating(false)
+    }
+  }
 
   const handleSubmit = async () => {
     if (submittingRef.current) return
@@ -223,9 +243,122 @@ export default function PropertyEditScreen() {
           {form.priceInr && parseInt(form.priceInr) > 0 && (
             <Text style={{ fontSize: 11, color: colors.ochre, marginTop: 4 }}>
               {formatPriceLabel(parseInt(form.priceInr))}
+              {form.listingType === 'Rent' && ' / month'}
             </Text>
           )}
         </FormField>
+
+        {/* Rent-specific details — same per-property-type conditionals as the
+            submit form, and the payload below already sends every one of these. */}
+        {form.listingType === 'Rent' && (
+          <View style={styles.rentSection}>
+            <Text style={styles.rentSectionTitle}>Rent Specific Details (Optional)</Text>
+
+            <FormField label="Security Deposit (₹)">
+              <TextInput
+                value={form.securityDeposit}
+                onChangeText={v => update({ securityDeposit: v })}
+                keyboardType="numeric"
+                placeholder="e.g. 50000"
+                placeholderTextColor={colors.concrete}
+                style={styles.input}
+              />
+            </FormField>
+
+            {(form.propertyType === 'Apartment' || form.propertyType === 'Villa' || form.propertyType === 'Commercial') && (
+              <FormField label="Available From">
+                <TextInput
+                  value={form.availableFrom}
+                  onChangeText={v => update({ availableFrom: v })}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor={colors.concrete}
+                  style={styles.input}
+                />
+              </FormField>
+            )}
+
+            {(form.propertyType === 'Apartment' || form.propertyType === 'Villa') && (
+              <FormField label="Preferred Tenant">
+                <ChipSelector
+                  options={[...PREFERRED_TENANT_TYPES]}
+                  value={form.preferredTenant}
+                  onChange={v => update({ preferredTenant: v })}
+                />
+              </FormField>
+            )}
+
+            {(form.propertyType === 'Apartment' || form.propertyType === 'Villa') && (
+              <FormField label="Pet Friendly">
+                <ChipSelector
+                  options={['Yes', 'No']}
+                  value={form.petFriendly ? 'Yes' : 'No'}
+                  onChange={v => update({ petFriendly: v === 'Yes' })}
+                />
+              </FormField>
+            )}
+
+            {(form.propertyType === 'Apartment' || form.propertyType === 'Villa' || form.propertyType === 'Commercial') && (
+              <FormField label="Maintenance Charges (₹/month)">
+                <TextInput
+                  value={form.maintenanceCharges}
+                  onChangeText={v => update({ maintenanceCharges: v })}
+                  keyboardType="numeric"
+                  placeholder="e.g. 3000"
+                  placeholderTextColor={colors.concrete}
+                  style={styles.input}
+                />
+              </FormField>
+            )}
+
+            {(form.propertyType === 'Plot' || form.propertyType === 'Commercial') && (
+              <FormField label="Minimum Lease Duration (Months)">
+                <TextInput
+                  value={form.leaseDuration}
+                  onChangeText={v => update({ leaseDuration: v })}
+                  keyboardType="numeric"
+                  placeholder="e.g. 11"
+                  placeholderTextColor={colors.concrete}
+                  style={styles.input}
+                />
+              </FormField>
+            )}
+
+            {form.propertyType === 'Commercial' && (
+              <>
+                <FormField label="Lock-in Period (Months)">
+                  <TextInput
+                    value={form.lockInPeriod}
+                    onChangeText={v => update({ lockInPeriod: v })}
+                    keyboardType="numeric"
+                    placeholder="e.g. 6"
+                    placeholderTextColor={colors.concrete}
+                    style={styles.input}
+                  />
+                </FormField>
+                <FormField label="CAM Charges (₹/month)">
+                  <TextInput
+                    value={form.camCharges}
+                    onChangeText={v => update({ camCharges: v })}
+                    keyboardType="numeric"
+                    placeholder="e.g. 5000"
+                    placeholderTextColor={colors.concrete}
+                    style={styles.input}
+                  />
+                </FormField>
+              </>
+            )}
+
+            {form.propertyType === 'Plot' && (
+              <FormField label="Allowed Use">
+                <ChipSelector
+                  options={[...PLOT_ALLOWED_USE_TYPES]}
+                  value={form.plotAllowedUse}
+                  onChange={v => update({ plotAllowedUse: v })}
+                />
+              </FormField>
+            )}
+          </View>
+        )}
 
         {/* Area */}
         <FormField label="Area (sq ft)">
@@ -328,6 +461,33 @@ export default function PropertyEditScreen() {
           />
         </FormField>
 
+        {/* Location Coords (GPS) — matches the web edit modal */}
+        <FormField label="Location Coords (GPS)">
+          {form.lat && form.lng ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={{ fontSize: 12, color: colors.concrete, flex: 1 }}>
+                📍 {form.lat.toFixed(5)}, {form.lng.toFixed(5)}
+              </Text>
+              <TouchableOpacity onPress={() => update({ lat: undefined, lng: undefined })}>
+                <Text style={{ fontSize: 12, color: colors.error }}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.locationBtn}
+              onPress={captureLocation}
+              disabled={locating}
+            >
+              {locating
+                ? <ActivityIndicator color={colors.ochre} size="small" />
+                : <Text style={{ color: colors.ochre, fontWeight: '600', fontSize: 13 }}>
+                    📍 Capture Current Location
+                  </Text>
+              }
+            </TouchableOpacity>
+          )}
+        </FormField>
+
         {/* Photos */}
         <FormField label="Photos (up to 10)">
           <PhotoPicker
@@ -391,6 +551,17 @@ export default function PropertyEditScreen() {
 
 const styles = StyleSheet.create({
   scroll:    { padding: 16 },
+  locationBtn: {
+    borderWidth: 1.5, borderColor: colors.ochre, borderRadius: 10,
+    padding: 12, alignItems: 'center', borderStyle: 'dashed',
+  },
+  rentSection: {
+    borderWidth: 1, borderColor: colors.sand, borderRadius: 8,
+    padding: 16, marginBottom: 16, backgroundColor: 'rgba(0,0,0,0.02)',
+  },
+  rentSectionTitle: {
+    color: colors.ochre, fontSize: 15, fontWeight: '700', marginBottom: 12,
+  },
   header: {
     flexDirection: 'row',
     alignItems:    'center',

@@ -126,7 +126,7 @@ export default function LabourFormScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 4 }}>
             <Text style={{ fontSize: 22 }}>←</Text>
           </TouchableOpacity>
-          <Text style={[typography.pageTitle, { marginBottom: 0 }]}>New Labour Record</Text>
+          <Text style={[typography.pageTitle, { marginBottom: 0 }]}>Submit Labour</Text>
         </View>
 
         <FormField label="Full Name *">
@@ -199,6 +199,26 @@ export default function LabourFormScreen() {
           />
         </FormField>
 
+        <FormField label="House No / Flat">
+          <TextInput
+            value={form.houseNo}
+            onChangeText={v => update({ houseNo: v })}
+            placeholder="e.g. #45, 2nd Floor"
+            placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
+        <FormField label="Street / Lane">
+          <TextInput
+            value={form.street}
+            onChangeText={v => update({ street: v })}
+            placeholder="e.g. 5th Main Rd"
+            placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
         <FormField label="Locality">
           <TextInput
             value={form.locality}
@@ -215,6 +235,18 @@ export default function LabourFormScreen() {
             onChangeText={v => update({ city: v })}
             placeholder="e.g. Pune"
             placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
+        <FormField label="Pincode">
+          <TextInput
+            value={form.pincode}
+            onChangeText={v => update({ pincode: v })}
+            placeholder="e.g. 560066"
+            placeholderTextColor={colors.concrete}
+            keyboardType="number-pad"
+            maxLength={6}
             style={styles.input}
           />
         </FormField>
@@ -243,7 +275,7 @@ export default function LabourFormScreen() {
         >
           {submitting
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.submitBtnText}>Submit Labour Record</Text>
+            : <Text style={styles.submitBtnText}>Submit Labour</Text>
           }
         </TouchableOpacity>
 

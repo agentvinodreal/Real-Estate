@@ -1,31 +1,8 @@
 import { Tabs, Redirect } from 'expo-router'
-import { View, Platform } from 'react-native'
+import { Platform } from 'react-native'
 import { colors } from '../../theme/colors'
 import { useAccessGate } from '../../hooks/useAccessGate'
-
-// Simple SVG-less icon components using text/emoji for now
-// Replace with react-native-vector-icons or expo/vector-icons in polish phase
-function HouseIcon({ focused }: { focused: boolean }) {
-  return <View><TabIcon emoji="🏠" focused={focused} /></View>
-}
-function WorkerIcon({ focused }: { focused: boolean }) {
-  return <View><TabIcon emoji="👷" focused={focused} /></View>
-}
-function ShopIcon({ focused }: { focused: boolean }) {
-  return <View><TabIcon emoji="🏪" focused={focused} /></View>
-}
-function ProfileIcon({ focused }: { focused: boolean }) {
-  return <View><TabIcon emoji="👤" focused={focused} /></View>
-}
-
-import { Text } from 'react-native'
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
-  return (
-    <Text style={{ fontSize: focused ? 22 : 20, opacity: focused ? 1 : 0.5 }}>
-      {emoji}
-    </Text>
-  )
-}
+import { PropertiesIcon, ServicemenIcon, ShopsIcon, ProfileIcon } from '../../components/NavIcons'
 
 export default function TabLayout() {
   const gate = useAccessGate()
@@ -47,9 +24,12 @@ export default function TabLayout() {
           height: Platform.OS === 'android' ? 60 : 80,
           paddingBottom: Platform.OS === 'android' ? 8 : 20,
         },
+        // Mirrors the web's .nav-item-label: mono, uppercase, wide tracking.
         tabBarLabelStyle: {
-          fontSize:   10,
-          fontWeight: '600',
+          fontSize:       10,
+          fontWeight:     '600',
+          textTransform:  'uppercase',
+          letterSpacing:  0.5,
         },
       }}
     >
@@ -57,21 +37,21 @@ export default function TabLayout() {
         name="properties"
         options={{
           title: 'Properties',
-          tabBarIcon: ({ focused }) => <HouseIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => <PropertiesIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="labour"
         options={{
-          title: 'Labour',
-          tabBarIcon: ({ focused }) => <WorkerIcon focused={focused} />,
+          title: 'Servicemen',
+          tabBarIcon: ({ focused }) => <ServicemenIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="shops"
         options={{
           title: 'Shops',
-          tabBarIcon: ({ focused }) => <ShopIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => <ShopsIcon focused={focused} />,
         }}
       />
       <Tabs.Screen

@@ -117,7 +117,7 @@ export default function LabourEditScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 4 }}>
             <Text style={{ fontSize: 22 }}>←</Text>
           </TouchableOpacity>
-          <Text style={[typography.pageTitle, { marginBottom: 0 }]}>Edit Labour Record</Text>
+          <Text style={[typography.pageTitle, { marginBottom: 0 }]}>Edit Labour Profile</Text>
         </View>
 
         <FormField label="Full Name *">
@@ -190,6 +190,26 @@ export default function LabourEditScreen() {
           />
         </FormField>
 
+        <FormField label="House No / Flat">
+          <TextInput
+            value={form.houseNo}
+            onChangeText={v => update({ houseNo: v })}
+            placeholder="e.g. #45, 2nd Floor"
+            placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
+        <FormField label="Street / Lane">
+          <TextInput
+            value={form.street}
+            onChangeText={v => update({ street: v })}
+            placeholder="e.g. 5th Main Rd"
+            placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
         <FormField label="Locality">
           <TextInput
             value={form.locality}
@@ -206,6 +226,18 @@ export default function LabourEditScreen() {
             onChangeText={v => update({ city: v })}
             placeholder="e.g. Pune"
             placeholderTextColor={colors.concrete}
+            style={styles.input}
+          />
+        </FormField>
+
+        <FormField label="Pincode">
+          <TextInput
+            value={form.pincode}
+            onChangeText={v => update({ pincode: v })}
+            placeholder="e.g. 560066"
+            placeholderTextColor={colors.concrete}
+            keyboardType="number-pad"
+            maxLength={6}
             style={styles.input}
           />
         </FormField>
