@@ -12,7 +12,8 @@
     "build:preview": "eas build --profile preview --platform android",
     "build:production": "eas build --profile production --platform android",
     "submit": "eas submit --platform android",
-    "update": "eas update --branch production",
+    "update": "eas update --channel preview",
+    "update:production": "eas update --channel production",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
