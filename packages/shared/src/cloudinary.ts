@@ -2,8 +2,10 @@
 // URLs are constructed here at read time using transformation parameters.
 // This means changing quality/size settings requires no DB migration.
 
+// `process.env.X` must stay a plain member access so Expo's babel plugin can
+// inline it — see the note in api.ts; `process.env?.X` is silently skipped.
 const getCloud = () =>
-  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME) ||
+  (typeof process !== 'undefined' && process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME) ||
   (import.meta as any).env?.VITE_CLOUDINARY_CLOUD_NAME ||
   'piwpzbke'
 

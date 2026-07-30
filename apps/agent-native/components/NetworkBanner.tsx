@@ -57,13 +57,16 @@ export function NetworkBanner() {
     // online would otherwise never trigger an automatic sync of anything left
     // over from a previous session. Check once on mount and sync immediately
     // if there's pending work and the device is already online.
+    // Only an explicit `false` means offline — `isInternetReachable` is null
+    // until the probe resolves and stays false where the probe host is blocked,
+    // and treating those as offline suppressed sync on a working connection.
     NetInfo.fetch().then((state) => {
-      const isOnline = !!(state.isConnected && state.isInternetReachable)
+      const isOnline = !!state.isConnected && state.isInternetReachable !== false
       if (isOnline && getPendingCount() > 0) sync()
     })
 
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-      const isOnline = !!(state.isConnected && state.isInternetReachable)
+      const isOnline = !!state.isConnected && state.isInternetReachable !== false
       if (!isOnline) {
         wasOffline.current = true
         setStatus('offline')
