@@ -1,4 +1,9 @@
 const DEFAULT_TIMEOUT_MS = 15_000  // 15 seconds — critical for field agents on slow networks
+// Writes get a far longer ceiling than reads. Aborting a POST does not cancel it
+// server-side: on a weak link the row commits while the client records a failure
+// and queues a retry, which the server then answers as a duplicate. A read can be
+// retried for free; a half-observed write cannot.
+const WRITE_TIMEOUT_MS = 60_000
 
 class ApiError extends Error {
   constructor(public message: string, public status: number) {
@@ -63,13 +68,13 @@ export const api = {
     request<T>(path, { method: 'GET', token }),
 
   post: <T>(path: string, body: unknown, token: string) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body), token }),
+    request<T>(path, { method: 'POST', body: JSON.stringify(body), token, timeout: WRITE_TIMEOUT_MS }),
 
   patch: <T>(path: string, body: unknown, token: string) =>
-    request<T>(path, { method: 'PATCH', body: JSON.stringify(body), token }),
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body), token, timeout: WRITE_TIMEOUT_MS }),
 
   delete: <T>(path: string, token: string) =>
-    request<T>(path, { method: 'DELETE', token }),
+    request<T>(path, { method: 'DELETE', token, timeout: WRITE_TIMEOUT_MS }),
 }
 
 export { ApiError }

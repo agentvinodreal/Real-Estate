@@ -120,21 +120,38 @@ export async function flushPendingRecords(token: string): Promise<void> {
                      : record.type === 'shop'     ? '/shops'
                      : '/labour'
 
-      await api.post(`${BASE_URL}${endpoint}`, payload, token)
+      const saved = await api.post<Record<string, unknown>>(
+        `${BASE_URL}${endpoint}`, payload, token
+      )
 
-      // Clean up associated uploads
-      const localIds = [
-        ...(record.payload.images as string[] ?? []),
-        record.payload.floorPlanUrl as string,
-        record.payload.profilePhotoUrl as string,
-      ].filter(Boolean)
+      // A 200 here can be the server's idempotent duplicate response — the first
+      // POST timed out client-side but had already committed, photo-less. The
+      // server backfills a missing photo from this retry, but if it came back
+      // still missing (older API, or the field was rejected), keep the upload
+      // rows queued so flushPendingUploads can PATCH them onto the now-existing
+      // record. Dropping them here is what used to lose the photo for good.
+      const photoLanded =
+        record.type === 'labour'
+          ? !!saved?.profilePhotoUrl
+          : Array.isArray(saved?.images) && (saved.images as unknown[]).length > 0
 
-      for (const localId of localIds) {
-        if (String(localId).startsWith('__queued__:')) {
-          deleteUpload(String(localId).replace('__queued__:', ''))
+      if (photoLanded) {
+        const localIds = [
+          ...(record.payload.images as string[] ?? []),
+          record.payload.floorPlanUrl as string,
+          record.payload.profilePhotoUrl as string,
+        ].filter(Boolean)
+
+        for (const localId of localIds) {
+          if (String(localId).startsWith('__queued__:')) {
+            deleteUpload(String(localId).replace('__queued__:', ''))
+          }
         }
       }
 
+      // Always drop the pending record — it exists server-side now. Once it is
+      // no longer pending, isRecordPending() flips false and flushPendingUploads
+      // takes over any uploads left above via PATCH /uploads/patch-queued.
       deletePendingRecord(record.id)
     } catch {
       // Will retry next sync cycle

@@ -55,7 +55,23 @@ export default async function shopRoutes(app: FastifyInstance) {
           where: { id: clientId },
           include: { agent: { select: { id: true, name: true, email: true } } },
         })
-        if (existing) return reply.code(200).send(serializeShop(existing))
+        if (existing) {
+          // A first POST that timed out client-side can still have committed a
+          // photo-less row (the app strips not-yet-uploaded photos from the
+          // initial body). The retry carries the resolved ids, so backfill what
+          // the stored row is missing — never overwriting a value already set,
+          // or a replay would revert a later edit.
+          const storedImages = Array.isArray(existing.images) ? existing.images : []
+          if (storedImages.length === 0 && Array.isArray(images) && images.length > 0) {
+            const patched = await prisma.shop.update({
+              where: { id: clientId },
+              data: { images },
+              include: { agent: { select: { id: true, name: true, email: true } } },
+            })
+            return reply.code(200).send(serializeShop(patched))
+          }
+          return reply.code(200).send(serializeShop(existing))
+        }
       }
       throw err
     }

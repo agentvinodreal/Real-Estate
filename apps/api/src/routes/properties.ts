@@ -74,6 +74,27 @@ export default async function propertyRoutes(app: FastifyInstance) {
           include: { agent: { select: { id: true, name: true, email: true } } },
         })
         if (existing) {
+          // A first POST that timed out client-side can still have committed a
+          // photo-less row (the app strips not-yet-uploaded photos from the
+          // initial body). The retry carries the resolved ids, so backfill what
+          // the stored row is missing — never overwriting a value already set,
+          // or a replay would revert a later edit.
+          const backfill: any = {}
+          const storedImages = Array.isArray(existing.images) ? existing.images : []
+          if (storedImages.length === 0 && Array.isArray(images) && images.length > 0) {
+            backfill.images = images
+          }
+          if (!existing.floorPlanUrl && floorPlanUrl) {
+            backfill.floorPlanUrl = floorPlanUrl
+          }
+          if (Object.keys(backfill).length > 0) {
+            const patched = await prisma.property.update({
+              where: { id: clientId },
+              data: backfill,
+              include: { agent: { select: { id: true, name: true, email: true } } },
+            })
+            return reply.code(200).send(serializeProperty(patched))
+          }
           return reply.code(200).send(serializeProperty(existing))
         }
       }

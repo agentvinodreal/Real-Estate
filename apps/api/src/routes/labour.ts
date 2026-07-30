@@ -50,6 +50,23 @@ export default async function labourRoutes(app: FastifyInstance) {
           include: { agent: { select: { id: true, name: true, email: true } } },
         })
         if (existing) {
+          // A first POST that timed out client-side can still have committed a
+          // photo-less row (the app strips a not-yet-uploaded photo from the
+          // initial body). The retry carries the resolved photo, so backfill
+          // anything the stored row is missing — but never overwrite a value
+          // that is already set, or a replay would revert a later edit.
+          const backfill: any = {}
+          if (!existing.profilePhotoUrl && profilePhotoUrl) {
+            backfill.profilePhotoUrl = profilePhotoUrl
+          }
+          if (Object.keys(backfill).length > 0) {
+            const patched = await prisma.labour.update({
+              where: { id: clientId },
+              data: backfill,
+              include: { agent: { select: { id: true, name: true, email: true } } },
+            })
+            return reply.code(200).send(serializeLabour(patched))
+          }
           return reply.code(200).send(serializeLabour(existing))
         }
       }
