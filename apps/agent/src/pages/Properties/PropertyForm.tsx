@@ -89,6 +89,11 @@ export function PropertyForm() {
   const storageKey = `carry:form:property:${user?.id ?? 'guest'}`
   const { form, update, clear } = useFormPersist<FormState>(storageKey, initialForm)
 
+  // Plots have no listing type control, so pin the value rather than letting a
+  // selection made before the type switch leak into the form or the payload.
+  // The form persists across sessions, so a stale 'Rent' really can show up.
+  const listingType = form.propertyType === 'Plot' ? 'Sale' : form.listingType
+
   // Clear upload queues on mount to avoid bleeding
   useEffect(() => {
     uploadManager.clear('images')
@@ -123,7 +128,10 @@ export function PropertyForm() {
 
       const priceVal = parseInt(form.priceInr)
 
-      const rentPayload = form.listingType === 'Rent' ? {
+      // Allowed Use describes the land itself, so it rides outside the rent block
+      const plotAllowedUse = form.propertyType === 'Plot' ? (form.plotAllowedUse || null) : null
+
+      const rentPayload = listingType === 'Rent' ? {
         securityDeposit: form.securityDeposit ? parseInt(form.securityDeposit) : null,
         availableFrom: form.availableFrom || null,
         preferredTenant: form.preferredTenant || null,
@@ -132,7 +140,7 @@ export function PropertyForm() {
         leaseDuration: form.leaseDuration ? parseInt(form.leaseDuration) : null,
         lockInPeriod: form.lockInPeriod ? parseInt(form.lockInPeriod) : null,
         camCharges: form.camCharges ? parseInt(form.camCharges) : null,
-        plotAllowedUse: form.propertyType === 'Plot' ? (form.plotAllowedUse || null) : null,
+        plotAllowedUse,
       } : {
         securityDeposit: null,
         availableFrom: null,
@@ -142,7 +150,7 @@ export function PropertyForm() {
         leaseDuration: null,
         lockInPeriod: null,
         camCharges: null,
-        plotAllowedUse: null,
+        plotAllowedUse,
       }
 
       if (!navigator.onLine) {
@@ -166,7 +174,7 @@ export function PropertyForm() {
             id: recordId,
             title: form.title,
             propertyType: form.propertyType,
-            listingType: form.listingType,
+            listingType,
             bhk: form.propertyType === 'Plot' || form.propertyType === 'Commercial' ? null : form.bhk,
             priceInr: priceVal,
             priceLabel: formatPriceLabel(priceVal),
@@ -211,7 +219,7 @@ export function PropertyForm() {
         id: recordId,
         title: form.title,
         propertyType: form.propertyType,
-        listingType: form.listingType,
+        listingType,
         bhk: form.propertyType === 'Plot' || form.propertyType === 'Commercial' ? null : form.bhk,
         priceInr: priceVal,
         priceLabel: formatPriceLabel(priceVal),
@@ -304,21 +312,24 @@ export function PropertyForm() {
           </div>
         </div>
 
-        <div className="form-field">
-          <label className="label">Listing Type</label>
-          <div className="chip-group">
-            {LISTING_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                className={`chip ${form.listingType === type ? 'active' : ''}`}
-                onClick={() => update({ listingType: type })}
-              >
-                {type}
-              </button>
-            ))}
+        {/* Listing type doesn't apply to bare land — plots are recorded as Sale */}
+        {form.propertyType !== 'Plot' && (
+          <div className="form-field">
+            <label className="label">Listing Type</label>
+            <div className="chip-group">
+              {LISTING_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={`chip ${form.listingType === type ? 'active' : ''}`}
+                  onClick={() => update({ listingType: type })}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {form.propertyType !== 'Plot' && form.propertyType !== 'Commercial' && (
           <div className="form-field">
@@ -349,7 +360,7 @@ export function PropertyForm() {
 
         <div className="form-field">
           <label className="label">
-            {form.listingType === 'Rent' ? 'Rent / Month (INR) *' : 'Price (INR) *'}
+            {listingType === 'Rent' ? 'Rent / Month (INR) *' : 'Price (INR) *'}
           </label>
           <input
             type="number"
@@ -357,16 +368,16 @@ export function PropertyForm() {
             required
             value={form.priceInr}
             onChange={(e) => update({ priceInr: e.target.value })}
-            placeholder={form.listingType === 'Rent' ? 'e.g. 25000' : 'e.g. 7500000'}
+            placeholder={listingType === 'Rent' ? 'e.g. 25000' : 'e.g. 7500000'}
           />
           {form.priceInr && (
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--ochre)' }}>
-              Auto-label: {formatPriceLabel(parseInt(form.priceInr) || 0)}{form.listingType === 'Rent' && ' / month'}
+              Auto-label: {formatPriceLabel(parseInt(form.priceInr) || 0)}{listingType === 'Rent' && ' / month'}
             </div>
           )}
         </div>
 
-        {form.listingType === 'Rent' && (
+        {listingType === 'Rent' && (
           <div className="rent-fields-section" style={{ border: '1px solid var(--sand)', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.02)' }}>
             <h3 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--ochre)', fontSize: '1rem' }}>Rent Specific Details (Optional)</h3>
             
@@ -484,23 +495,26 @@ export function PropertyForm() {
               </>
             )}
 
-            {form.propertyType === 'Plot' && (
-              <div className="form-field">
-                <label className="label">Allowed Use</label>
-                <div className="chip-group">
-                  {PLOT_ALLOWED_USE_TYPES.map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      className={`chip ${form.plotAllowedUse === type ? 'active' : ''}`}
-                      onClick={() => update({ plotAllowedUse: type })}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+          </div>
+        )}
+
+        {/* Allowed Use belongs to the plot itself, not to a rental agreement,
+            so it sits outside the rent section — plots have no listing type */}
+        {form.propertyType === 'Plot' && (
+          <div className="form-field">
+            <label className="label">Allowed Use</label>
+            <div className="chip-group">
+              {PLOT_ALLOWED_USE_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={`chip ${form.plotAllowedUse === type ? 'active' : ''}`}
+                  onClick={() => update({ plotAllowedUse: type })}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

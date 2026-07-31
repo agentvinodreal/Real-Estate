@@ -114,11 +114,14 @@ export function Properties() {
       // Bare land has no rooms, no construction stage and no furnishing —
       // keep these cleared so an admin edit can't reintroduce them
       const isPlot = editPropertyType === 'Plot'
+      // Plots have no listing type control, so pin the value rather than
+      // letting whatever the record loaded with leak back out
+      const listingType = isPlot ? 'Sale' : editListingType
 
       const payload: any = {
         title:              editTitle.trim() || undefined,
         propertyType:       editPropertyType || undefined,
-        listingType:        editListingType || undefined,
+        listingType:        listingType || undefined,
         bhk:                isPlot || editPropertyType === 'Commercial' ? null : (editBhk ? parseInt(editBhk, 10) : null),
         priceInr:           editPriceInr ? parseInt(editPriceInr, 10) : undefined,
         priceLabel:         editPriceLabel.trim() || undefined,
@@ -137,9 +140,12 @@ export function Properties() {
         lat:                editLat ? parseFloat(editLat) : null,
         lng:                editLng ? parseFloat(editLng) : null,
         published:          editPublished,
+        // Allowed Use describes the land itself, not a rental agreement, so it
+        // is sent for any plot rather than only for rented ones
+        plotAllowedUse:     isPlot ? (editPlotAllowedUse || null) : null,
       }
 
-      if (editListingType === 'Rent') {
+      if (listingType === 'Rent') {
         payload.securityDeposit    = editSecurityDeposit ? parseInt(editSecurityDeposit, 10) : null
         payload.availableFrom      = editAvailableFrom.trim() || null
         payload.preferredTenant    = editPreferredTenant || null
@@ -148,7 +154,6 @@ export function Properties() {
         payload.leaseDuration      = editLeaseDuration ? parseInt(editLeaseDuration, 10) : null
         payload.lockInPeriod       = editLockInPeriod ? parseInt(editLockInPeriod, 10) : null
         payload.camCharges         = editCamCharges ? parseInt(editCamCharges, 10) : null
-        payload.plotAllowedUse     = isPlot ? (editPlotAllowedUse || null) : null
       } else {
         // Switching a record away from Rent must clear the rent-only fields,
         // otherwise the old values linger on the record. Mirrors the agent form.
@@ -160,7 +165,6 @@ export function Properties() {
         payload.leaseDuration      = null
         payload.lockInPeriod       = null
         payload.camCharges         = null
-        payload.plotAllowedUse     = null
       }
 
       const updated = await api.patch<Property>(`/properties/${editPropertyId}`, payload, token)
@@ -466,19 +470,22 @@ export function Properties() {
                 <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Property Title *</label>
                 <input type="text" required value={editTitle} onChange={e => setEditTitle(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: editPropertyType === 'Plot' ? '1fr' : '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Property Type *</label>
                   <select required value={editPropertyType} onChange={e => setEditPropertyType(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
                     {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Listing Type *</label>
-                  <select required value={editListingType} onChange={e => setEditListingType(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
-                    {LISTING_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
+                {/* Listing type doesn't apply to bare land — plots are recorded as Sale */}
+                {editPropertyType !== 'Plot' && (
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Listing Type *</label>
+                    <select required value={editListingType} onChange={e => setEditListingType(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
+                      {LISTING_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: editPropertyType === 'Plot' || editPropertyType === 'Commercial' ? '1fr 1fr' : '1fr 1fr 1fr', gap: '1rem' }}>
                 {/* BHK doesn't apply to land or commercial space */}
@@ -529,6 +536,18 @@ export function Properties() {
                   </div>
                 </div>
               )}
+              {/* Allowed Use describes the land itself, not a rental agreement,
+                  so it shows for any plot rather than only for rented ones */}
+              {editPropertyType === 'Plot' && (
+                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Plot Allowed Use</label>
+                  <select value={editPlotAllowedUse} onChange={e => setEditPlotAllowedUse(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
+                    <option value="">None</option>
+                    {PLOT_ALLOWED_USE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              )}
+
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Full Address</label>
                 <input type="text" value={editAddress} onChange={e => setEditAddress(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
@@ -613,15 +632,6 @@ export function Properties() {
                       <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>CAM Charges</label>
                       <input type="number" value={editCamCharges} onChange={e => setEditCamCharges(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
                     </div>
-                    {editPropertyType === 'Plot' && (
-                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                        <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Plot Allowed Use</label>
-                        <select value={editPlotAllowedUse} onChange={e => setEditPlotAllowedUse(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
-                          <option value="">None</option>
-                          {PLOT_ALLOWED_USE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-                    )}
                     <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '100%', paddingTop: '1.2rem' }}>
                       <input type="checkbox" id="edit-pet-friendly" checked={editPetFriendly} onChange={e => setEditPetFriendly(e.target.checked)} style={{ cursor: 'pointer', width: 20, height: 20 }} />
                       <label htmlFor="edit-pet-friendly" style={{ fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>Pet Friendly</label>
@@ -778,13 +788,16 @@ export function Properties() {
                       <span className="detail-value">₹{selected.camCharges.toLocaleString('en-IN')}</span>
                     </div>
                   )}
-                  {selected.plotAllowedUse && (
-                    <div className="detail-item">
-                      <span className="detail-label">Plot Allowed Use</span>
-                      <span className="detail-value">{selected.plotAllowedUse}</span>
-                    </div>
-                  )}
                 </>
+              )}
+
+              {/* Allowed Use is a property of the land, so it shows for any
+                  plot rather than only inside the rent details */}
+              {selected.plotAllowedUse && (
+                <div className="detail-item">
+                  <span className="detail-label">Plot Allowed Use</span>
+                  <span className="detail-value">{selected.plotAllowedUse}</span>
+                </div>
               )}
 
               {selected.description && (

@@ -99,12 +99,17 @@ export default function PropertyEditScreen() {
 
     try {
       const priceVal = parseInt(form.priceInr)
+      // Plots have no listing type control, so pin the value rather than
+      // letting a selection made before the type switch leak out
+      const listingType = form.propertyType === 'Plot' ? 'Sale' : form.listingType
+      // Allowed Use describes the land itself, not a rental agreement
+      const plotAllowedUse = form.propertyType === 'Plot' ? (form.plotAllowedUse || null) : null
       const areaVal  = form.areaSqft.trim() ? parseInt(form.areaSqft) : undefined
 
       const payload: Record<string, unknown> = {
         title:        form.title.trim(),
         propertyType: form.propertyType,
-        listingType:  form.listingType,
+        listingType,
         bhk:          form.propertyType !== 'Plot' ? form.bhk : undefined,
         priceInr:     priceVal,
         priceLabel:   formatPriceLabel(priceVal),
@@ -124,11 +129,12 @@ export default function PropertyEditScreen() {
         lng:          form.lng,
         images:       form.images ?? [],
         floorPlanUrl: form.floorPlanUrl ?? undefined,
+        plotAllowedUse,
       }
 
       // null rather than undefined throughout — this is a PATCH, and undefined
       // fields are skipped server-side, so clearing a value needs an explicit null
-      if (form.listingType === 'Rent') {
+      if (listingType === 'Rent') {
         Object.assign(payload, {
           securityDeposit:    form.securityDeposit ? parseInt(form.securityDeposit) : null,
           availableFrom:      form.availableFrom || null,
@@ -138,14 +144,13 @@ export default function PropertyEditScreen() {
           lockInPeriod:       form.lockInPeriod ? parseInt(form.lockInPeriod) : null,
           leaseDuration:      form.leaseDuration ? parseInt(form.leaseDuration) : null,
           camCharges:         form.camCharges ? parseInt(form.camCharges) : null,
-          plotAllowedUse:     form.propertyType === 'Plot' ? (form.plotAllowedUse || null) : null,
         })
       } else {
         // Switched away from Rent — drop the rent-only values
         Object.assign(payload, {
           securityDeposit: null, availableFrom: null, preferredTenant: null,
           petFriendly: null, maintenanceCharges: null, lockInPeriod: null,
-          leaseDuration: null, camCharges: null, plotAllowedUse: null,
+          leaseDuration: null, camCharges: null,
         })
       }
 
@@ -222,14 +227,16 @@ export default function PropertyEditScreen() {
           />
         </FormField>
 
-        {/* Listing Type */}
-        <FormField label="Listing Type *">
-          <ChipSelector
-            options={[...LISTING_TYPES]}
-            value={form.listingType}
-            onChange={v => update({ listingType: v as any })}
-          />
-        </FormField>
+        {/* Listing Type (not for Plot — bare land is recorded as Sale) */}
+        {form.propertyType !== 'Plot' && (
+          <FormField label="Listing Type *">
+            <ChipSelector
+              options={[...LISTING_TYPES]}
+              value={form.listingType}
+              onChange={v => update({ listingType: v as any })}
+            />
+          </FormField>
+        )}
 
         {/* BHK (not for Plot) */}
         {form.propertyType !== 'Plot' && (
@@ -360,16 +367,19 @@ export default function PropertyEditScreen() {
               </>
             )}
 
-            {form.propertyType === 'Plot' && (
-              <FormField label="Allowed Use">
-                <ChipSelector
-                  options={[...PLOT_ALLOWED_USE_TYPES]}
-                  value={form.plotAllowedUse}
-                  onChange={v => update({ plotAllowedUse: v })}
-                />
-              </FormField>
-            )}
           </View>
+        )}
+
+        {/* Allowed Use belongs to the plot itself, not to a rental agreement,
+            so it sits outside the rent section — plots have no listing type */}
+        {form.propertyType === 'Plot' && (
+          <FormField label="Allowed Use">
+            <ChipSelector
+              options={[...PLOT_ALLOWED_USE_TYPES]}
+              value={form.plotAllowedUse}
+              onChange={v => update({ plotAllowedUse: v })}
+            />
+          </FormField>
         )}
 
         {/* Area */}

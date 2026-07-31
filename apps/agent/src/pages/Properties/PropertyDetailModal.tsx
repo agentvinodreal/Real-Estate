@@ -99,7 +99,9 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
       const payload: Record<string, any> = {
         title:        form.title,
         propertyType: form.propertyType,
-        listingType:  form.listingType,
+        // Plots have no listing type control — pin it rather than saving back
+        // whatever the record happened to load with
+        listingType:  form.propertyType === 'Plot' ? 'Sale' : form.listingType,
         bhk:          form.propertyType === 'Plot' || form.propertyType === 'Commercial' ? null : form.bhk,
         priceInr:     priceVal,
         priceLabel:   formatPriceLabel(priceVal),
@@ -278,15 +280,18 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
               </div>
             </div>
 
-            <div className="form-field">
-              <label className="label">Listing Type</label>
-              <div className="chip-group">
-                {LISTING_TYPES.map(type => (
-                  <button key={type} type="button" className={`chip ${form.listingType === type ? 'active' : ''}`}
-                    onClick={() => update({ listingType: type })}>{type}</button>
-                ))}
+            {/* Listing type doesn't apply to bare land — plots are recorded as Sale */}
+            {form.propertyType !== 'Plot' && (
+              <div className="form-field">
+                <label className="label">Listing Type</label>
+                <div className="chip-group">
+                  {LISTING_TYPES.map(type => (
+                    <button key={type} type="button" className={`chip ${form.listingType === type ? 'active' : ''}`}
+                      onClick={() => update({ listingType: type })}>{type}</button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {form.propertyType !== 'Plot' && form.propertyType !== 'Commercial' && (
               <div className="form-field">
