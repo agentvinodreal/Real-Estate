@@ -51,6 +51,7 @@ export default function Hero() {
             </Link> */}
             <a
               href={`https://wa.me/${CONTACT.whatsapp}`}
+              data-cta="hero"
               className="inline-flex items-center border border-bone/35 px-7 py-3.5 font-mono text-xs uppercase tracking-[0.15em] text-bone transition-colors hover:border-ochre hover:text-ochre"
             >
               Talk on WhatsApp

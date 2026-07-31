@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api } from '@carry/shared'
+import { trackEvent } from '../../../shared/lib/analytics'
 
 type Props = {
   propertyId?: string
@@ -32,8 +33,15 @@ export default function InquiryForm({ propertyId, projectId, sourcePage, heading
         projectId,
         sourcePage,
       })
+      trackEvent('generate_lead', {
+        form_type: 'inquiry',
+        property_id: propertyId,
+        project_id: projectId,
+        source_page: sourcePage,
+      })
       setStatus('done')
     } catch {
+      trackEvent('form_error', { form_type: 'inquiry' })
       setStatus('error')
     }
   }

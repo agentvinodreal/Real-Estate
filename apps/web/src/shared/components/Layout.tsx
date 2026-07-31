@@ -78,6 +78,7 @@ export default function Layout() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
+        data-cta="floating-button"
         className="floating-whatsapp-btn group fixed z-[90] bottom-20 right-5 md:bottom-8 md:right-8"
       >
         {/* Pulse ring */}
@@ -97,6 +98,7 @@ export default function Layout() {
 
       {/* Sticky mobile call / WhatsApp bar */}
       <div
+        data-cta="sticky-bar"
         className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 md:hidden bg-ink transition-transform duration-300 pb-[env(safe-area-inset-bottom,0px)] ${
           visible ? 'translate-y-0' : 'translate-y-full'
         }`}

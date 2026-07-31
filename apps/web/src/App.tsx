@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import { setTokenGetter } from '@carry/shared'
+import { initOutboundTracking } from './shared/lib/analytics'
 import Layout from './shared/components/Layout'
 import Home from './features/home/pages/Home'
 import Properties from './features/properties/pages/Properties'
@@ -28,6 +29,8 @@ function TokenBridge() {
 }
 
 export default function App() {
+  useEffect(() => initOutboundTracking(), [])
+
   return (
     <CartProvider>
       <TokenBridge />

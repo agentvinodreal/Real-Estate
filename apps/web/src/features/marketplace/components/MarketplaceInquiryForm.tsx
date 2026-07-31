@@ -4,6 +4,7 @@ import { X, Check, Phone, Calendar, ShoppingCart, UserCheck, MessageSquare } fro
 import { api, type Material, type ServiceProvider, type EquipmentRental } from '@carry/shared'
 import { CONTACT } from '../../../shared/lib/data'
 import { EASE_OUT_EXPO } from '../../../shared/lib/motion'
+import { trackEvent } from '../../../shared/lib/analytics'
 
 type Props = {
   isOpen: boolean
@@ -43,8 +44,14 @@ export default function MarketplaceInquiryForm({ isOpen, onClose, item }: Props)
         itemId: activeItem.data.id,
         itemQty: activeItem.type === 'Material' || activeItem.type === 'Equipment' ? Number(form.qty) : undefined,
       })
+      trackEvent('generate_lead', {
+        form_type: 'marketplace',
+        marketplace_type: activeItem.type,
+        item_id: activeItem.data.id,
+      })
       setStatus('done')
     } catch {
+      trackEvent('form_error', { form_type: 'marketplace' })
       setStatus('error')
     }
   }
