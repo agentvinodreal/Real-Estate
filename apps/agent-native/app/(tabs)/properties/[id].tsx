@@ -154,7 +154,8 @@ export default function PropertyEditScreen() {
       await api.patch(`/properties/${id}/agent`, onlinePayload, token)
 
       // Attempt foreground sync of any newly queued photos
-      try { await flushPendingUploads(token) } catch { /* ignore */ }
+      // Background — never block the save on a photo transfer (see new.tsx).
+      void flushPendingUploads(token).catch(() => {})
 
       clear()
       Alert.alert('Saved', 'Your changes have been submitted for review.', [

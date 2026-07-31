@@ -107,8 +107,11 @@ export default function ShopFormScreen() {
       try {
         const token = await getToken()
         if (token) {
-          await flushPendingUploads(token)
-          await flushPendingRecords(token)
+          // Fire and forget. The record is saved; whether its photo has finished
+          // uploading must never gate the success alert. Awaiting this is what
+          // left the submit button spinning forever when a Cloudinary transfer
+          // stalled — the queue and the sync triggers own the retry from here.
+          void flushPendingUploads(token).then(() => flushPendingRecords(token)).catch(() => {})
         }
       } catch { /* ignore */ }
 

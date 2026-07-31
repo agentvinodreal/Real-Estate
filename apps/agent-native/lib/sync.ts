@@ -28,6 +28,26 @@ function isTransportFailure(err: unknown): boolean {
   return status === 408 || status >= 500
 }
 
+// ── Diagnostics ───────────────────────────────────────────────────────────────
+// Photo failures are otherwise completely silent: the queue swallows every
+// error, so a stuck upload looks identical to one still in progress. Keeping the
+// last one lets the Profile screen say what actually went wrong instead of
+// leaving it to be guessed at from source.
+let lastUploadError: { message: string; at: number } | null = null
+
+export function getLastUploadError(): { message: string; at: number } | null {
+  return lastUploadError
+}
+
+export function clearLastUploadError(): void {
+  lastUploadError = null
+}
+
+function recordUploadError(err: unknown): void {
+  const message = err instanceof Error ? err.message : String(err)
+  lastUploadError = { message, at: Date.now() }
+}
+
 // ── Flush photo uploads ───────────────────────────────────────────────────────
 
 export async function flushPendingUploads(token: string): Promise<void> {
@@ -55,7 +75,9 @@ export async function flushPendingUploads(token: string): Promise<void> {
         token
       )
       markUploadComplete(upload.localId, publicId)
+      clearLastUploadError()
     } catch (err) {
+      recordUploadError(err)
       // Only a genuine server rejection costs an attempt — see isTransportFailure.
       if (!isTransportFailure(err)) incrementUploadAttempts(upload.id)
     }
@@ -80,7 +102,9 @@ export async function flushPendingRecords(token: string): Promise<void> {
         upload.fileUri, upload.fileName, upload.folder, token
       )
       markUploadComplete(upload.localId, publicId)
+      clearLastUploadError()
     } catch (err) {
+      recordUploadError(err)
       // Only a genuine server rejection costs an attempt — see isTransportFailure.
       if (!isTransportFailure(err)) incrementUploadAttempts(upload.id)
     }

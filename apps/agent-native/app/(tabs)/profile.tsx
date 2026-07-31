@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router'
 import {
   getPendingCount, getPendingRecords, getPendingUploads, resetStuckUploads,
 } from '../../lib/uploadQueue'
-import { runFullSync } from '../../lib/sync'
+import { runFullSync, getLastUploadError } from '../../lib/sync'
 import { clearAllReadCache } from '../../lib/localCache'
 import { clearPersistedToken } from '../../lib/auth'
 import { unregisterBackgroundSync } from '../../lib/backgroundSync'
@@ -28,6 +28,7 @@ export default function ProfileScreen() {
   const [failedCount,   setFailedCount]   = useState(0)
   const [syncing,       setSyncing]       = useState(false)
   const [lastSynced,    setLastSynced]    = useState<Date | null>(null)
+  const [uploadError,   setUploadError]   = useState<{ message: string; at: number } | null>(null)
 
   const refreshCounts = useCallback(() => {
     const total   = getPendingCount()
@@ -35,6 +36,7 @@ export default function ProfileScreen() {
     const failed  = uploads.filter(u => u.attempts >= MAX_ATTEMPTS && !u.publicId).length
     setPendingCount(total)
     setFailedCount(failed)
+    setUploadError(getLastUploadError())
     refreshBadge(total)
   }, [])
 
@@ -132,6 +134,18 @@ export default function ProfileScreen() {
       {/* Failed Records Banner */}
       <FailedRecordBanner count={failedCount} onRetry={handleRetryFailed} />
 
+      {/* The queue swallows upload errors, which made every photo failure look
+          identical to one still in progress. Show the last one verbatim. */}
+      {uploadError && (
+        <View style={styles.errorCard}>
+          <Text style={styles.errorTitle}>Last photo upload error</Text>
+          <Text style={styles.errorBody} selectable>{uploadError.message}</Text>
+          <Text style={styles.errorTime}>
+            {new Date(uploadError.at).toLocaleTimeString()}
+          </Text>
+        </View>
+      )}
+
       {/* Sync Status Card */}
       <View style={[styles.card, { flexDirection: 'column', gap: 12 }]}>
         <Text style={{ fontSize: 14, fontWeight: '700', color: colors.ink }}>
@@ -206,6 +220,14 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  errorCard: {
+    backgroundColor: 'rgba(192,57,43,0.06)',
+    borderWidth: 1, borderColor: 'rgba(192,57,43,0.25)',
+    borderRadius: 12, padding: 14, marginHorizontal: 16, marginBottom: 8,
+  },
+  errorTitle: { fontSize: 12, fontWeight: '700', color: colors.error, marginBottom: 6 },
+  errorBody:  { fontSize: 12, color: colors.ink, lineHeight: 17 },
+  errorTime:  { fontSize: 10, color: colors.concrete, marginTop: 6 },
   container: { flex: 1, backgroundColor: colors.paper },
   content:   { paddingBottom: 100 },
   header: {

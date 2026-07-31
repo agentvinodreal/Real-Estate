@@ -88,7 +88,8 @@ export default function LabourEditScreen() {
       }
       await api.patch(`/labour/${id}/agent`, onlinePayload, token)
 
-      try { await flushPendingUploads(token) } catch { /* ignore */ }
+      // Background — never block the save on a photo transfer (see new.tsx).
+      void flushPendingUploads(token).catch(() => {})
 
       clear()
       Alert.alert('Saved', 'Your changes have been submitted for review.', [
