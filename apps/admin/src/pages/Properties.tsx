@@ -111,11 +111,15 @@ export function Properties() {
       const token = await getToken()
       if (!token) throw new Error('Not authenticated')
       
+      // Bare land has no rooms, no construction stage and no furnishing —
+      // keep these cleared so an admin edit can't reintroduce them
+      const isPlot = editPropertyType === 'Plot'
+
       const payload: any = {
         title:              editTitle.trim() || undefined,
         propertyType:       editPropertyType || undefined,
         listingType:        editListingType || undefined,
-        bhk:                editBhk ? parseInt(editBhk, 10) : null,
+        bhk:                isPlot || editPropertyType === 'Commercial' ? null : (editBhk ? parseInt(editBhk, 10) : null),
         priceInr:           editPriceInr ? parseInt(editPriceInr, 10) : undefined,
         priceLabel:         editPriceLabel.trim() || undefined,
         areaSqft:           editAreaSqft ? parseInt(editAreaSqft, 10) : null,
@@ -125,8 +129,8 @@ export function Properties() {
         reraNumber:         editReraNumber.trim() || null,
         ownerName:          editOwnerName.trim() || null,
         ownerPhone:         editOwnerPhone.trim() || null,
-        status:             editStatus || undefined,
-        furnishing:         editFurnishing || null,
+        status:             isPlot ? 'Ready' : (editStatus || undefined),
+        furnishing:         isPlot ? null : (editFurnishing || null),
         description:        editDescription.trim() || null,
         images:             editImages ? editImages.split(',').map(s => s.trim()).filter(Boolean) : [],
         floorPlanUrl:       editFloorPlanUrl.trim() || null,
@@ -144,7 +148,19 @@ export function Properties() {
         payload.leaseDuration      = editLeaseDuration ? parseInt(editLeaseDuration, 10) : null
         payload.lockInPeriod       = editLockInPeriod ? parseInt(editLockInPeriod, 10) : null
         payload.camCharges         = editCamCharges ? parseInt(editCamCharges, 10) : null
-        payload.plotAllowedUse     = editPlotAllowedUse || null
+        payload.plotAllowedUse     = isPlot ? (editPlotAllowedUse || null) : null
+      } else {
+        // Switching a record away from Rent must clear the rent-only fields,
+        // otherwise the old values linger on the record. Mirrors the agent form.
+        payload.securityDeposit    = null
+        payload.availableFrom      = null
+        payload.preferredTenant    = null
+        payload.petFriendly        = null
+        payload.maintenanceCharges = null
+        payload.leaseDuration      = null
+        payload.lockInPeriod       = null
+        payload.camCharges         = null
+        payload.plotAllowedUse     = null
       }
 
       const updated = await api.patch<Property>(`/properties/${editPropertyId}`, payload, token)
@@ -464,11 +480,14 @@ export function Properties() {
                   </select>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>BHK (if residential)</label>
-                  <input type="number" value={editBhk} onChange={e => setEditBhk(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: editPropertyType === 'Plot' || editPropertyType === 'Commercial' ? '1fr 1fr' : '1fr 1fr 1fr', gap: '1rem' }}>
+                {/* BHK doesn't apply to land or commercial space */}
+                {editPropertyType !== 'Plot' && editPropertyType !== 'Commercial' && (
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>BHK</label>
+                    <input type="number" value={editBhk} onChange={e => setEditBhk(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
+                  </div>
+                )}
                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Price (INR) *</label>
                   <input type="number" required value={editPriceInr} onChange={e => setEditPriceInr(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
@@ -492,21 +511,24 @@ export function Properties() {
                   <input type="text" required value={editCity} onChange={e => setEditCity(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Status *</label>
-                  <select required value={editStatus} onChange={e => setEditStatus(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
-                    {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+              {/* Construction status and furnishing don't apply to bare land */}
+              {editPropertyType !== 'Plot' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Status *</label>
+                    <select required value={editStatus} onChange={e => setEditStatus(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
+                      {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Furnishing Status</label>
+                    <select value={editFurnishing} onChange={e => setEditFurnishing(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
+                      <option value="">None</option>
+                      {FURNISHING_TYPES.map(f => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Furnishing Status</label>
-                  <select value={editFurnishing} onChange={e => setEditFurnishing(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
-                    <option value="">None</option>
-                    {FURNISHING_TYPES.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                </div>
-              </div>
+              )}
               <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Full Address</label>
                 <input type="text" value={editAddress} onChange={e => setEditAddress(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
@@ -591,13 +613,15 @@ export function Properties() {
                       <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>CAM Charges</label>
                       <input type="number" value={editCamCharges} onChange={e => setEditCamCharges(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }} />
                     </div>
-                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Plot Allowed Use</label>
-                      <select value={editPlotAllowedUse} onChange={e => setEditPlotAllowedUse(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
-                        <option value="">None</option>
-                        {PLOT_ALLOWED_USE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
+                    {editPropertyType === 'Plot' && (
+                      <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Plot Allowed Use</label>
+                        <select value={editPlotAllowedUse} onChange={e => setEditPlotAllowedUse(e.target.value)} style={{ padding: '0.5rem', borderRadius: 4, border: '1px solid var(--sand)' }}>
+                          <option value="">None</option>
+                          {PLOT_ALLOWED_USE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+                    )}
                     <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '100%', paddingTop: '1.2rem' }}>
                       <input type="checkbox" id="edit-pet-friendly" checked={editPetFriendly} onChange={e => setEditPetFriendly(e.target.checked)} style={{ cursor: 'pointer', width: 20, height: 20 }} />
                       <label htmlFor="edit-pet-friendly" style={{ fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>Pet Friendly</label>
@@ -661,7 +685,7 @@ export function Properties() {
                   <span className="detail-value">{selected.bhk}</span>
                 </div>
               )}
-              {selected.furnishing && (
+              {selected.propertyType !== 'Plot' && selected.furnishing && (
                 <div className="detail-item">
                   <span className="detail-label">Furnishing</span>
                   <span className="detail-value">{selected.furnishing}</span>
@@ -675,7 +699,7 @@ export function Properties() {
                   </span>
                 </div>
               )}
-              {selected.status && (
+              {selected.propertyType !== 'Plot' && selected.status && (
                 <div className="detail-item">
                   <span className="detail-label">Construction Status</span>
                   <span className="detail-value">{selected.status}</span>

@@ -108,8 +108,8 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
         city:         form.city,
         address:      form.address     || null,
         reraNumber:   form.reraNumber  || null,
-        status:       form.status,
-        furnishing:   form.furnishing  || null,
+        status:       form.propertyType === 'Plot' ? 'Ready' : form.status,
+        furnishing:   form.propertyType === 'Plot' ? null : (form.furnishing || null),
         description:  form.description || null,
         images:       [...form.images, ...newImageIds],
         floorPlanUrl: newFloorPlan ?? (form.floorPlanUrl || null),
@@ -215,8 +215,8 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
             <DetailRow label="Location"    value={`${property.locality}, ${property.city}`} />
             {property.address    && <DetailRow label="Address"     value={property.address} />}
             {property.reraNumber && <DetailRow label="RERA No."    value={property.reraNumber} />}
-            <DetailRow label="Status"      value={property.status} />
-            {property.furnishing && <DetailRow label="Furnishing"  value={property.furnishing} />}
+            {property.propertyType !== 'Plot' && <DetailRow label="Status" value={property.status} />}
+            {property.propertyType !== 'Plot' && property.furnishing && <DetailRow label="Furnishing"  value={property.furnishing} />}
             {property.description && <DetailRow label="Description" value={property.description} />}
             {!!property.areaSqft && <DetailRow label="Area (sq ft)" value={String(property.areaSqft)} />}
             {(property.lat || property.lng) && (
@@ -340,25 +340,30 @@ export function PropertyDetailModal({ property, onClose, onSaved }: Props) {
                 onChange={e => update({ reraNumber: e.target.value })} />
             </div>
 
-            <div className="form-field">
-              <label className="label">Status</label>
-              <div className="chip-group">
-                {PROPERTY_STATUSES.map(s => (
-                  <button key={s} type="button" className={`chip ${form.status === s ? 'active' : ''}`}
-                    onClick={() => update({ status: s })}>{s}</button>
-                ))}
-              </div>
-            </div>
+            {/* Construction status and furnishing don't apply to bare land */}
+            {form.propertyType !== 'Plot' && (
+              <>
+                <div className="form-field">
+                  <label className="label">Status</label>
+                  <div className="chip-group">
+                    {PROPERTY_STATUSES.map(s => (
+                      <button key={s} type="button" className={`chip ${form.status === s ? 'active' : ''}`}
+                        onClick={() => update({ status: s })}>{s}</button>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="form-field">
-              <label className="label">Furnishing</label>
-              <div className="chip-group">
-                {FURNISHING_TYPES.map(type => (
-                  <button key={type} type="button" className={`chip ${form.furnishing === type ? 'active' : ''}`}
-                    onClick={() => update({ furnishing: type })}>{type}</button>
-                ))}
-              </div>
-            </div>
+                <div className="form-field">
+                  <label className="label">Furnishing</label>
+                  <div className="chip-group">
+                    {FURNISHING_TYPES.map(type => (
+                      <button key={type} type="button" className={`chip ${form.furnishing === type ? 'active' : ''}`}
+                        onClick={() => update({ furnishing: type })}>{type}</button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="form-field">
               <label className="label">Description</label>

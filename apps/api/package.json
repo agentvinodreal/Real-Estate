@@ -11,6 +11,7 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
+    "backfill:plot-fields": "tsx --env-file=.env src/backfill-plot-fields.ts",
     "vercel-build": "prisma generate && tsc"
   },
   "dependencies": {

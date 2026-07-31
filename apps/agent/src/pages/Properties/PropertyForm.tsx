@@ -132,7 +132,7 @@ export function PropertyForm() {
         leaseDuration: form.leaseDuration ? parseInt(form.leaseDuration) : null,
         lockInPeriod: form.lockInPeriod ? parseInt(form.lockInPeriod) : null,
         camCharges: form.camCharges ? parseInt(form.camCharges) : null,
-        plotAllowedUse: form.plotAllowedUse || null,
+        plotAllowedUse: form.propertyType === 'Plot' ? (form.plotAllowedUse || null) : null,
       } : {
         securityDeposit: null,
         availableFrom: null,
@@ -177,8 +177,10 @@ export function PropertyForm() {
             reraNumber: form.reraNumber || null,
             ownerName: form.ownerName,
             ownerPhone: form.ownerPhone,
-            status: form.status,
-            furnishing: form.furnishing || null,
+            // Land has no construction stage or furnishing — never persist stale
+            // values left over from a type the agent had selected earlier
+            status: form.propertyType === 'Plot' ? 'Ready' : form.status,
+            furnishing: form.propertyType === 'Plot' ? null : (form.furnishing || null),
             description: form.description || null,
             images: queuedImageLocalIds,          // bare UUIDs
             floorPlanUrl: queuedFloorPlanLocalId, // bare UUID or null
@@ -220,8 +222,8 @@ export function PropertyForm() {
         reraNumber: form.reraNumber || null,
         ownerName: form.ownerName,
         ownerPhone: form.ownerPhone,
-        status: form.status,
-        furnishing: form.furnishing || null,
+        status: form.propertyType === 'Plot' ? 'Ready' : form.status,
+        furnishing: form.propertyType === 'Plot' ? null : (form.furnishing || null),
         description: form.description || null,
         images,
         floorPlanUrl,
@@ -585,37 +587,42 @@ export function PropertyForm() {
           </div>
         </div>
 
-        <div className="form-field">
-          <label className="label">Status</label>
-          <div className="chip-group">
-            {PROPERTY_STATUSES.map((status) => (
-              <button
-                key={status}
-                type="button"
-                className={`chip ${form.status === status ? 'active' : ''}`}
-                onClick={() => update({ status })}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Construction status and furnishing don't apply to bare land */}
+        {form.propertyType !== 'Plot' && (
+          <>
+            <div className="form-field">
+              <label className="label">Status</label>
+              <div className="chip-group">
+                {PROPERTY_STATUSES.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    className={`chip ${form.status === status ? 'active' : ''}`}
+                    onClick={() => update({ status })}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="form-field">
-          <label className="label">Furnishing</label>
-          <div className="chip-group">
-            {FURNISHING_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                className={`chip ${form.furnishing === type ? 'active' : ''}`}
-                onClick={() => update({ furnishing: type })}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
+            <div className="form-field">
+              <label className="label">Furnishing</label>
+              <div className="chip-group">
+                {FURNISHING_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    className={`chip ${form.furnishing === type ? 'active' : ''}`}
+                    onClick={() => update({ furnishing: type })}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="form-field">
           <label className="label">Description</label>

@@ -82,8 +82,8 @@ export default function PropertyFormScreen() {
         reraNumber:   form.reraNumber.trim() || undefined,
         ownerName:    form.ownerName.trim(),
         ownerPhone:   form.ownerPhone.trim(),
-        status:       form.status,
-        furnishing:   form.furnishing,
+        status:       form.propertyType === 'Plot' ? 'Ready' : form.status,
+        furnishing:   form.propertyType === 'Plot' ? undefined : form.furnishing,
         description:  form.description.trim() || undefined,
         lat:          form.lat,
         lng:          form.lng,
@@ -101,7 +101,7 @@ export default function PropertyFormScreen() {
           lockInPeriod:       form.lockInPeriod ? parseInt(form.lockInPeriod) : undefined,
           leaseDuration:      form.leaseDuration ? parseInt(form.leaseDuration) : undefined,
           camCharges:         form.camCharges ? parseInt(form.camCharges) : undefined,
-          plotAllowedUse:     form.plotAllowedUse || undefined,
+          plotAllowedUse:     form.propertyType === 'Plot' ? (form.plotAllowedUse || undefined) : undefined,
         })
       }
 
@@ -429,23 +429,26 @@ export default function PropertyFormScreen() {
           </Text>
         </FormField>
 
-        {/* Status */}
-        <FormField label="Status">
-          <ChipSelector
-            options={[...PROPERTY_STATUSES]}
-            value={form.status}
-            onChange={v => update({ status: v as any })}
-          />
-        </FormField>
+        {/* Status & Furnishing (not for Plot — bare land has neither) */}
+        {form.propertyType !== 'Plot' && (
+          <>
+            <FormField label="Status">
+              <ChipSelector
+                options={[...PROPERTY_STATUSES]}
+                value={form.status}
+                onChange={v => update({ status: v as any })}
+              />
+            </FormField>
 
-        {/* Furnishing */}
-        <FormField label="Furnishing">
-          <ChipSelector
-            options={[...FURNISHING_TYPES]}
-            value={form.furnishing}
-            onChange={v => update({ furnishing: v as any })}
-          />
-        </FormField>
+            <FormField label="Furnishing">
+              <ChipSelector
+                options={[...FURNISHING_TYPES]}
+                value={form.furnishing}
+                onChange={v => update({ furnishing: v as any })}
+              />
+            </FormField>
+          </>
+        )}
 
         {/* Description */}
         <FormField label="Description">

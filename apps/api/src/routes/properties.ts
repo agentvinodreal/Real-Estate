@@ -5,6 +5,31 @@ import { requireAgent, requireAdmin, getOrCreateAgent } from '../lib/auth.js'
 import { serializeProperty } from '../lib/serialize.js'
 import { syncToWebsiteInBackground } from '../lib/websiteSync.js'
 
+// Every optional column on Property is nullable in Prisma, and clients send an
+// explicit null to clear a field that no longer applies (e.g. furnishing on a
+// Plot, or rent fields once a listing switches away from Rent). Fastify's AJV
+// runs with coerceTypes on, so a plain {type:'integer'} would silently turn
+// that null into 0 — and {type:'string'} into "". Declaring the null member
+// keeps the clear a real clear.
+const nullableStr = { type: ['string', 'null'] } as const
+const nullableInt = { type: ['integer', 'null'] } as const
+const nullableNum = { type: ['number', 'null'] } as const
+const nullableBool = { type: ['boolean', 'null'] } as const
+
+/** Fields shared by the create and update bodies that may legitimately be null. */
+const nullablePropertyFields = {
+  bhk: nullableInt, areaSqft: nullableInt,
+  address: nullableStr, reraNumber: nullableStr,
+  furnishing: nullableStr, description: nullableStr,
+  ownerName: nullableStr, ownerPhone: nullableStr,
+  floorPlanUrl: nullableStr, lat: nullableNum, lng: nullableNum,
+  securityDeposit: nullableInt, availableFrom: nullableStr,
+  preferredTenant: nullableStr, petFriendly: nullableBool,
+  maintenanceCharges: nullableInt, leaseDuration: nullableInt,
+  lockInPeriod: nullableInt, camCharges: nullableInt,
+  plotAllowedUse: nullableStr,
+}
+
 export default async function propertyRoutes(app: FastifyInstance) {
 
   // POST /properties — agent submits a property
@@ -12,24 +37,13 @@ export default async function propertyRoutes(app: FastifyInstance) {
     schema: { tags: ['Properties'], summary: 'Submit a property (agent)', security: [{ bearerAuth: [] }],
       body: { type: 'object', required: ['title','propertyType','listingType','priceInr','priceLabel','locality','city','status'],
         properties: {
+          ...nullablePropertyFields,
           title: {type:'string'}, propertyType: {type:'string'}, listingType: {type:'string'},
-          bhk: {type:'integer'}, priceInr: {type:'integer'}, priceLabel: {type:'string'},
-          areaSqft: {type:'integer'}, locality: {type:'string'}, city: {type:'string'},
-          address: {type:'string'}, reraNumber: {type:'string'}, status: {type:'string'},
-          furnishing: {type:'string'}, description: {type:'string'},
-          ownerName: {type:'string'}, ownerPhone: {type:'string'},
+          priceInr: {type:'integer'}, priceLabel: {type:'string'},
+          locality: {type:'string'}, city: {type:'string'},
+          status: {type:'string'},
           images: {type:'array', items:{type:'string'}},
-          floorPlanUrl: {type:'string'}, lat: {type:'number'}, lng: {type:'number'},
           id: {type:'string'},
-          securityDeposit: {type:'integer'},
-          availableFrom: {type:'string'},
-          preferredTenant: {type:'string'},
-          petFriendly: {type:'boolean'},
-          maintenanceCharges: {type:'integer'},
-          leaseDuration: {type:'integer'},
-          lockInPeriod: {type:'integer'},
-          camCharges: {type:'integer'},
-          plotAllowedUse: {type:'string'},
         }
       }
     }
@@ -152,19 +166,12 @@ export default async function propertyRoutes(app: FastifyInstance) {
     schema: { tags: ['Properties'], summary: 'Agent edits their own property submission', security: [{ bearerAuth: [] }],
       params: { type: 'object', properties: { id: {type:'string'} }, required: ['id'] },
       body: { type: 'object', properties: {
+        ...nullablePropertyFields,
         title: {type:'string'}, propertyType: {type:'string'}, listingType: {type:'string'},
-        bhk: {type:'integer'}, priceInr: {type:'integer'}, priceLabel: {type:'string'},
-        areaSqft: {type:'integer'}, locality: {type:'string'}, city: {type:'string'},
-        address: {type:'string'}, reraNumber: {type:'string'}, status: {type:'string'},
-        furnishing: {type:'string'}, description: {type:'string'},
-        ownerName: {type:'string'}, ownerPhone: {type:'string'},
+        priceInr: {type:'integer'}, priceLabel: {type:'string'},
+        locality: {type:'string'}, city: {type:'string'},
+        status: {type:'string'},
         images: {type:'array', items:{type:'string'}},
-        floorPlanUrl: {type:'string'}, lat: {type:'number'}, lng: {type:'number'},
-        securityDeposit: {type:'integer'}, availableFrom: {type:'string'},
-        preferredTenant: {type:'string'}, petFriendly: {type:'boolean'},
-        maintenanceCharges: {type:'integer'}, leaseDuration: {type:'integer'},
-        lockInPeriod: {type:'integer'}, camCharges: {type:'integer'},
-        plotAllowedUse: {type:'string'},
       }}
     }
   }, async (request, reply) => {
@@ -226,21 +233,14 @@ export default async function propertyRoutes(app: FastifyInstance) {
     schema: { tags: ['Properties'], summary: 'Update property review status and details (admin)', security: [{ bearerAuth: [] }],
       params: { type: 'object', properties: { id: {type:'string'} }, required: ['id'] },
       body: { type: 'object', properties: {
+        ...nullablePropertyFields,
         reviewStatus: {type:'string', enum:['pending','reviewed','deleted']},
         published: {type:'boolean'},
         title: {type:'string'}, propertyType: {type:'string'}, listingType: {type:'string'},
-        bhk: {type:'integer'}, priceInr: {type:'integer'}, priceLabel: {type:'string'},
-        areaSqft: {type:'integer'}, locality: {type:'string'}, city: {type:'string'},
-        address: {type:'string'}, reraNumber: {type:'string'}, status: {type:'string'},
-        furnishing: {type:'string'}, description: {type:'string'},
-        ownerName: {type:'string'}, ownerPhone: {type:'string'},
-        images: {type:'array', items:{type:'string'}}, floorPlanUrl: {type:'string'},
-        lat: {type:'number'}, lng: {type:'number'},
-        securityDeposit: {type:'integer'}, availableFrom: {type:'string'},
-        preferredTenant: {type:'string'}, petFriendly: {type:'boolean'},
-        maintenanceCharges: {type:'integer'}, leaseDuration: {type:'integer'},
-        lockInPeriod: {type:'integer'}, camCharges: {type:'integer'},
-        plotAllowedUse: {type:'string'}
+        priceInr: {type:'integer'}, priceLabel: {type:'string'},
+        locality: {type:'string'}, city: {type:'string'},
+        status: {type:'string'},
+        images: {type:'array', items:{type:'string'}},
       } }
     }
   }, async (request, reply) => {

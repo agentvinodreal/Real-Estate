@@ -115,8 +115,10 @@ export default function PropertyEditScreen() {
         reraNumber:   form.reraNumber.trim() || undefined,
         ownerName:    form.ownerName.trim(),
         ownerPhone:   form.ownerPhone.trim(),
-        status:       form.status,
-        furnishing:   form.furnishing,
+        // null (not undefined) so switching a record to Plot actually clears
+        // furnishing on the server — PATCH ignores undefined fields
+        status:       form.propertyType === 'Plot' ? 'Ready' : form.status,
+        furnishing:   form.propertyType === 'Plot' ? null : form.furnishing,
         description:  form.description.trim() || undefined,
         lat:          form.lat,
         lng:          form.lng,
@@ -124,17 +126,26 @@ export default function PropertyEditScreen() {
         floorPlanUrl: form.floorPlanUrl ?? undefined,
       }
 
+      // null rather than undefined throughout — this is a PATCH, and undefined
+      // fields are skipped server-side, so clearing a value needs an explicit null
       if (form.listingType === 'Rent') {
         Object.assign(payload, {
-          securityDeposit:    form.securityDeposit ? parseInt(form.securityDeposit) : undefined,
-          availableFrom:      form.availableFrom || undefined,
-          preferredTenant:    form.preferredTenant || undefined,
+          securityDeposit:    form.securityDeposit ? parseInt(form.securityDeposit) : null,
+          availableFrom:      form.availableFrom || null,
+          preferredTenant:    form.preferredTenant || null,
           petFriendly:        form.petFriendly,
-          maintenanceCharges: form.maintenanceCharges ? parseInt(form.maintenanceCharges) : undefined,
-          lockInPeriod:       form.lockInPeriod ? parseInt(form.lockInPeriod) : undefined,
-          leaseDuration:      form.leaseDuration ? parseInt(form.leaseDuration) : undefined,
-          camCharges:         form.camCharges ? parseInt(form.camCharges) : undefined,
-          plotAllowedUse:     form.plotAllowedUse || undefined,
+          maintenanceCharges: form.maintenanceCharges ? parseInt(form.maintenanceCharges) : null,
+          lockInPeriod:       form.lockInPeriod ? parseInt(form.lockInPeriod) : null,
+          leaseDuration:      form.leaseDuration ? parseInt(form.leaseDuration) : null,
+          camCharges:         form.camCharges ? parseInt(form.camCharges) : null,
+          plotAllowedUse:     form.propertyType === 'Plot' ? (form.plotAllowedUse || null) : null,
+        })
+      } else {
+        // Switched away from Rent — drop the rent-only values
+        Object.assign(payload, {
+          securityDeposit: null, availableFrom: null, preferredTenant: null,
+          petFriendly: null, maintenanceCharges: null, lockInPeriod: null,
+          leaseDuration: null, camCharges: null, plotAllowedUse: null,
         })
       }
 
@@ -432,23 +443,26 @@ export default function PropertyEditScreen() {
           </Text>
         </FormField>
 
-        {/* Status */}
-        <FormField label="Status">
-          <ChipSelector
-            options={[...PROPERTY_STATUSES]}
-            value={form.status}
-            onChange={v => update({ status: v as any })}
-          />
-        </FormField>
+        {/* Status & Furnishing (not for Plot — bare land has neither) */}
+        {form.propertyType !== 'Plot' && (
+          <>
+            <FormField label="Status">
+              <ChipSelector
+                options={[...PROPERTY_STATUSES]}
+                value={form.status}
+                onChange={v => update({ status: v as any })}
+              />
+            </FormField>
 
-        {/* Furnishing */}
-        <FormField label="Furnishing">
-          <ChipSelector
-            options={[...FURNISHING_TYPES]}
-            value={form.furnishing}
-            onChange={v => update({ furnishing: v as any })}
-          />
-        </FormField>
+            <FormField label="Furnishing">
+              <ChipSelector
+                options={[...FURNISHING_TYPES]}
+                value={form.furnishing}
+                onChange={v => update({ furnishing: v as any })}
+              />
+            </FormField>
+          </>
+        )}
 
         {/* Description */}
         <FormField label="Description">
