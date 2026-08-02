@@ -288,6 +288,22 @@ export default async function propertyRoutes(app: FastifyInstance) {
     if (camCharges !== undefined) data.camCharges = camCharges
     if (plotAllowedUse !== undefined) data.plotAllowedUse = plotAllowedUse
 
+    // The website stores areaSqft as a required column while we allow it to be
+    // empty, so publishing without one is rejected there — previously in silence.
+    // Block it here instead, where the admin can see why and fix it.
+    if (published === true) {
+      const effectiveArea =
+        areaSqft !== undefined
+          ? areaSqft
+          : (await prisma.property.findUnique({ where: { id }, select: { areaSqft: true } }))?.areaSqft
+
+      if (effectiveArea === null || effectiveArea === undefined) {
+        return reply.code(400).send({
+          error: 'Area (sq ft) is required before publishing — the website cannot list a property without it.',
+        })
+      }
+    }
+
     try {
       const row = await prisma.property.update({ where: { id }, data,
         include: { agent: { select: { id: true, name: true, email: true } } } })

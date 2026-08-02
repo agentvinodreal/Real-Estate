@@ -48,6 +48,22 @@ export async function syncToWebsite(payload: SyncPayload, log: FastifyBaseLogger
       return
     }
 
+    // The receiver answers 207 when only part of the batch applied — and `res.ok`
+    // is true for every 2xx, 207 included. Without this check a batch that failed
+    // outright still logged "synced to website", which is how a schema rejection
+    // on the far side stayed invisible. Trust the body, not the status class.
+    const result = (await res.json().catch(() => null)) as
+      | { ok?: boolean; syncedCount?: number; failed?: { id: string; error: string }[] }
+      | null
+
+    if (result?.ok === false) {
+      log.error(
+        { status: res.status, syncedCount: result.syncedCount, failed: result.failed, ids },
+        'website sync rejected some items',
+      )
+      return
+    }
+
     log.info({ ids }, 'synced to website')
   } catch (err) {
     // Network error or timeout — the publish itself already succeeded here.
