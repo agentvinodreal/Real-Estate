@@ -9,13 +9,28 @@ const CLERK_SECRET = process.env.CLERK_SECRET_KEY ?? ''
 //   https://dashboard.clerk.com → API Keys → Show JWT public key
 const CLERK_JWT_KEY = process.env.CLERK_JWT_KEY ?? ''
 
+// Second Clerk instance: the website's (sweet-doberman-12), whose tokens the
+// merged admin console presents. Field agents — web and Expo — are on the
+// primary instance and never reach the fallback path below.
+//
+// Only admin-console traffic uses this. Every route the console calls is
+// requireAdmin, and no requireAdmin route calls getOrCreateAgent, so a website
+// `sub` is never resolved against this project's Agent table.
+const CLERK_SECRET_WEBSITE = process.env.CLERK_SECRET_KEY_WEBSITE ?? ''
+
 if (CLERK_JWT_KEY) {
   console.log('🔑 JWT local verification enabled (fast path via humble-blowfish-97)')
 } else {
   console.log('⚠️ CLERK_JWT_KEY not found in env. Auth will use slow path (~200ms extra latency)')
 }
 
-// In-memory cache to avoid duplicate slow Clerk API queries for the same user
+if (CLERK_SECRET_WEBSITE) {
+  console.log('🔗 Admin-console tokens from the website Clerk instance accepted as a fallback')
+}
+
+// In-memory cache to avoid duplicate slow Clerk API queries for the same user.
+// Keyed by "<instance>:<sub>" — the two Clerk directories have separate id
+// spaces, so an unqualified sub could collide across them.
 const roleCache = new Map<string, { role: string | null; expiresAt: number }>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes cache
 
@@ -36,34 +51,63 @@ async function extractRoleFromJWT(request: FastifyRequest): Promise<{ role: stri
 
   if (!token || !CLERK_SECRET) return { role: null, sub: null }
 
+  // Primary instance (humble-blowfish-97) — the path every agent request takes.
+  // When CLERK_JWT_KEY is set: fully local verification — no network call, ~0ms overhead.
+  // When not set: fetches JWKS from Clerk's API (~200-300ms from India).
+  const verifyOptions: Parameters<typeof verifyToken>[1] = { secretKey: CLERK_SECRET }
+  if (CLERK_JWT_KEY) verifyOptions.jwtKey = CLERK_JWT_KEY
+
+  let payload: Awaited<ReturnType<typeof verifyToken>>
+  let secretKey = CLERK_SECRET
+  let instance = 'primary'
+
   try {
-    // When CLERK_JWT_KEY is set: fully local verification — no network call, ~0ms overhead.
-    // When not set: fetches JWKS from Clerk's API (~200-300ms from India).
-    const verifyOptions: Parameters<typeof verifyToken>[1] = { secretKey: CLERK_SECRET }
-    if (CLERK_JWT_KEY) verifyOptions.jwtKey = CLERK_JWT_KEY
+    payload = await verifyToken(token, verifyOptions)
+  } catch (primaryErr) {
+    // Not one of ours. Before rejecting, try the website instance — its tokens
+    // only ever arrive from the admin console. A token that fails both would
+    // have been rejected before this fallback existed, so no caller that
+    // previously succeeded can start failing here.
+    if (!CLERK_SECRET_WEBSITE) {
+      console.error('JWT Verification Error:', primaryErr)
+      return { role: null, sub: null }
+    }
 
-    const payload = await verifyToken(token, verifyOptions)
+    try {
+      payload = await verifyToken(token, { secretKey: CLERK_SECRET_WEBSITE })
+      secretKey = CLERK_SECRET_WEBSITE
+      instance = 'website'
+    } catch (websiteErr) {
+      console.error('JWT Verification Error:', primaryErr, websiteErr)
+      return { role: null, sub: null }
+    }
+  }
 
-    // 'role' is the custom claim we added to the session token template
+  try {
+    // 'role' is the custom claim we added to the session token template.
+    // Both instances are configured with it, so the fallback below is rare.
     let role = (payload as Record<string, unknown>).role as string | null
 
-    // Fallback: If role is missing from JWT, fetch user directly from Clerk
+    // Fallback: If role is missing from JWT, fetch user directly from Clerk.
+    // Must use the secret for the instance that actually issued the token —
+    // the other directory does not contain this sub.
     if (!role && payload.sub) {
-      const cached = roleCache.get(payload.sub)
+      const cacheKey = `${instance}:${payload.sub}`
+      const cached = roleCache.get(cacheKey)
       if (cached && cached.expiresAt > Date.now()) {
         role = cached.role
       } else {
         const { createClerkClient } = await import('@clerk/backend')
-        const clerk = createClerkClient({ secretKey: CLERK_SECRET })
+        const clerk = createClerkClient({ secretKey })
         const user = await clerk.users.getUser(payload.sub)
         role = (user.publicMetadata?.role as string) ?? null
-        roleCache.set(payload.sub, { role, expiresAt: Date.now() + CACHE_TTL_MS })
+        roleCache.set(cacheKey, { role, expiresAt: Date.now() + CACHE_TTL_MS })
       }
     }
 
     return { role, sub: payload.sub }
   } catch (err) {
-    console.error('JWT Verification Error:', err)
+    console.error('Role lookup error:', err)
     return { role: null, sub: null }
   }
 }
