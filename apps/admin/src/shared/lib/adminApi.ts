@@ -17,6 +17,16 @@ export function setTokenGetter(fn: () => Promise<string | null>) {
   getToken = fn
 }
 
+/**
+ * The live Clerk token, for callers outside this module. The Field Ops pages
+ * need it because their client (`features/fieldops/lib/fieldOpsApi.ts`) takes
+ * the token per call rather than reading it internally — same session, same
+ * instance, different base URL, so it reuses this one `TokenBridge`.
+ */
+export function getAuthToken(): Promise<string | null> {
+  return getToken ? getToken() : Promise.resolve(null)
+}
+
 async function authFetch(path: string, init: RequestInit = {}) {
   const token = getToken ? await getToken() : null
   const headers: Record<string, string> = {

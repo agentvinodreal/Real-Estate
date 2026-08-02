@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { InputHTMLAttributes, LabelHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { motion, type HTMLMotionProps } from 'motion/react'
-import { Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { EASE_OUT_EXPO, fadeUpItem } from '../lib/motion'
 
 /* ── Buttons ─────────────────────────────────────────────────────── */
@@ -251,6 +251,81 @@ export function Combobox({
         </ul>
       )}
     </div>
+  )
+}
+
+/* ── Filters ─────────────────────────────────────────────────────── */
+
+/** Row of labelled filter controls above a list. Collapses to one column on mobile. */
+export function FilterBar({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
+  return (
+    <div className="mb-6 flex flex-col gap-4 border border-ink/10 bg-bone-dim/40 p-4 sm:flex-row sm:flex-wrap sm:items-end">
+      {children}
+      {actions && <div className="flex gap-2 sm:ml-auto">{actions}</div>}
+    </div>
+  )
+}
+
+/** A single labelled control inside a <FilterBar>. */
+export function FilterField({ label, children, className = '' }: { label: string; children: ReactNode; className?: string }) {
+  return (
+    <div className={`min-w-40 flex-1 ${className}`}>
+      <Label>{label}</Label>
+      {children}
+    </div>
+  )
+}
+
+/* ── Pagination ──────────────────────────────────────────────────── */
+
+/**
+ * Prev/next pager for the server-paginated Field Ops lists. Renders nothing
+ * when everything fits on one page.
+ */
+export function Pagination({
+  page,
+  limit,
+  total,
+  onPageChange,
+}: {
+  page: number
+  limit: number
+  total: number
+  onPageChange: (page: number) => void
+}) {
+  const lastPage = Math.max(1, Math.ceil(total / limit))
+  if (total === 0 || lastPage === 1) return null
+
+  const from = (page - 1) * limit + 1
+  const to = Math.min(page * limit, total)
+
+  return (
+    <div className="mt-8 flex items-center justify-between gap-4 border-t border-ink/10 pt-5">
+      <p className="font-mono text-[0.65rem] uppercase tracking-[0.15em] text-concrete">
+        {from}–{to} of {total}
+      </p>
+      <div className="flex items-center gap-3">
+        <IconButton onClick={() => onPageChange(page - 1)} disabled={page <= 1} aria-label="Previous page">
+          <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
+        </IconButton>
+        <span className="font-mono text-[0.65rem] uppercase tracking-[0.15em] text-ink">
+          {page} / {lastPage}
+        </span>
+        <IconButton onClick={() => onPageChange(page + 1)} disabled={page >= lastPage} aria-label="Next page">
+          <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.8} />
+        </IconButton>
+      </div>
+    </div>
+  )
+}
+
+/* ── Error banner ────────────────────────────────────────────────── */
+
+export function ErrorNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="mb-4 border border-red-400/40 bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/20">
+      {children}
+    </p>
   )
 }
 
