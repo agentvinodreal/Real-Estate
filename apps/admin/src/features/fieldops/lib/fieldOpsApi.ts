@@ -2,7 +2,7 @@
  * HTTP client for the Field Ops API (a different service, database and Clerk
  * instance from the website API that `shared/lib/adminApi.ts` talks to).
  *
- * Ported from `Data collection/packages/shared/src/api.ts` so the pages moved
+ * Ported from `field-ops/packages/shared/src/api.ts` so the pages moved
  * across from that panel keep their `api.get(path, token)` call sites unchanged.
  *
  * Auth: the Field Ops API verifies this app's website-instance Clerk token via
@@ -54,7 +54,11 @@ async function request<T>(
 
     if (!res.ok) {
       const body = (await res.json().catch(() => ({ error: res.statusText }))) as any
-      throw new FieldOpsApiError(body.error ?? 'Request failed', res.status)
+      // Fastify's own native errors (validation failures, malformed JSON) put the
+      // real reason in `message` and leave `error` as the generic HTTP reason
+      // phrase ("Bad Request") — prefer it when present. Mirrors the same fix in
+      // field-ops/packages/shared/src/api.ts, which this file was ported from.
+      throw new FieldOpsApiError(body.message ?? body.error ?? 'Request failed', res.status)
     }
 
     return res.json() as Promise<T>
