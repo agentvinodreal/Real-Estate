@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform, useMotionValueEvent, animate } from 'motion/react'
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react'
 import Photo from '../../../shared/components/Photo'
 
 /**
@@ -9,10 +9,7 @@ import Photo from '../../../shared/components/Photo'
  */
 export default function VillaReveal({ className = '' }: { className?: string }) {
   const progress = useMotionValue(0)
-  const [percent, setPercent] = useState(0)
   const [done, setDone] = useState(false)
-
-  useMotionValueEvent(progress, 'change', (v) => setPercent(Math.round(v)))
 
   useEffect(() => {
     const controls = animate(progress, 100, {
@@ -55,19 +52,16 @@ export default function VillaReveal({ className = '' }: { className?: string }) 
         />
       </motion.div>
 
-      {/* Construction sweep line + live progress readout */}
+      {/* Construction sweep line */}
       <AnimatePresence>
         {!done && (
           <motion.div
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
             style={{ top: sweepTop }}
-            className="pointer-events-none absolute inset-x-0 flex items-center gap-2 px-4"
+            className="pointer-events-none absolute inset-x-0 px-4"
           >
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ochre to-ochre shadow-[0_0_10px_2px_rgba(213,169,106,0.55)]" />
-            <span className="shrink-0 bg-ink px-2 py-1 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-ochre">
-              Building {percent}%
-            </span>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-ochre to-ochre shadow-[0_0_10px_2px_rgba(213,169,106,0.55)]" />
           </motion.div>
         )}
       </AnimatePresence>

@@ -7,12 +7,10 @@ import Reveal from '../../../shared/components/motion/Reveal'
 import { EASE_OUT_EXPO } from '../../../shared/lib/motion'
 
 function InitialsAvatar({ name, className = '' }: { name: string; className?: string }) {
-  const initials = name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const words = name.split(' ').filter((w) => /[a-zA-Z]/.test(w[0]))
+  const initials = (
+    words.length >= 2 ? words[0][0] + words[words.length - 1][0] : (words[0] ?? '').slice(0, 2)
+  ).toUpperCase()
 
   const colors = ['bg-steel', 'bg-teal', 'bg-ink', 'bg-concrete']
   const colorIndex = name.charCodeAt(0) % colors.length

@@ -7,7 +7,6 @@ import { CONTACT } from '../../../shared/lib/data'
 const MILESTONES = [
   { year: '2012', title: 'Founded in Motihari', body: 'Started as a boutique construction consultancy focused on quality structural engineering.' },
   { year: '2015', title: 'First 100 Homes', body: 'Expanded to end-to-end turnkey residential builds across Patna.' },
-  { year: '2018', title: 'RERA Registration & Compliance', body: 'Enforced full RERA alignment on all managed properties for absolute client safety.' },
   { year: '2021', title: 'Commercial & Layouts Expansion', body: 'Launched commercial design services and custom layout plotting divisions.' },
 ]
 
@@ -31,7 +30,7 @@ export default function About() {
     <div>
       <Seo
         title="About Us — Building Homes Across Bihar"
-        description="Learn about Carry Construction — Bihar's trusted turnkey residential builders, structural design experts, and RERA-registered property consultants serving Patna, Gaya, Muzaffarpur and all of Bihar."
+        description="Learn about Carry Construction — Bihar's trusted turnkey residential builders, structural design experts, and property consultants serving Patna, Gaya, Muzaffarpur and all of Bihar."
         path="/about"
         jsonLd={{
           '@context': 'https://schema.org',

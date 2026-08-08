@@ -19,14 +19,14 @@ export default function Terms() {
         <section>
           <h2 className="font-display text-xl font-semibold text-ink mb-3">1. Use of the Site</h2>
           <p>
-            By accessing carryconstruction.com, you agree to these terms, all applicable laws, and RERA disclosures. The content on this website is for informational purposes only and does not constitute a legal binding contract.
+            By accessing carryconstruction.com, you agree to these terms and all applicable laws. The content on this website is for informational purposes only and does not constitute a legal binding contract.
           </p>
         </section>
 
         <section>
           <h2 className="font-display text-xl font-semibold text-ink mb-3">2. Listing Accuracy & Disclaimers</h2>
           <p>
-            While we strive to ensure RERA validation and accurate listing specifications (carpet area, rates, amenities), listing information changes frequently. Users are requested to independently verify all layout details, certificates, and prices before signing any transactional builder agreements.
+            While we strive to ensure accurate listing specifications (carpet area, rates, amenities), listing information changes frequently. Users are requested to independently verify all layout details, certificates, and prices before signing any transactional builder agreements.
           </p>
         </section>
 

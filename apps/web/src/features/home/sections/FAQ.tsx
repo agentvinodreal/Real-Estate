@@ -30,11 +30,6 @@ const FAQS: FaqItem[] = [
       'Yes. Turnkey construction means we manage the entire project — from architectural design and structural engineering to interior finishing and handover. You hand us a plot and receive a move-in-ready home. We handle all contractors, materials, approvals, and timelines.',
   },
   {
-    question: 'Are you RERA registered?',
-    answer:
-      'Yes, Carry Construction is RERA registered. Our registration details are displayed on every listing and in our footer. RERA compliance ensures complete transparency in pricing, timelines, and deliverables as mandated by the Real Estate (Regulation and Development) Act, 2016.',
-  },
-  {
     question: 'How do I schedule a site visit?',
     answer:
       'You can schedule a site visit directly through WhatsApp, phone call, or our Contact page. Our team typically confirms visits within a few hours and accommodates flexible timing including weekends.',

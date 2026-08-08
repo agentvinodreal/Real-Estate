@@ -62,13 +62,13 @@ export default function Hero() {
         {/* Image / 3D */}
         <div className="relative">
           {can3D ? (
-            <Suspense fallback={<VillaReveal className="aspect-[4/5] w-full" />}>
-              <div className="aspect-[4/5] w-full">
+            <Suspense fallback={<VillaReveal className="aspect-[4/5] w-full lg:aspect-square" />}>
+              <div className="aspect-[4/5] w-full lg:aspect-square">
                 <Hero3D />
               </div>
             </Suspense>
           ) : (
-            <VillaReveal className="aspect-[4/5] w-full" />
+            <VillaReveal className="aspect-[4/5] w-full lg:aspect-square" />
           )}
         </div>
       </div>

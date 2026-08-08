@@ -18,8 +18,8 @@ export default function Blog() {
   return (
     <div>
       <Seo
-        title="Guides & Insights — Patna Real Estate Blog"
-        description="Read comprehensive guides about home buying, RERA updates, property registration, and turnkey construction costs in Patna."
+        title="Guides & Insights — Bihar Real Estate Blog"
+        description="Read comprehensive guides about home buying, RERA updates, property registration, and turnkey construction costs across Bihar."
         path="/blog"
       />
 
@@ -31,7 +31,7 @@ export default function Blog() {
             Guides & insights.
           </h1>
           <p className="mt-3 max-w-xl text-ink-soft">
-            Everything you need to know about buying real estate, legal RERA compliance, and planning turnkey construction builds in Patna.
+            Everything you need to know about buying real estate, legal RERA compliance, and planning turnkey construction builds across Bihar.
           </p>
         </div>
       </div>

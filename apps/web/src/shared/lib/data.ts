@@ -9,99 +9,11 @@ export const CONTACT = {
   instagram: 'https://instagram.com/carryconstruction',
 }
 
-export type Listing = {
-  slug: string
-  title: string
-  locality: string
-  city: string
-  type: 'Apartment' | 'Villa' | 'Plot' | 'Commercial'
-  listing: 'Sale' | 'Resale' | 'Under Construction'
-  bhk: number | null
-  areaSqft: number
-  priceLabel: string // pre-formatted INR
-  rera: string
-}
-
-export const LISTINGS: Listing[] = [
-  {
-    slug: 'skyline-heights-3bhk',
-    title: 'Skyline Heights',
-    locality: 'Boring Road',
-    city: 'Patna',
-    type: 'Apartment',
-    listing: 'Sale',
-    bhk: 3,
-    areaSqft: 1450,
-    priceLabel: '₹1.35 Cr',
-    rera: 'P52100012345',
-  },
-  {
-    slug: 'the-orchard-villa',
-    title: 'The Orchard Villa',
-    locality: 'Danapur',
-    city: 'Patna',
-    type: 'Villa',
-    listing: 'Sale',
-    bhk: 4,
-    areaSqft: 3200,
-    priceLabel: '₹3.10 Cr',
-    rera: 'P52100067890',
-  },
-  {
-    slug: 'green-meadows-plot',
-    title: 'Green Meadows Plot',
-    locality: 'Kankarbagh',
-    city: 'Patna',
-    type: 'Plot',
-    listing: 'Resale',
-    bhk: null,
-    areaSqft: 2400,
-    priceLabel: '₹85 L',
-    rera: 'P52100011223',
-  },
-  {
-    slug: 'metro-square-2bhk',
-    title: 'Metro Square',
-    locality: 'Bailey Road',
-    city: 'Patna',
-    type: 'Apartment',
-    listing: 'Under Construction',
-    bhk: 2,
-    areaSqft: 980,
-    priceLabel: '₹72 L',
-    rera: 'P52100099887',
-  },
-  {
-    slug: 'riverside-resale-3bhk',
-    title: 'Riverside Residency',
-    locality: 'Patliputra Colony',
-    city: 'Patna',
-    type: 'Apartment',
-    listing: 'Resale',
-    bhk: 3,
-    areaSqft: 1360,
-    priceLabel: '₹1.10 Cr',
-    rera: 'P52100055443',
-  },
-  {
-    slug: 'commerce-hub-office',
-    title: 'Commerce Hub',
-    locality: 'Raja Bazar',
-    city: 'Patna',
-    type: 'Commercial',
-    listing: 'Sale',
-    bhk: null,
-    areaSqft: 1800,
-    priceLabel: '₹2.40 Cr',
-    rera: 'P52100077665',
-  },
-]
-
 export const SERVICES = [
   {
     id: '01',
     title: 'Buy a Home',
-    body: 'Curated apartments, villas, and plots — new and ready-to-move — with verified RERA details and transparent pricing.',
+    body: 'Curated apartments, villas, and plots — new and ready-to-move — with transparent pricing.',
     tag: 'Sale',
   },
   {
@@ -121,7 +33,7 @@ export const SERVICES = [
 export const PROCESS = [
   { step: '01', title: 'Consultation', body: 'We understand your budget, site, and vision — and set clear expectations.' },
   { step: '02', title: 'Design', body: 'Architecture and 3D plans crafted around how you actually live and work.' },
-  { step: '03', title: 'Approvals', body: 'We handle sanctions, RERA, and statutory paperwork so you don’t have to.' },
+  { step: '03', title: 'Approvals', body: 'We handle sanctions and statutory paperwork so you don’t have to.' },
   { step: '04', title: 'Construction', body: 'Quality materials, fixed timelines, and stage-wise updates you can track.' },
   { step: '05', title: 'Handover', body: 'A finished, inspected home — delivered on schedule with a service warranty.' },
 ]
